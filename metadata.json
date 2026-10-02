@@ -1,0 +1,6 @@
+{
+  "name": "北護課程通 NTUNHS Course Master",
+  "description": "國立臺北護理健康大學智慧選課、排程模擬、衝突分析、校園GIS導航與畢業學分審查系統",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
