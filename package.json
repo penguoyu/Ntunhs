@@ -1,14 +1,17 @@
 {
-  "name": "react-example",
+  "name": "ntunhs-course-master",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "國立臺北護理健康大學智慧課程查詢與排課模擬系統 (NTUNHS Course Master)",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "audit": "npm audit",
+    "security-check": "npm audit && tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

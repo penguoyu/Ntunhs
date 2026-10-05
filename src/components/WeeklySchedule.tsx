@@ -1,18 +1,39 @@
-import React, { useState } from 'react';
-import { Course } from '../types';
+import React, { useState, useMemo } from 'react';
+import { Course, SDG_LIST } from '../types';
 
 interface WeeklyScheduleProps {
   scheduleCourses: Course[];
   onViewCourseDetail: (course: Course) => void;
-  onNavigateToGis: (course: Course) => void;
   onOpenConflictResolver: () => void;
   showToast: (msg: string) => void;
 }
 
+const DAYS = [
+  { day: 1, zh: '一', en: 'Mon' },
+  { day: 2, zh: '二', en: 'Tue' },
+  { day: 3, zh: '三', en: 'Wed' },
+  { day: 4, zh: '四', en: 'Thu' },
+  { day: 5, zh: '五', en: 'Fri' },
+];
+
+const PERIOD_CONFIG = [
+  { period: 1, time: '08:10' },
+  { period: 2, time: '09:10' },
+  { period: 3, time: '10:10' },
+  { period: 4, time: '11:10' },
+  { period: 5, time: '13:30' },
+  { period: 6, time: '14:30' },
+  { period: 7, time: '15:30' },
+  { period: 8, time: '16:30' },
+];
+
+const periodToRow = (period: number): number => {
+  return period <= 4 ? period + 1 : period + 2;
+};
+
 export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
   scheduleCourses,
   onViewCourseDetail,
-  onNavigateToGis,
   onOpenConflictResolver,
   showToast,
 }) => {
@@ -28,6 +49,100 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
     .filter(c => c.category.includes('必修'))
     .reduce((sum, c) => sum + c.credits, 0);
   const electiveCredits = totalCredits - requiredCredits;
+
+  // Calculate SDGs metrics for current schedule
+  const allSdgIds = Array.from(new Set(scheduleCourses.flatMap(c => (c.sdgs && c.sdgs.length > 0 ? c.sdgs : [3, 4]))));
+  const activeSdgItems = SDG_LIST.filter(s => allSdgIds.includes(s.id));
+
+  // Timetable grid calculations
+  const occupiedSlots = useMemo(() => {
+    const slots = new Set<string>();
+    scheduleCourses.forEach(c => {
+      if (c.day && c.periods) {
+        c.periods.forEach(p => slots.add(`${c.day}-${p}`));
+      }
+    });
+    return slots;
+  }, [scheduleCourses]);
+
+  const conflictingCourseIds = useMemo(() => {
+    const ids = new Set<string>();
+    scheduleCourses.forEach(c1 => {
+      scheduleCourses.forEach(c2 => {
+        if (c1.id !== c2.id && c1.day === c2.day && c1.periods?.some(p => c2.periods?.includes(p))) {
+          ids.add(c1.id);
+          ids.add(c2.id);
+        }
+      });
+    });
+    return ids;
+  }, [scheduleCourses]);
+
+  const coursePlacements = useMemo(() => {
+    interface CoursePlacement {
+      course: Course;
+      startPeriod: number;
+      endPeriod: number;
+      rowStart: number;
+      rowEnd: number;
+      col: number;
+      isConflict: boolean;
+    }
+    const placements: CoursePlacement[] = [];
+
+    scheduleCourses.forEach(course => {
+      if (!course.day || !course.periods || course.periods.length === 0) return;
+      const morning = course.periods.filter(p => p <= 4).sort((a, b) => a - b);
+      const afternoon = course.periods.filter(p => p >= 5).sort((a, b) => a - b);
+
+      if (morning.length > 0) {
+        const startPeriod = morning[0];
+        const endPeriod = morning[morning.length - 1];
+        placements.push({
+          course,
+          startPeriod,
+          endPeriod,
+          rowStart: periodToRow(startPeriod),
+          rowEnd: periodToRow(endPeriod) + 1,
+          col: course.day + 1,
+          isConflict: conflictingCourseIds.has(course.id),
+        });
+      }
+
+      if (afternoon.length > 0) {
+        const startPeriod = afternoon[0];
+        const endPeriod = afternoon[afternoon.length - 1];
+        placements.push({
+          course,
+          startPeriod,
+          endPeriod,
+          rowStart: periodToRow(startPeriod),
+          rowEnd: periodToRow(endPeriod) + 1,
+          col: course.day + 1,
+          isConflict: conflictingCourseIds.has(course.id),
+        });
+      }
+    });
+
+    return placements;
+  }, [scheduleCourses, conflictingCourseIds]);
+
+  const emptySlots = useMemo(() => {
+    const slots: { day: number; period: number; zh: string; time: string }[] = [];
+    DAYS.forEach(d => {
+      PERIOD_CONFIG.forEach(p => {
+        if (!occupiedSlots.has(`${d.day}-${p.period}`)) {
+          slots.push({
+            day: d.day,
+            period: p.period,
+            zh: d.zh,
+            time: p.time,
+          });
+        }
+      });
+    });
+    return slots;
+  }, [occupiedSlots]);
 
   const handleExportICS = () => {
     let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//NTUNHS Course Master//TW\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\nX-WR-CALNAME:北護 113-2 個人課表\nX-WR-TIMEZONE:Asia/Taipei\n`;
@@ -204,21 +319,25 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           </div>
         </div>
 
-        {/* 3. Campus GIS Mobility Metric */}
+        {/* 3. SDGs Curriculum Indicators Metric */}
         <div
-          onClick={() => onNavigateToGis(scheduleCourses[0] || ({} as any))}
-          className="bg-surface-card p-4 sm:p-5 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
+          className="bg-surface-card p-4 sm:p-5 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between"
         >
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">校園移動動線</span>
+            <span className="text-xs text-emerald-800 font-semibold uppercase tracking-wider flex items-center gap-1">
+              <span className="material-symbols-outlined text-[15px] text-emerald-600">eco</span>
+              SDGs 永續指標
+            </span>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xl text-primary">2 座大樓</span>
-              <span className="text-xs text-general-sky font-semibold">平均步程 3.5 分</span>
+              <span className="font-bold text-xl text-primary">{activeSdgItems.length} 項指標</span>
+              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                永續合規
+              </span>
             </div>
-            <span className="text-xs text-text-muted">資科大樓 ↔ 學思樓 (無趕課緊迫)</span>
+            <span className="text-xs text-text-muted">課表已涵蓋 {activeSdgItems.slice(0, 3).map(s => `SDG ${s.id}`).join(', ')}</span>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
-            <span className="material-symbols-outlined text-[26px]">directions_walk</span>
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[26px]">eco</span>
           </div>
         </div>
 
@@ -261,295 +380,161 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
 
             <div className="overflow-x-auto no-scrollbar pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
               <div className="min-w-[580px] sm:min-w-0">
-                {/* Days Header */}
-                <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 items-center pb-2 text-center text-xs">
-                  <div className="font-semibold text-text-muted">節次</div>
-                  <div className="flex flex-col items-center py-2 rounded-xl bg-surface-container-low">
-                    <span className="text-text-muted text-[10px]">一</span>
-                    <span className="font-bold text-primary text-sm">Mon</span>
+                {/* Unified Timetable Grid */}
+                <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-2 select-none text-xs">
+                  {/* Row 1, Col 1: Period Header */}
+                  <div
+                    style={{ gridColumn: 1, gridRow: 1 }}
+                    className="font-semibold text-text-muted text-xs flex items-center justify-center py-2 bg-surface-container-low/50 rounded-xl"
+                  >
+                    節次
                   </div>
-                  <div className="flex flex-col items-center py-2 rounded-xl bg-surface-container-low">
-                    <span className="text-text-muted text-[10px]">二</span>
-                    <span className="font-bold text-primary text-sm">Tue</span>
-                  </div>
-                  <div className="flex flex-col items-center py-2 rounded-xl bg-surface-container-low">
-                    <span className="text-text-muted text-[10px]">三</span>
-                    <span className="font-bold text-primary text-sm">Wed</span>
-                  </div>
-                  <div className="flex flex-col items-center py-2 rounded-xl bg-surface-container-low">
-                    <span className="text-text-muted text-[10px]">四</span>
-                    <span className="font-bold text-primary text-sm">Thu</span>
-                  </div>
-                  <div className="flex flex-col items-center py-2 rounded-xl bg-surface-container-high text-primary font-bold">
-                    <span className="text-text-secondary text-[10px]">五</span>
-                    <span className="text-sm">Fri</span>
-                  </div>
-                </div>
 
-                {/* Grid Rows: Periods 1 to 8 + Noon Break */}
-                <div className="flex flex-col gap-2 select-none text-xs">
-              {/* Period 1 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">1</span>
-                  <span className="text-[10px] text-text-muted">08:10</span>
-                </div>
-                {/* Mon P1-3: Algorithm */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'CS301') || null)}
-                  className="row-span-3 bg-primary-fixed hover:bg-primary-fixed-dim transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
-                      <span className="font-bold text-on-primary-fixed truncate">演算法資料結構</span>
+                  {/* Row 1, Col 2..6: Day Headers */}
+                  {DAYS.map(d => (
+                    <div
+                      key={`day-header-${d.day}`}
+                      style={{ gridColumn: d.day + 1, gridRow: 1 }}
+                      className={`flex flex-col items-center py-2 rounded-xl text-xs transition-colors ${
+                        d.day === 5
+                          ? 'bg-surface-container-high text-primary font-bold'
+                          : 'bg-surface-container-low text-primary'
+                      }`}
+                    >
+                      <span className="text-text-muted text-[10px]">週{d.zh}</span>
+                      <span className="font-bold text-sm">{d.en}</span>
                     </div>
-                    <p className="text-[11px] text-on-primary-fixed-variant truncate mt-0.5">資科 I501</p>
-                  </div>
-                  <span className="text-[10px] text-primary font-bold text-right">必修 3.0</span>
-                </div>
-                {/* Tue P1 Empty */}
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">晨間專注</span>
-                </div>
-                {/* Wed P1 Empty */}
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">外語自主</span>
-                </div>
-                {/* Thu P1 Empty */}
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">文獻預習</span>
-                </div>
-                {/* Fri P1 Empty (Research slot) */}
-                <div className="bg-surface-container-low rounded-xl flex items-center justify-center text-center p-1">
-                  <span className="text-[10px] text-text-muted">專題研讀</span>
-                </div>
-              </div>
+                  ))}
 
-              {/* Period 2 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">2</span>
-                  <span className="text-[10px] text-text-muted">09:10</span>
-                </div>
-                <div className="hidden"></div>
-                {/* Tue P2-4: FHIR Standards */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'IM3012') || null)}
-                  className="row-span-3 bg-primary-fixed hover:bg-primary-fixed-dim transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
-                      <span className="font-bold text-on-primary-fixed truncate">醫療資訊FHIR</span>
+                  {/* Col 1: Period Time Indicators */}
+                  {PERIOD_CONFIG.map(p => (
+                    <div
+                      key={`period-time-${p.period}`}
+                      style={{ gridColumn: 1, gridRow: periodToRow(p.period) }}
+                      className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle h-full min-h-[76px]"
+                    >
+                      <span className="font-bold text-primary text-sm sm:text-base">{p.period}</span>
+                      <span className="text-[10px] text-text-muted">{p.time}</span>
                     </div>
-                    <p className="text-[11px] text-on-primary-fixed-variant truncate mt-0.5">資科 I502</p>
-                  </div>
-                  <span className="text-[10px] text-primary font-bold text-right">必修 3.0</span>
-                </div>
-                {/* Wed P2 */}
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">Python習作</span>
-                </div>
-                {/* Thu P2 */}
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">生理量測分析</span>
-                </div>
-                {/* Fri P2-3: Medical Ethics */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'GE2109') || null)}
-                  className="row-span-2 bg-tertiary-fixed/90 hover:bg-tertiary-fixed transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
-                      <span className="font-bold text-on-tertiary-fixed truncate">醫學倫理與法規</span>
-                    </div>
-                    <p className="text-[11px] text-on-tertiary-fixed-variant truncate mt-0.5">文教 B101</p>
-                  </div>
-                  <span className="text-[10px] text-tertiary font-bold text-right">通識 2.0</span>
-                </div>
-              </div>
+                  ))}
 
-              {/* Period 3 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">3</span>
-                  <span className="text-[10px] text-text-muted">10:10</span>
-                </div>
-                <div className="hidden"></div>
-                <div className="hidden"></div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">館藏檢索</span>
-                </div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">臨床討論</span>
-                </div>
-                <div className="hidden"></div>
-              </div>
-
-              {/* Period 4 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">4</span>
-                  <span className="text-[10px] text-text-muted">11:10</span>
-                </div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">空檔午膳</span>
-                </div>
-                <div className="hidden"></div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">課業自習</span>
-                </div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">移至學思樓</span>
-                </div>
-                <div className="bg-surface-container-low rounded-xl flex items-center justify-center text-center p-1">
-                  <span className="text-[10px] text-text-muted">文獻研析</span>
-                </div>
-              </div>
-
-              {/* Noon Rest Break Divider */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 py-1">
-                <div className="text-center font-bold text-text-muted self-center">午休</div>
-                <div className="col-span-5 bg-surface-container-low rounded-xl py-2 px-4 flex items-center justify-between text-text-muted text-xs border border-border-subtle">
-                  <span className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[18px] text-tertiary-container">restaurant</span>
-                    <span>12:00 - 13:30 午餐與休整 | 學生一餐、親仁大樓咖啡館全開</span>
-                  </span>
-                  <span className="text-secondary font-bold hidden sm:inline">小憩 90 分鐘</span>
-                </div>
-              </div>
-
-              {/* Period 5 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">5</span>
-                  <span className="text-[10px] text-text-muted">13:30</span>
-                </div>
-                {/* Mon P5-6: Biostats */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'BIO202') || null)}
-                  className="row-span-2 bg-secondary-container/90 hover:bg-secondary-container transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"></span>
-                      <span className="font-bold text-on-secondary-container truncate">生醫統計R</span>
-                    </div>
-                    <p className="text-[11px] text-on-secondary-fixed-variant truncate mt-0.5">文教 B204</p>
+                  {/* Row 6: Noon Break Divider */}
+                  <div
+                    style={{ gridColumn: 1, gridRow: 6 }}
+                    className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle"
+                  >
+                    <span className="font-bold text-xs text-text-muted">午休</span>
+                    <span className="text-[9px] text-text-muted">12:00</span>
                   </div>
-                  <span className="text-[10px] text-secondary font-bold text-right">跨選 2.0</span>
-                </div>
-                {/* Tue P5 */}
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">系統設計</span>
-                </div>
-                {/* Wed P5-7: Health Big Data */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'IM3105') || null)}
-                  className="row-span-3 bg-surface-container-highest hover:bg-surface-variant transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-clinical-purple shrink-0"></span>
-                      <span className="font-bold text-on-surface truncate">健康大數據</span>
-                    </div>
-                    <p className="text-[11px] text-text-muted truncate mt-0.5">資科 I401</p>
-                  </div>
-                  <span className="text-[10px] text-clinical-purple font-bold text-right">選修 3.0</span>
-                </div>
-                {/* Thu P5-6: Smart Nursing */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'NUR3402') || null)}
-                  className="row-span-2 bg-tertiary-fixed/90 hover:bg-tertiary-fixed transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary shrink-0"></span>
-                      <span className="font-bold text-on-tertiary-fixed truncate">智慧護理</span>
-                    </div>
-                    <p className="text-[11px] text-on-tertiary-fixed-variant truncate mt-0.5">學思 F401</p>
-                  </div>
-                  <span className="text-[10px] text-tertiary font-bold text-right">跨系 2.0</span>
-                </div>
-                {/* Fri P5-8: Research Day Block */}
-                <div className="row-span-4 bg-surface-container-low rounded-xl p-2.5 flex flex-col justify-between border border-border-subtle">
-                  <div>
-                    <span className="px-1.5 py-0.5 rounded bg-general-sky text-white font-bold text-[9px]">
-                      專題日
+                  <div
+                    style={{ gridColumn: '2 / 7', gridRow: 6 }}
+                    className="bg-surface-container-low/90 rounded-xl py-2 px-4 flex items-center justify-between text-text-muted text-xs border border-border-subtle"
+                  >
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <span className="material-symbols-outlined text-[18px] text-tertiary-container">restaurant</span>
+                      <span>12:00 - 13:30 午餐與休整 | 學生一餐、親仁大樓咖啡館全開</span>
                     </span>
-                    <h5 className="font-bold text-xs text-primary mt-1">智慧醫療專題實作</h5>
-                    <p className="text-[10px] text-text-muted mt-0.5">全日自主研發 / 企業實習準備</p>
+                    <span className="text-secondary font-bold hidden sm:inline">午休 90 分鐘</span>
                   </div>
-                  <span className="text-[10px] text-secondary font-semibold">自習A座已核可</span>
-                </div>
-              </div>
 
-              {/* Period 6 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">6</span>
-                  <span className="text-[10px] text-text-muted">14:30</span>
-                </div>
-                <div className="hidden"></div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">介面除錯</span>
-                </div>
-                <div className="hidden"></div>
-                <div className="hidden"></div>
-                <div className="hidden"></div>
-              </div>
+                  {/* Scheduled Courses */}
+                  {coursePlacements.map((placement, idx) => {
+                    const { course, startPeriod, endPeriod, rowStart, rowEnd, col, isConflict } = placement;
+                    const isMultiPeriod = endPeriod > startPeriod;
 
-              {/* Period 7 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">7</span>
-                  <span className="text-[10px] text-text-muted">15:30</span>
-                </div>
-                {/* Mon P7-8: Wearable IoT */}
-                <div
-                  onClick={() => setSelectedCourseModal(scheduleCourses.find(c => c.id === 'IM3208') || null)}
-                  className="row-span-2 bg-secondary-fixed/50 hover:bg-secondary-fixed transition-all p-2 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs active:scale-[0.99]"
-                >
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"></span>
-                      <span className="font-bold text-on-secondary-fixed truncate">穿戴式物聯網</span>
+                    return (
+                      <div
+                        key={`${course.id}-${startPeriod}-${idx}`}
+                        style={{
+                          gridColumn: col,
+                          gridRow: `${rowStart} / ${rowEnd}`,
+                        }}
+                        onClick={() => setSelectedCourseModal(course)}
+                        className={`p-2 sm:p-2.5 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group z-10 ${
+                          isConflict
+                            ? 'bg-red-50 text-red-950 border-red-300 ring-1 ring-red-400'
+                            : course.category.includes('必修')
+                            ? 'bg-primary-fixed/90 hover:bg-primary-fixed text-on-primary-fixed border-primary/25'
+                            : course.category.includes('跨') || course.isCrossDisciplinary
+                            ? 'bg-secondary-container/90 hover:bg-secondary-container text-on-secondary-container border-secondary/25'
+                            : course.category.includes('通識')
+                            ? 'bg-tertiary-fixed/90 hover:bg-tertiary-fixed text-on-tertiary-fixed border-tertiary/25'
+                            : 'bg-surface-container-highest hover:bg-surface-variant text-on-surface border-border-subtle'
+                        }`}
+                        title={`${course.name} (${course.code}) | ${course.location} | ${course.teacher}`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <div className="flex items-center gap-1 min-w-0">
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  course.category.includes('必修')
+                                    ? 'bg-primary'
+                                    : course.category.includes('跨') || course.isCrossDisciplinary
+                                    ? 'bg-secondary'
+                                    : course.category.includes('通識')
+                                    ? 'bg-tertiary'
+                                    : 'bg-clinical-purple'
+                                }`}
+                              ></span>
+                              <span className="font-bold text-xs sm:text-sm truncate">
+                                {course.name}
+                              </span>
+                            </div>
+                            {isConflict ? (
+                              <span className="px-1.5 py-0.2 rounded bg-conflict-danger text-white text-[9px] font-bold shrink-0">
+                                衝堂
+                              </span>
+                            ) : (
+                              <span
+                                className={`px-1.5 py-0.2 rounded text-[9px] font-bold shrink-0 ${
+                                  course.category.includes('必修')
+                                    ? 'bg-primary text-white'
+                                    : course.category.includes('跨') || course.isCrossDisciplinary
+                                    ? 'bg-secondary text-white'
+                                    : course.category.includes('通識')
+                                    ? 'bg-tertiary text-white'
+                                    : 'bg-surface-container text-text-muted'
+                                }`}
+                              >
+                                {course.category.slice(0, 2)} {course.credits.toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-[11px] opacity-80 truncate mt-0.5">
+                            <span className="material-symbols-outlined text-[12px] opacity-70">location_on</span>
+                            <span className="truncate">{course.location || course.room}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] opacity-75 mt-1 pt-1 border-t border-black/5 dark:border-white/5">
+                          <span className="truncate max-w-[85px] sm:max-w-none">{course.teacher}</span>
+                          <span className="font-mono text-[9px]">
+                            {isMultiPeriod ? `第${startPeriod}-${endPeriod}節` : `第${startPeriod}節`}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Unified Empty Slots */}
+                  {emptySlots.map(slot => (
+                    <div
+                      key={`empty-${slot.day}-${slot.period}`}
+                      style={{
+                        gridColumn: slot.day + 1,
+                        gridRow: periodToRow(slot.period),
+                      }}
+                      onClick={() => showToast(`週${slot.zh} 第${slot.period}節 (${slot.time}) 目前為自習空堂，無排課`)}
+                      className="h-full min-h-[76px] bg-surface-container-lowest/80 hover:bg-surface-container-low/90 rounded-xl border border-dashed border-border-subtle/80 flex flex-col items-center justify-center p-2 text-center transition-all group cursor-pointer shadow-2xs hover:border-primary/40"
+                      title={`週${slot.zh} 第${slot.period}節 (${slot.time}) 自修空堂`}
+                    >
+                      <span className="text-[10px] text-text-muted/40 group-hover:text-primary transition-colors font-medium">
+                        空堂
+                      </span>
                     </div>
-                    <p className="text-[11px] text-on-secondary-fixed-variant truncate mt-0.5">OSC3</p>
-                  </div>
-                  <span className="text-[10px] text-secondary font-bold text-right">選修 2.0</span>
+                  ))}
                 </div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">導生晤談</span>
-                </div>
-                <div className="hidden"></div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">模擬復盤</span>
-                </div>
-                <div className="hidden"></div>
-              </div>
-
-              {/* Period 8 */}
-              <div className="grid grid-cols-[60px_repeat(5,1fr)] sm:grid-cols-[80px_repeat(5,1fr)] gap-1.5 min-h-[58px]">
-                <div className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle">
-                  <span className="font-bold text-primary">8</span>
-                  <span className="text-[10px] text-text-muted">16:30</span>
-                </div>
-                <div className="hidden"></div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">實驗室組會</span>
-                </div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">課後習題</span>
-                </div>
-                <div className="bg-surface-container-lowest rounded-xl border border-dashed border-border-subtle flex items-center justify-center">
-                  <span className="text-[10px] text-text-muted">專案彙整</span>
-                </div>
-                <div className="hidden"></div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -653,7 +638,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
         </button>
       </div>
 
-      {/* Lower Section 3 Columns: Office Hours, Campus GIS, Library & Ratings */}
+      {/* Lower Section 3 Columns: Office Hours, SDGs Indicators Matrix, Library & Ratings */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* 1. Professor Office Hours */}
         <div className="bg-surface-card rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col justify-between">
@@ -740,57 +725,55 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           </button>
         </div>
 
-        {/* 2. Campus GIS Route Advisory */}
+        {/* 2. SDGs Curriculum Indicators Matrix */}
         <div className="bg-surface-card rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col justify-between">
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
               <div className="flex items-center gap-1.5 text-primary">
-                <span className="material-symbols-outlined text-[20px]">near_me</span>
-                <h3 className="font-bold text-sm sm:text-base">趕課動線與校園 GIS 導引</h3>
+                <span className="material-symbols-outlined text-[20px] text-emerald-600">eco</span>
+                <h3 className="font-bold text-sm sm:text-base">SDGs 永續目標修習分佈</h3>
               </div>
-              <span className="text-xs text-primary font-semibold">北護校本部平面</span>
+              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                已涵蓋 {activeSdgItems.length} 項指標
+              </span>
             </div>
 
-            {/* GIS Map Image preview */}
-            <div
-              onClick={() => onNavigateToGis(scheduleCourses[0] || ({} as any))}
-              className="w-full h-40 rounded-xl bg-cover bg-center relative overflow-hidden shadow-inner flex flex-col justify-end p-3 cursor-pointer group"
-              style={{
-                backgroundImage:
-                  "url('https://lh3.googleusercontent.com/aida-public/AB6AXuB55SE6PSWA7lkGCDR_BrVWAAuG7EI2UGfusUGFecXXXb1ARj65fHwgORvSVyPhHzaBxMNmBIVJxiFNmtQanN0jwHdMjp52RMh51lTQat7e4NyUhutagRutB8vZjbU_tJw0dxjDBxik1j7XanTUOYjr8bsow5SqBKq-mlqLDc18BiFAUMrSg7KUZD7ctGBVF2YhSWpisve5eSBT2RgVVhwKLoymf8BukpSKFH6y4HiZpy-SuQ9vDJ8N')",
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent group-hover:from-primary transition-colors"></div>
-              <div className="relative z-10 flex items-center justify-between text-white text-xs">
-                <div className="flex items-center gap-1 font-bold">
-                  <span className="material-symbols-outlined text-[16px] text-secondary-container">route</span>
-                  <span>資科大樓 ➔ 學思樓：240 公尺</span>
-                </div>
-                <span className="bg-white/20 backdrop-blur px-2 py-0.5 rounded text-[10px]">
-                  建議路徑：經椰林大道
-                </span>
+            {/* SDGs Badges Container */}
+            <div className="p-3 bg-surface-container-low rounded-xl border border-border-subtle flex flex-col gap-2">
+              <span className="text-[11px] font-bold text-emerald-900">
+                本週課表已認列之聯合國 SDGs 永續目標：
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {activeSdgItems.map(item => (
+                  <span
+                    key={item.id}
+                    className="px-2.5 py-1 rounded-lg text-white font-bold text-xs shadow-2xs flex items-center gap-1"
+                    style={{ backgroundColor: item.color }}
+                    title={`SDGs 永續目標：${item.code} ${item.name}`}
+                  >
+                    <span className="material-symbols-outlined text-[13px]">{item.icon}</span>
+                    <span>{item.code} {item.name}</span>
+                  </span>
+                ))}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 mt-1">
               <div className="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
-                <span className="text-[11px] text-text-muted">平均轉堂緩衝時間</span>
-                <span className="text-sm font-bold text-primary">10 分鐘 (充裕)</span>
+                <span className="text-[11px] text-text-muted">SDGs 核心能力覆蓋</span>
+                <span className="text-sm font-bold text-primary">專業實務 • 科技應用</span>
               </div>
               <div className="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
-                <span className="text-[11px] text-text-muted">下雨備用路徑</span>
-                <span className="text-sm font-bold text-primary">連通走廊 (全程不淋雨)</span>
+                <span className="text-[11px] text-text-muted">校級永續指標審查</span>
+                <span className="text-sm font-bold text-emerald-700">通過 (100% 合規)</span>
               </div>
             </div>
           </div>
 
-          <button
-            onClick={() => onNavigateToGis(scheduleCourses[0] || ({} as any))}
-            className="w-full mt-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
-          >
-            <span className="material-symbols-outlined text-[16px]">map</span>
-            <span>打開 3D 智慧導航地圖</span>
-          </button>
+          <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between text-xs text-text-muted">
+            <span>依北護校務發展藍圖與教育部永續指標規範</span>
+            <span className="font-bold text-emerald-800">免檢附紙本證明</span>
+          </div>
         </div>
 
         {/* 3. Course Reviews & NTUNHS Library Reserves */}
@@ -941,24 +924,12 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                 onClick={() => {
                   const course = selectedCourseModal;
                   setSelectedCourseModal(null);
-                  onNavigateToGis(course);
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">navigation</span>
-                <span>教室 GIS 導航</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  const course = selectedCourseModal;
-                  setSelectedCourseModal(null);
                   onViewCourseDetail(course);
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-container font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
               >
                 <span className="material-symbols-outlined text-[16px]">menu_book</span>
-                <span>查看課綱</span>
+                <span>檢視大綱與 SDGs 永續指標</span>
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Course } from '../types';
 
 interface SimulationWorkstationProps {
@@ -14,6 +14,29 @@ interface SimulationWorkstationProps {
   onViewCourseDetail: (course: Course) => void;
   showToast: (msg: string) => void;
 }
+
+const SIM_DAYS = [
+  { day: 1, zh: '一', en: 'Mon' },
+  { day: 2, zh: '二', en: 'Tue' },
+  { day: 3, zh: '三', en: 'Wed' },
+  { day: 4, zh: '四', en: 'Thu' },
+  { day: 5, zh: '五', en: 'Fri' },
+];
+
+const SIM_PERIODS = [
+  { period: 1, time: '08:10' },
+  { period: 2, time: '09:10' },
+  { period: 3, time: '10:10' },
+  { period: 4, time: '11:10' },
+  { period: 5, time: '13:30' },
+  { period: 6, time: '14:30' },
+  { period: 7, time: '15:30' },
+  { period: 8, time: '16:30' },
+];
+
+const simPeriodToRow = (period: number): number => {
+  return period <= 4 ? period + 1 : period + 2;
+};
 
 export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
   courses,
@@ -39,6 +62,98 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
   const tier1Credits = tier1Courses.reduce((sum, c) => sum + c.credits, 0);
   const tier2Credits = tier2Courses.reduce((sum, c) => sum + c.credits, 0);
   const totalSimCredits = tier1Credits + (hasAddedRecommended ? 2.0 : 0);
+
+  // Timetable preview calculations
+  const effectivePreviewCourses = useMemo(() => {
+    let list = viewMode === 'contingency' ? [...tier1Courses, ...tier2Courses] : [...tier1Courses];
+    if (hasAddedRecommended && !list.some(c => c.id === 'GE2109')) {
+      const ge = courses.find(c => c.id === 'GE2109');
+      if (ge) list = [...list, ge];
+    }
+    return list;
+  }, [viewMode, tier1Courses, tier2Courses, hasAddedRecommended, courses]);
+
+  const simOccupiedSlots = useMemo(() => {
+    const slots = new Set<string>();
+    effectivePreviewCourses.forEach(c => {
+      if (c.day && c.periods) {
+        c.periods.forEach(p => slots.add(`${c.day}-${p}`));
+      }
+    });
+    // If recommendation is shown on Fri P2-3, mark those as occupied so empty slots aren't rendered underneath
+    if (!hasAddedRecommended) {
+      slots.add('5-2');
+      slots.add('5-3');
+    }
+    return slots;
+  }, [effectivePreviewCourses, hasAddedRecommended]);
+
+  const simCoursePlacements = useMemo(() => {
+    interface Placement {
+      course: Course;
+      startPeriod: number;
+      endPeriod: number;
+      rowStart: number;
+      rowEnd: number;
+      col: number;
+      isTier2: boolean;
+    }
+    const placements: Placement[] = [];
+
+    effectivePreviewCourses.forEach(course => {
+      if (!course.day || !course.periods || course.periods.length === 0) return;
+      const morning = course.periods.filter(p => p <= 4).sort((a, b) => a - b);
+      const afternoon = course.periods.filter(p => p >= 5).sort((a, b) => a - b);
+      const isTier2 = tier2Ids.includes(course.id);
+
+      if (morning.length > 0) {
+        const start = morning[0];
+        const end = morning[morning.length - 1];
+        placements.push({
+          course,
+          startPeriod: start,
+          endPeriod: end,
+          rowStart: simPeriodToRow(start),
+          rowEnd: simPeriodToRow(end) + 1,
+          col: course.day + 1,
+          isTier2,
+        });
+      }
+
+      if (afternoon.length > 0) {
+        const start = afternoon[0];
+        const end = afternoon[afternoon.length - 1];
+        placements.push({
+          course,
+          startPeriod: start,
+          endPeriod: end,
+          rowStart: simPeriodToRow(start),
+          rowEnd: simPeriodToRow(end) + 1,
+          col: course.day + 1,
+          isTier2,
+        });
+      }
+    });
+
+    return placements;
+  }, [effectivePreviewCourses, tier2Ids]);
+
+  const simEmptySlots = useMemo(() => {
+    const slots: { day: number; period: number; zh: string; time: string }[] = [];
+    SIM_DAYS.forEach(d => {
+      SIM_PERIODS.forEach(p => {
+        if (!simOccupiedSlots.has(`${d.day}-${p.period}`)) {
+          slots.push({
+            day: d.day,
+            period: p.period,
+            zh: d.zh,
+            time: p.time,
+          });
+        }
+      });
+    });
+    return slots;
+  }, [simOccupiedSlots]);
 
   const moveTier1ToTier2 = (courseId: string) => {
     onSetTier1Ids(tier1Ids.filter(id => id !== courseId));
@@ -480,208 +595,153 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
           </div>
 
           {/* Mini Timetable Table for Simulation */}
-          <div className="w-full overflow-x-auto rounded-xl border border-border-subtle text-xs">
+          <div className="w-full overflow-x-auto rounded-xl border border-border-subtle text-xs bg-surface-card p-2 sm:p-3">
             <div className="min-w-[500px]">
-              {/* Header */}
-              <div className="grid grid-cols-6 gap-1 bg-surface-container-low p-2 text-center font-bold text-on-surface">
-                <div className="text-text-muted text-[11px]">節次 / 時間</div>
-                <div className="py-1 rounded bg-surface-card">週一 (Mon)</div>
-                <div className="py-1 rounded bg-surface-card">週二 (Tue)</div>
-                <div className="py-1 rounded bg-surface-card">週三 (Wed)</div>
-                <div className="py-1 rounded bg-surface-card">週四 (Thu)</div>
-                <div className="py-1 rounded bg-surface-card text-primary">週五 (Fri)</div>
-              </div>
-
-              {/* Rows */}
-              <div className="p-1 space-y-1">
-                {/* Period 1 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">1</span>
-                    <span className="text-[9px] text-text-muted">08:10</span>
-                  </div>
-                  {/* Mon P1-3: Algorithm */}
-                  <div
-                    onClick={() => {
-                      const c = courses.find(x => x.id === 'CS301');
-                      if (c) onViewCourseDetail(c);
-                    }}
-                    className="row-span-3 bg-primary-container text-white p-2 rounded-lg flex flex-col justify-between shadow-xs cursor-pointer hover:ring-2 hover:ring-general-sky transition-all"
-                  >
-                    <span className="text-[10px] bg-white/20 px-1 py-0.2 rounded w-fit font-bold">必修 3.0</span>
-                    <span className="font-bold text-xs truncate">演算法資料結構</span>
-                    <span className="text-[10px] text-white/80">S502 • 林冠宇</span>
-                  </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  {/* Thu P2-4: Health Big Data in Sim */}
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="bg-surface-bg rounded p-1 flex items-center justify-center text-[10px] text-text-muted">
-                    自主自習
-                  </div>
+              <div className="grid grid-cols-[56px_repeat(5,1fr)] sm:grid-cols-[68px_repeat(5,1fr)] gap-1.5 select-none text-xs">
+                {/* Row 1, Col 1: Period Header */}
+                <div
+                  style={{ gridColumn: 1, gridRow: 1 }}
+                  className="font-semibold text-text-muted text-[11px] flex items-center justify-center py-1.5 bg-surface-container-low rounded-lg"
+                >
+                  節次
                 </div>
 
-                {/* Period 2 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">2</span>
-                    <span className="text-[9px] text-text-muted">09:10</span>
-                  </div>
-                  <div className="hidden"></div>
-                  {/* Tue P2-4: FHIR */}
+                {/* Row 1, Col 2..6: Day Headers */}
+                {SIM_DAYS.map(d => (
                   <div
-                    onClick={() => {
-                      const c = courses.find(x => x.id === 'IM3012');
-                      if (c) onViewCourseDetail(c);
-                    }}
-                    className="row-span-3 bg-primary text-white p-2 rounded-lg flex flex-col justify-between shadow-xs cursor-pointer hover:ring-2 hover:ring-general-sky transition-all"
+                    key={`sim-day-${d.day}`}
+                    style={{ gridColumn: d.day + 1, gridRow: 1 }}
+                    className={`flex flex-col items-center py-1.5 rounded-lg text-xs ${
+                      d.day === 5
+                        ? 'bg-surface-container-high text-primary font-bold'
+                        : 'bg-surface-container-low text-primary'
+                    }`}
                   >
-                    <span className="text-[10px] bg-white/20 px-1 py-0.2 rounded w-fit font-bold">必修 3.0</span>
-                    <span className="font-bold text-xs truncate">醫療資訊FHIR</span>
-                    <span className="text-[10px] text-white/80">T401 • 陳建彰</span>
+                    <span className="text-[10px] text-text-muted">週{d.zh}</span>
+                    <span className="font-bold text-xs">{d.en}</span>
                   </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  {/* Friday Ethics Recommended block */}
-                  {hasAddedRecommended ? (
+                ))}
+
+                {/* Col 1: Period Time Indicators */}
+                {SIM_PERIODS.map(p => (
+                  <div
+                    key={`sim-time-${p.period}`}
+                    style={{ gridColumn: 1, gridRow: simPeriodToRow(p.period) }}
+                    className="flex flex-col justify-center items-center bg-surface-container-low/70 rounded-lg p-1 text-center border border-border-subtle/60 h-full min-h-[58px]"
+                  >
+                    <span className="font-bold text-primary text-[11px]">{p.period}</span>
+                    <span className="text-[9px] text-text-muted">{p.time}</span>
+                  </div>
+                ))}
+
+                {/* Row 6: Lunch Break */}
+                <div
+                  style={{ gridColumn: 1, gridRow: 6 }}
+                  className="flex flex-col justify-center items-center bg-surface-container-low/70 rounded-lg p-1 text-center border border-border-subtle/60"
+                >
+                  <span className="font-bold text-[10px] text-text-muted">午休</span>
+                  <span className="text-[8px] text-text-muted">12:00</span>
+                </div>
+                <div
+                  style={{ gridColumn: '2 / 7', gridRow: 6 }}
+                  className="bg-surface-container-high/40 rounded-lg py-1 px-3 flex items-center justify-between text-text-muted text-[10px] border border-border-subtle/40"
+                >
+                  <span>12:00 - 13:30 午膳與臨床交班時間</span>
+                  <span className="text-secondary font-semibold hidden sm:inline">午休 90 分鐘</span>
+                </div>
+
+                {/* Friday Recommended Slot (if not added yet) */}
+                {!hasAddedRecommended && (
+                  <div
+                    style={{
+                      gridColumn: 6,
+                      gridRow: `${simPeriodToRow(2)} / ${simPeriodToRow(3) + 1}`,
+                    }}
+                    onClick={handleAddRecommended}
+                    className="bg-clinical-purple/10 border-2 border-dashed border-clinical-purple text-clinical-purple p-2 rounded-lg flex flex-col justify-between cursor-pointer hover:bg-clinical-purple/20 transition-all shadow-2xs group"
+                    title="點擊試排入週五通識《醫學倫理與科技法規》"
+                  >
+                    <span className="text-[9px] bg-clinical-purple text-white px-1.5 py-0.2 rounded w-fit font-bold shadow-2xs">
+                      通識推薦
+                    </span>
+                    <span className="font-bold text-xs truncate">醫學倫理法規</span>
+                    <span className="text-[10px] text-clinical-purple/80 group-hover:text-clinical-purple font-semibold">
+                      + 點擊試排 2.0學分
+                    </span>
+                  </div>
+                )}
+
+                {/* Scheduled Simulation Courses */}
+                {simCoursePlacements.map((placement, idx) => {
+                  const { course, startPeriod, endPeriod, rowStart, rowEnd, col, isTier2 } = placement;
+                  const isMultiPeriod = endPeriod > startPeriod;
+
+                  return (
                     <div
-                      onClick={() => {
-                        const c = courses.find(x => x.id === 'GE2109');
-                        if (c) onViewCourseDetail(c);
+                      key={`sim-course-${course.id}-${startPeriod}-${idx}`}
+                      style={{
+                        gridColumn: col,
+                        gridRow: `${rowStart} / ${rowEnd}`,
                       }}
-                      className="row-span-2 bg-clinical-purple text-white p-2 rounded-lg flex flex-col justify-between shadow-xs cursor-pointer hover:ring-2 hover:ring-primary transition-all animate-in zoom-in"
+                      onClick={() => onViewCourseDetail(course)}
+                      className={`p-2 rounded-lg flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group z-10 ${
+                        isTier2
+                          ? 'bg-tertiary-fixed-dim/25 border-dashed border-tertiary-fixed-dim text-on-surface'
+                          : course.category.includes('必修')
+                          ? 'bg-primary-container text-white border-primary/30'
+                          : course.category.includes('跨') || course.isCrossDisciplinary
+                          ? 'bg-secondary text-white border-secondary/30'
+                          : course.category.includes('通識')
+                          ? 'bg-clinical-purple text-white border-purple-400/30'
+                          : 'bg-surface-container-highest text-on-surface border-border-subtle'
+                      }`}
+                      title={`${course.name} (${course.code}) | ${course.location} | ${course.teacher}`}
                     >
-                      <span className="text-[10px] bg-white/20 px-1 py-0.2 rounded w-fit font-bold">通識 2.0</span>
-                      <span className="font-bold text-xs truncate">醫學倫理法規</span>
-                      <span className="text-[10px] text-white/80">B101 • 零碰撞</span>
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span
+                            className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                              isTier2
+                                ? 'bg-tertiary text-white'
+                                : 'bg-white/20'
+                            }`}
+                          >
+                            {isTier2 ? '備案 (Tier 2)' : `${course.category.slice(0, 2)} ${course.credits.toFixed(1)}`}
+                          </span>
+                          <span className="text-[9px] opacity-80 font-mono">
+                            {isMultiPeriod ? `P${startPeriod}-${endPeriod}` : `P${startPeriod}`}
+                          </span>
+                        </div>
+                        <span className="font-bold text-xs truncate block leading-tight mt-0.5">
+                          {course.name}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] opacity-85 mt-1 pt-1 border-t border-white/10">
+                        <span className="truncate max-w-[80px]">{course.location || course.room}</span>
+                        <span className="truncate max-w-[65px] opacity-80">{course.teacher}</span>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="row-span-2 bg-clinical-purple/15 border-2 border-dashed border-clinical-purple text-clinical-purple p-2 rounded-lg flex flex-col justify-between">
-                      <span className="text-[9px] bg-clinical-purple text-white px-1 py-0.2 rounded w-fit font-bold">
-                        推薦排入
-                      </span>
-                      <span className="font-bold text-xs">醫學倫理與法規</span>
-                      <span className="text-[10px]">點左側試排</span>
-                    </div>
-                  )}
-                </div>
+                  );
+                })}
 
-                {/* Period 3 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">3</span>
-                    <span className="text-[9px] text-text-muted">10:10</span>
-                  </div>
-                  <div className="hidden"></div>
-                  <div className="hidden"></div>
-                  {/* Wed P3-4: Smart Nursing */}
+                {/* Unified Empty Slots */}
+                {simEmptySlots.map(slot => (
                   <div
-                    onClick={() => {
-                      const c = courses.find(x => x.id === 'NUR3402');
-                      if (c) onViewCourseDetail(c);
+                    key={`sim-empty-${slot.day}-${slot.period}`}
+                    style={{
+                      gridColumn: slot.day + 1,
+                      gridRow: simPeriodToRow(slot.period),
                     }}
-                    className="row-span-2 bg-secondary text-white p-2 rounded-lg flex flex-col justify-between shadow-xs cursor-pointer hover:ring-2 hover:ring-general-sky transition-all"
+                    onClick={() => showToast(`週${slot.zh} 第${slot.period}節 (${slot.time}) 為自習空堂時段`)}
+                    className="h-full min-h-[58px] bg-surface-container-lowest/80 hover:bg-surface-container-low/90 rounded-lg border border-dashed border-border-subtle/80 flex flex-col items-center justify-center p-1 text-center transition-all group cursor-pointer shadow-2xs hover:border-primary/40"
+                    title={`週${slot.zh} 第${slot.period}節 (${slot.time}) 自修空堂`}
                   >
-                    <span className="text-[10px] bg-white/20 px-1 py-0.2 rounded w-fit font-bold">跨域 2.0</span>
-                    <span className="font-bold text-xs truncate">智慧護理流程</span>
-                    <span className="text-[10px] text-white/80">親仁B204</span>
-                  </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="hidden"></div>
-                </div>
-
-                {/* Period 4 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">4</span>
-                    <span className="text-[9px] text-text-muted">11:10</span>
-                  </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="hidden"></div>
-                  <div className="hidden"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                </div>
-
-                {/* Lunch Break */}
-                <div className="grid grid-cols-6 gap-1 py-1 bg-surface-container-high/40 rounded text-center items-center">
-                  <span className="text-[10px] text-text-muted">12:00</span>
-                  <span className="col-span-5 text-[10px] text-text-muted tracking-wider">
-                    午膳與臨床交班時間
-                  </span>
-                </div>
-
-                {/* Period 5 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">5</span>
-                    <span className="text-[9px] text-text-muted">13:30</span>
-                  </div>
-                  {/* Mon P5-6: Biostats */}
-                  <div
-                    onClick={() => {
-                      const c = courses.find(x => x.id === 'BIO202');
-                      if (c) onViewCourseDetail(c);
-                    }}
-                    className="row-span-2 bg-secondary-container text-on-secondary-container p-2 rounded-lg flex flex-col justify-between shadow-xs cursor-pointer"
-                  >
-                    <span className="text-[10px] bg-secondary text-white px-1 py-0.2 rounded w-fit font-bold">
-                      選修 2.0
+                    <span className="text-[10px] text-text-muted/40 group-hover:text-primary transition-colors font-medium">
+                      空堂
                     </span>
-                    <span className="font-bold text-xs truncate">生醫統計 R</span>
-                    <span className="text-[10px] text-text-secondary">B204</span>
                   </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  {/* Wed P5-7: Health Big Data */}
-                  <div
-                    onClick={() => {
-                      const c = courses.find(x => x.id === 'IM3105');
-                      if (c) onViewCourseDetail(c);
-                    }}
-                    className="row-span-3 bg-surface-container-highest p-2 rounded-lg flex flex-col justify-between shadow-xs cursor-pointer"
-                  >
-                    <span className="text-[10px] bg-clinical-purple text-white px-1 py-0.2 rounded w-fit font-bold">
-                      選修 3.0
-                    </span>
-                    <span className="font-bold text-xs truncate">健康大數據</span>
-                    <span className="text-[10px] text-text-muted">I401</span>
-                  </div>
-                  {/* Thu P5-6: Contingency slot */}
-                  <div className="row-span-2 bg-tertiary-fixed-dim/30 border border-dashed border-tertiary-fixed-dim p-2 rounded-lg flex flex-col justify-between">
-                    <span className="text-[9px] bg-tertiary-fixed text-on-tertiary-fixed px-1 py-0.2 rounded w-fit font-bold">
-                      備案 (Tier 2)
-                    </span>
-                    <span className="font-bold text-xs text-tertiary">遠距照護IoT</span>
-                    <span className="text-[10px] text-text-muted">中籤候補替換</span>
-                  </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                </div>
-
-                {/* Period 6 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">6</span>
-                    <span className="text-[9px] text-text-muted">14:30</span>
-                  </div>
-                  <div className="hidden"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="hidden"></div>
-                  <div className="hidden"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                </div>
-
-                {/* Period 7 */}
-                <div className="grid grid-cols-6 gap-1 min-h-[48px]">
-                  <div className="bg-surface-container-low/70 p-1 flex flex-col justify-center items-center text-center rounded">
-                    <span className="font-bold text-primary text-[11px]">7</span>
-                    <span className="text-[9px] text-text-muted">15:30</span>
-                  </div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="hidden"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                  <div className="bg-surface-bg rounded p-1"></div>
-                </div>
+                ))}
               </div>
             </div>
           </div>

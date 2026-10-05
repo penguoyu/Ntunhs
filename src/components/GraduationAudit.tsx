@@ -276,6 +276,28 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Item 5: SDGs Indicators Threshold */}
+          <div className="bg-surface-container-lowest p-4 rounded-xl border border-emerald-200/80 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-emerald-600 text-[18px]">eco</span>
+                <span className="font-bold text-sm text-on-surface">校級 SDGs 永續發展目標指標門檻</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  已達標 (超越門檻)
+                </span>
+                <span className="font-bold text-sm text-emerald-800">8 / 4 項</span>
+              </div>
+            </div>
+            <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+              <div className="h-full bg-emerald-600 rounded-full" style={{ width: '100%' }}></div>
+            </div>
+            <span className="text-text-muted text-xs">
+              已修畢課程涵蓋 SDG 3 健康福祉、SDG 4 優質教育、SDG 9 產業創新、SDG 17 永續夥伴等 8 項永續目標，超越北護畢業基本門檻 (4 項)。
+            </span>
+          </div>
         </div>
       </div>
 

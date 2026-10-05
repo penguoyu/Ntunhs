@@ -8,6 +8,7 @@ interface UserProfileModalProps {
   student: StudentProfile;
   onUpdateUser: (updatedUser: UserAccount) => void;
   onUpdateStudent?: (updatedStudent: StudentProfile) => void;
+  onLogout?: () => void;
   showToast: (msg: string) => void;
 }
 
@@ -18,6 +19,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   student,
   onUpdateUser,
   onUpdateStudent,
+  onLogout,
   showToast,
 }) => {
   const [name, setName] = useState(currentUser.name);
@@ -228,21 +230,38 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl border border-border-subtle hover:bg-surface-container text-xs font-bold transition-colors"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center gap-1.5"
-                >
-                  <span className="material-symbols-outlined text-[16px]">save</span>
-                  <span>儲存個人設定</span>
-                </button>
+              <div className="pt-2 flex items-center justify-between gap-2">
+                {onLogout ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onLogout();
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-all flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">logout</span>
+                    <span>登出此帳號</span>
+                  </button>
+                ) : (
+                  <div></div>
+                )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2.5 rounded-xl border border-border-subtle hover:bg-surface-container text-xs font-bold transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">save</span>
+                    <span>儲存個人設定</span>
+                  </button>
+                </div>
               </div>
             </form>
           )}

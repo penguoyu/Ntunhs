@@ -8,7 +8,6 @@ import { CourseSearch } from './components/CourseSearch';
 import { WeeklySchedule } from './components/WeeklySchedule';
 import { SimulationWorkstation } from './components/SimulationWorkstation';
 import { ConflictResolver } from './components/ConflictResolver';
-import { CampusGis } from './components/CampusGis';
 import { GraduationAudit } from './components/GraduationAudit';
 import { CourseDetailModal } from './components/CourseDetailModal';
 import { NotificationModal } from './components/NotificationModal';
@@ -19,6 +18,7 @@ import { AdminCourseManagement } from './components/AdminCourseManagement';
 import { AdminCourseImport } from './components/AdminCourseImport';
 import { AdminUserManagement } from './components/AdminUserManagement';
 import { AdminAnalytics } from './components/AdminAnalytics';
+import { SecurityAuditModal } from './components/SecurityAuditModal';
 
 export default function App() {
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
@@ -34,7 +34,7 @@ export default function App() {
     }
   });
 
-  const [currentUser, setCurrentUser] = useState<UserAccount>(() => {
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
     try {
       const saved = localStorage.getItem('ntunhs_current_user');
       if (saved) {
@@ -58,7 +58,7 @@ export default function App() {
 
   // Current tab - default is Student Course Search
   const [currentTab, setCurrentTab] = useState<ActiveTab>(() => {
-    return currentUser.role === 'admin' ? 'admin-courses' : 'search-courses';
+    return currentUser?.role === 'admin' ? 'admin-courses' : 'search-courses';
   });
 
   // Dynamic Courses catalog with localStorage persistence
@@ -119,10 +119,10 @@ export default function App() {
 
   // Modal inspection states
   const [inspectingCourse, setInspectingCourse] = useState<Course | null>(null);
-  const [gisTargetCourse, setGisTargetCourse] = useState<Course | null>(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
+  const [isSecurityAuditOpen, setIsSecurityAuditOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Persistence to local storage
@@ -131,7 +131,11 @@ export default function App() {
   }, [users]);
 
   useEffect(() => {
-    localStorage.setItem('ntunhs_current_user', JSON.stringify(currentUser));
+    if (currentUser) {
+      localStorage.setItem('ntunhs_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('ntunhs_current_user');
+    }
   }, [currentUser]);
 
   useEffect(() => {
@@ -188,12 +192,18 @@ export default function App() {
     }
   };
 
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setCurrentTab('search-courses');
+    showToast('您已成功安全登出系統。目前為訪客瀏覽模式');
+  };
+
   const handleRegisterUser = (newUser: UserAccount) => {
     setUsers(prev => [newUser, ...prev]);
   };
 
   const handleQuickSwitchRole = () => {
-    if (currentUser.role === 'admin') {
+    if (!currentUser || currentUser.role === 'admin') {
       const studentUser = users.find(u => u.role === 'student' && u.status === 'active') || INITIAL_USERS[2];
       setCurrentUser(studentUser);
       setCurrentTab('search-courses');
@@ -247,7 +257,7 @@ export default function App() {
 
   const handleUpdateUser = (updatedUser: UserAccount) => {
     setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-    if (currentUser.id === updatedUser.id) {
+    if (currentUser && currentUser.id === updatedUser.id) {
       setCurrentUser(updatedUser);
     }
   };
@@ -280,12 +290,6 @@ export default function App() {
     }
   };
 
-  const handleNavigateToGis = (course: Course) => {
-    setGisTargetCourse(course);
-    setCurrentTab('campus-gis');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleApplyToSchedule = () => {
     const merged = Array.from(new Set([...scheduleIds, ...tier1Ids]));
     setScheduleIds(merged);
@@ -313,13 +317,13 @@ export default function App() {
   return (
     <div
       className={`min-h-screen bg-surface text-on-surface flex flex-col font-sans transition-all ${
-        deviceMode === 'mobile' ? 'items-center bg-slate-900 py-0 sm:py-6' : ''
+        deviceMode === 'mobile' ? 'items-center bg-slate-900 py-0 sm:py-6 px-0 sm:px-4' : ''
       }`}
     >
       <div
         className={`w-full flex flex-col min-h-screen ${
           deviceMode === 'mobile'
-            ? 'max-w-[430px] bg-surface rounded-none sm:rounded-[36px] shadow-2xl overflow-hidden border-0 sm:border-[8px] sm:border-slate-800 relative'
+            ? 'max-w-[430px] bg-surface rounded-none sm:rounded-[36px] shadow-2xl overflow-y-auto sm:max-h-[92vh] border-0 sm:border-[8px] sm:border-slate-800 relative'
             : 'max-w-full'
         }`}
       >
@@ -343,14 +347,18 @@ export default function App() {
           onOpenLogin={() => setIsLoginModalOpen(true)}
           onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
           onQuickSwitchRole={handleQuickSwitchRole}
+          onLogout={handleLogout}
+          onOpenSecurityAudit={() => setIsSecurityAuditOpen(true)}
         />
 
         {/* Content View Container */}
         <main
           className={`flex-1 w-full pb-28 sm:pb-32 xl:pb-16 ${
             deviceMode === 'mobile' 
-              ? currentUser.role === 'admin' ? 'pt-28 px-3' : 'pt-20 px-3' 
-              : 'pt-20 xl:pt-24 px-3 sm:px-6 xl:px-10'
+              ? 'pt-4 px-3' 
+              : currentUser?.role === 'admin'
+                ? 'pt-28 sm:pt-32 xl:pt-24 px-3 sm:px-6 xl:px-10 max-w-[1680px] mx-auto'
+                : 'pt-20 sm:pt-24 xl:pt-24 px-3 sm:px-6 xl:px-10 max-w-[1680px] mx-auto'
           }`}
         >
           {/* ========================================= */}
@@ -406,7 +414,6 @@ export default function App() {
               onToggleCart={handleToggleCart}
               onToggleFavorite={handleToggleFavorite}
               onViewCourseDetail={course => setInspectingCourse(course)}
-              onNavigateToGis={handleNavigateToGis}
               onGoToSimulation={() => {
                 setCurrentTab('simulation-cart');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -420,7 +427,6 @@ export default function App() {
             <WeeklySchedule
               scheduleCourses={scheduleCourses}
               onViewCourseDetail={course => setInspectingCourse(course)}
-              onNavigateToGis={handleNavigateToGis}
               onOpenConflictResolver={() => {
                 setCurrentTab('conflict-resolver');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -469,18 +475,6 @@ export default function App() {
             />
           )}
 
-          {currentTab === 'campus-gis' && (
-            <CampusGis
-              targetCourse={gisTargetCourse}
-              onViewCourseDetail={course => setInspectingCourse(course)}
-              onBack={() => {
-                setCurrentTab('my-schedule');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              showToast={showToast}
-            />
-          )}
-
           {currentTab === 'graduation-audit' && (
             <GraduationAudit
               student={studentProfile}
@@ -512,6 +506,7 @@ export default function App() {
                 setCurrentTab('admin-courses');
                 showToast(`已切換為教務處課務管理員身分：${adminUser.name}`);
               }}
+              onLogout={handleLogout}
               showToast={showToast}
             />
           )}
@@ -528,10 +523,16 @@ export default function App() {
             </div>
             <div className="flex items-center gap-4 text-text-secondary">
               <button 
-                onClick={() => setIsUserProfileModalOpen(true)} 
+                onClick={() => {
+                  if (currentUser) {
+                    setIsUserProfileModalOpen(true);
+                  } else {
+                    setIsLoginModalOpen(true);
+                  }
+                }} 
                 className="hover:text-primary transition-colors font-medium"
               >
-                個人帳號管理
+                {currentUser ? '個人帳號管理' : '校務帳號登入'}
               </button>
               <button 
                 onClick={() => setIsLoginModalOpen(true)} 
@@ -539,6 +540,14 @@ export default function App() {
               >
                 切換登入身分
               </button>
+              {currentUser && (
+                <button 
+                  onClick={handleLogout}
+                  className="hover:text-rose-600 text-rose-500 transition-colors font-medium"
+                >
+                  安全登出
+                </button>
+              )}
               <button onClick={() => showToast('已下載選課法規與選修修課須知 (PDF)')} className="hover:text-primary transition-colors">
                 選課法規與須知
               </button>
@@ -561,7 +570,7 @@ export default function App() {
           }}
           cartCount={cart.length}
           hasConflict={true}
-          userRole={currentUser.role}
+          userRole={currentUser?.role}
           deviceMode={deviceMode}
         />
 
@@ -574,7 +583,6 @@ export default function App() {
             onToggleCart={handleToggleCart}
             onToggleFavorite={handleToggleFavorite}
             onClose={() => setInspectingCourse(null)}
-            onNavigateToGis={handleNavigateToGis}
             showToast={showToast}
           />
         )}
@@ -597,18 +605,28 @@ export default function App() {
           users={users}
           onLogin={handleLogin}
           onRegister={handleRegisterUser}
+          onLogout={handleLogout}
           showToast={showToast}
         />
 
         {/* User Profile Modal */}
-        <UserProfileModal
-          isOpen={isUserProfileModalOpen}
-          onClose={() => setIsUserProfileModalOpen(false)}
-          currentUser={currentUser}
-          student={studentProfile}
-          onUpdateUser={handleUpdateUser}
-          onUpdateStudent={setStudentProfile}
-          showToast={showToast}
+        {currentUser && (
+          <UserProfileModal
+            isOpen={isUserProfileModalOpen}
+            onClose={() => setIsUserProfileModalOpen(false)}
+            currentUser={currentUser}
+            student={studentProfile}
+            onUpdateUser={handleUpdateUser}
+            onUpdateStudent={setStudentProfile}
+            onLogout={handleLogout}
+            showToast={showToast}
+          />
+        )}
+
+        {/* Security Compliance & Vulnerability Audit Certificate Modal */}
+        <SecurityAuditModal
+          isOpen={isSecurityAuditOpen}
+          onClose={() => setIsSecurityAuditOpen(false)}
         />
 
         {/* Global Toast Notification */}

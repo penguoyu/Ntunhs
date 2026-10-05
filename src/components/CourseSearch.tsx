@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Course, StudentProfile } from '../types';
+import { Course, StudentProfile, SDG_LIST } from '../types';
 
 interface CourseSearchProps {
   courses: Course[];
@@ -8,7 +8,6 @@ interface CourseSearchProps {
   onToggleCart: (courseId: string) => void;
   onToggleFavorite: (courseId: string) => void;
   onViewCourseDetail: (course: Course) => void;
-  onNavigateToGis: (course: Course) => void;
   onGoToSimulation: () => void;
   student: StudentProfile;
   totalCredits: number;
@@ -21,7 +20,6 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
   onToggleCart,
   onToggleFavorite,
   onViewCourseDetail,
-  onNavigateToGis,
   onGoToSimulation,
   student,
   totalCredits,
@@ -29,6 +27,12 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedQuickFilter, setSelectedQuickFilter] = useState('全部');
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedTeacher, setAdvancedTeacher] = useState('');
+  const [advancedCategory, setAdvancedCategory] = useState('全部');
+  const [advancedCredits, setAdvancedCredits] = useState('全部');
+  const [advancedDay, setAdvancedDay] = useState('全部');
+  const [advancedEMI, setAdvancedEMI] = useState(false);
+  const [advancedSDG, setAdvancedSDG] = useState('全部');
   const [selectedCollege, setSelectedCollege] = useState<string[]>([
     'IM', 'HA', 'SLP', 'NUR', 'LTC', 'NMW', 'DPC', 'EX', 'IEC', 'GE'
   ]);
@@ -115,7 +119,11 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
         const matchTeacher = course.teacher.toLowerCase().includes(q);
         const matchDesc = course.description.toLowerCase().includes(q);
         const matchTags = course.tags.some(t => t.toLowerCase().includes(q));
-        if (!matchName && !matchCode && !matchTeacher && !matchDesc && !matchTags) {
+        const matchSdgs = (q.includes('sdg') || q.includes('永續') || q.includes('指標')) && (
+          (course.sdgs && course.sdgs.length > 0) ||
+          course.tags.some(t => t.toLowerCase().includes('sdg') || t.toLowerCase().includes('永續'))
+        );
+        if (!matchName && !matchCode && !matchTeacher && !matchDesc && !matchTags && !matchSdgs) {
           return false;
         }
       }
@@ -176,9 +184,118 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
         return false;
       }
 
+      // Advanced teacher filter
+      if (advancedTeacher.trim()) {
+        const t = advancedTeacher.trim().toLowerCase();
+        if (!course.teacher.toLowerCase().includes(t)) {
+          return false;
+        }
+      }
+
+      // Advanced category filter
+      if (advancedCategory !== '全部') {
+        if (advancedCategory === '必修' && !course.category.includes('必修')) return false;
+        if (advancedCategory === '選修' && !course.category.includes('選修')) return false;
+        if (advancedCategory === '通識' && course.college !== '通識中心' && !course.category.includes('通識')) return false;
+        if (advancedCategory !== '必修' && advancedCategory !== '選修' && advancedCategory !== '通識') {
+          if (course.category !== advancedCategory) return false;
+        }
+      }
+
+      // Advanced credits filter
+      if (advancedCredits !== '全部') {
+        const creditNum = parseInt(advancedCredits, 10);
+        if (!isNaN(creditNum) && course.credits !== creditNum) {
+          return false;
+        }
+      }
+
+      // Advanced day filter
+      if (advancedDay !== '全部') {
+        const dayNum = parseInt(advancedDay, 10);
+        if (!isNaN(dayNum) && course.day !== dayNum) {
+          return false;
+        }
+      }
+
+      // Advanced EMI filter
+      if (advancedEMI && !course.isEMI) {
+        return false;
+      }
+
+      // Quick filter SDGs
+      if (selectedQuickFilter === 'SDGs 永續目標' && (!course.sdgs || course.sdgs.length === 0)) {
+        return false;
+      }
+
+      // Advanced SDG filter
+      if (advancedSDG !== '全部') {
+        const targetId = parseInt(advancedSDG, 10);
+        const courseSdgs = course.sdgs && course.sdgs.length > 0 ? course.sdgs : [3, 4];
+        if (!courseSdgs.includes(targetId)) {
+          return false;
+        }
+      }
+
       return true;
     });
-  }, [courses, searchQuery, selectedQuickFilter, selectedCollege, prereqOnly, availableOnly]);
+  }, [
+    courses,
+    searchQuery,
+    selectedQuickFilter,
+    selectedCollege,
+    prereqOnly,
+    availableOnly,
+    advancedTeacher,
+    advancedCategory,
+    advancedCredits,
+    advancedDay,
+    advancedEMI,
+    advancedSDG,
+  ]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery.trim()) count++;
+    if (selectedQuickFilter !== '全部') count++;
+    if (selectedCollege.length < 10) count++;
+    if (prereqOnly) count++;
+    if (availableOnly) count++;
+    if (advancedTeacher.trim()) count++;
+    if (advancedCategory !== '全部') count++;
+    if (advancedCredits !== '全部') count++;
+    if (advancedDay !== '全部') count++;
+    if (advancedEMI) count++;
+    if (advancedSDG !== '全部') count++;
+    return count;
+  }, [
+    searchQuery,
+    selectedQuickFilter,
+    selectedCollege,
+    prereqOnly,
+    availableOnly,
+    advancedTeacher,
+    advancedCategory,
+    advancedCredits,
+    advancedDay,
+    advancedEMI,
+    advancedSDG,
+  ]);
+
+  const resetAllFilters = () => {
+    setSearchQuery('');
+    setSelectedQuickFilter('全部');
+    setSelectedCollege(['IM', 'HA', 'SLP', 'NUR', 'LTC', 'NMW', 'DPC', 'EX', 'IEC', 'GE']);
+    setPrereqOnly(false);
+    setAvailableOnly(false);
+    setAdvancedTeacher('');
+    setAdvancedCategory('全部');
+    setAdvancedCredits('全部');
+    setAdvancedDay('全部');
+    setAdvancedEMI(false);
+    setAdvancedSDG('全部');
+    clearSlots();
+  };
 
   return (
     <div className="flex flex-col w-full max-w-[1680px] mx-auto pb-16">
@@ -251,28 +368,249 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
             <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
               <button
                 onClick={() => setIsAdvancedFilterOpen(!isAdvancedFilterOpen)}
-                className={`flex-1 md:flex-initial h-12 px-5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all ${
+                className={`flex-1 md:flex-initial h-12 px-5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
                   isAdvancedFilterOpen
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-white ring-2 ring-primary/30 ring-offset-2'
                     : 'bg-surface-container hover:bg-surface-container-high text-primary'
                 }`}
+                title="展開/收合進階精準篩選面板"
               >
-                <span className="material-symbols-outlined text-[18px]">tune</span>
-                <span>{isAdvancedFilterOpen ? '收合條件' : '進階檢索'}</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  {isAdvancedFilterOpen ? 'expand_less' : 'tune'}
+                </span>
+                <span>{isAdvancedFilterOpen ? '收合進階檢索' : '進階檢索'}</span>
+                {activeFilterCount > 0 && (
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                    isAdvancedFilterOpen ? 'bg-white text-primary' : 'bg-primary text-white'
+                  }`}>
+                    {activeFilterCount}
+                  </span>
+                )}
               </button>
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedQuickFilter('全部');
-                  clearSlots();
-                }}
-                className="h-12 px-4 rounded-xl bg-surface-container text-primary text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-surface-container-high transition-colors"
+                onClick={resetAllFilters}
+                className="h-12 px-4 rounded-xl bg-surface-container text-primary text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-surface-container-high transition-colors cursor-pointer"
+                title="清空所有搜尋關鍵字與進階條件"
               >
                 <span className="material-symbols-outlined text-[18px]">restart_alt</span>
                 <span className="hidden sm:inline">重置條件</span>
               </button>
             </div>
           </div>
+
+          {/* Advanced Multi-Dimensional Filter Panel (Expanded on Desktop & Mobile) */}
+          {isAdvancedFilterOpen && (
+            <div className="mt-2 p-5 bg-surface-container-lowest border border-primary/20 rounded-2xl shadow-md transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[20px]">tune</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-on-surface">進階多維度精準檢索面板</h3>
+                    <p className="text-[11px] text-text-muted">支援授課教師、修別、上課星期、學分數與全英語授課交叉檢索</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {activeFilterCount > 0 && (
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                      已啟用 {activeFilterCount} 個篩選條件
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setIsAdvancedFilterOpen(false)}
+                    className="p-1.5 rounded-lg text-text-muted hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+                    title="收合進階檢索面板"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Advanced Inputs Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. 授課教師 */}
+                <div>
+                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px] text-primary">person</span>
+                    授課教師姓名
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="輸入教師姓名 (如：洪教授)"
+                      value={advancedTeacher}
+                      onChange={e => setAdvancedTeacher(e.target.value)}
+                      className="w-full h-10 px-3 pr-8 rounded-xl bg-surface-card border border-border-subtle text-xs focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    />
+                    {advancedTeacher && (
+                      <button
+                        onClick={() => setAdvancedTeacher('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-on-surface"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">cancel</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. 課程修別 */}
+                <div>
+                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px] text-secondary">category</span>
+                    課程修別性質
+                  </label>
+                  <select
+                    value={advancedCategory}
+                    onChange={e => setAdvancedCategory(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-surface-card border border-border-subtle text-xs text-on-surface font-medium focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
+                  >
+                    <option value="全部">全部修別</option>
+                    <option value="專業必修">專業必修</option>
+                    <option value="專業選修">專業選修</option>
+                    <option value="博雅通識">博雅通識</option>
+                    <option value="跨系選修">跨系選修 / 跨領域</option>
+                    <option value="臨床實習">臨床實習</option>
+                  </select>
+                </div>
+
+                {/* 3. 授課星期 */}
+                <div>
+                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px] text-general-sky">calendar_month</span>
+                    上課星期
+                  </label>
+                  <select
+                    value={advancedDay}
+                    onChange={e => setAdvancedDay(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-surface-card border border-border-subtle text-xs text-on-surface font-medium focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
+                  >
+                    <option value="全部">全部星期 (週一 ~ 週五)</option>
+                    <option value="1">星期一 (Mon)</option>
+                    <option value="2">星期二 (Tue)</option>
+                    <option value="3">星期三 (Wed)</option>
+                    <option value="4">星期四 (Thu)</option>
+                    <option value="5">星期五 (Fri)</option>
+                  </select>
+                </div>
+
+                {/* 4. 學分數 */}
+                <div>
+                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">counter_1</span>
+                    學分數
+                  </label>
+                  <select
+                    value={advancedCredits}
+                    onChange={e => setAdvancedCredits(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-surface-card border border-border-subtle text-xs text-on-surface font-medium focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
+                  >
+                    <option value="全部">不拘學分</option>
+                    <option value="1">1 學分</option>
+                    <option value="2">2 學分</option>
+                    <option value="3">3 學分</option>
+                    <option value="4">4 學分及以上</option>
+                  </select>
+                </div>
+
+                {/* 5. SDGs 永續目標 */}
+                <div className="sm:col-span-2 lg:col-span-4">
+                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px] text-emerald-600">eco</span>
+                    <span>對應 SDGs 聯合國永續發展目標 (北護校務重點指標)</span>
+                  </label>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <select
+                      value={advancedSDG}
+                      onChange={e => setAdvancedSDG(e.target.value)}
+                      className="h-10 px-3 rounded-xl bg-surface-card border border-border-subtle text-xs text-on-surface font-medium focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer flex-1 min-w-[220px]"
+                    >
+                      <option value="全部">全部 SDGs 永續目標 (不拘)</option>
+                      {SDG_LIST.map(sdg => (
+                        <option key={sdg.id} value={sdg.id.toString()}>
+                          {sdg.code} {sdg.name} ({sdg.enName})
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                      {[3, 4, 9, 10, 17].map(id => {
+                        const item = SDG_LIST.find(s => s.id === id);
+                        if (!item) return null;
+                        const isSelected = advancedSDG === id.toString();
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setAdvancedSDG(isSelected ? '全部' : id.toString())}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                              isSelected
+                                ? 'text-white shadow-xs'
+                                : 'bg-surface-card hover:bg-surface-container text-text-secondary border border-border-subtle'
+                            }`}
+                            style={isSelected ? { backgroundColor: item.color } : {}}
+                          >
+                            <span className="material-symbols-outlined text-[13px]">{item.icon}</span>
+                            <span>{item.code} {item.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick toggles row */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-border-subtle">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={availableOnly}
+                      onChange={e => setAvailableOnly(e.target.checked)}
+                      className="w-4 h-4 rounded accent-primary cursor-pointer"
+                    />
+                    <span>僅顯示尚有餘額</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={prereqOnly}
+                      onChange={e => setPrereqOnly(e.target.checked)}
+                      className="w-4 h-4 rounded accent-primary cursor-pointer"
+                    />
+                    <span>僅顯示先修及格課程</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={advancedEMI}
+                      onChange={e => setAdvancedEMI(e.target.checked)}
+                      className="w-4 h-4 rounded accent-primary cursor-pointer"
+                    />
+                    <span>EMI 全英語授課</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={resetAllFilters}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-primary hover:bg-surface-container transition-colors cursor-pointer"
+                  >
+                    清除條件
+                  </button>
+                  <button
+                    onClick={() => setIsAdvancedFilterOpen(false)}
+                    className="px-4 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:bg-primary-hover shadow-xs transition-colors cursor-pointer"
+                  >
+                    完成並檢視結果 ({filteredCourses.length})
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Hot Search Queries Bar */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
@@ -852,28 +1190,19 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                       </div>
 
                       {/* Action buttons */}
-                      <div className="grid grid-cols-3 sm:flex items-center gap-1.5 w-full sm:w-auto">
+                      <div className="grid grid-cols-2 sm:flex items-center gap-1.5 w-full sm:w-auto">
                         <button
                           onClick={() => onViewCourseDetail(course)}
-                          className="h-9 px-2 sm:px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-xs flex items-center justify-center gap-1 transition-colors"
-                          title="查看完整課程大綱與評分方式"
+                          className="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          title="查看完整課程大綱、SDGs 永續目標與評定標準"
                         >
                           <span className="material-symbols-outlined text-[15px]">menu_book</span>
-                          <span>大綱</span>
-                        </button>
-
-                        <button
-                          onClick={() => onNavigateToGis(course)}
-                          className="h-9 px-2 sm:px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-xs flex items-center justify-center gap-1 transition-colors"
-                          title="校園建物 GIS 與連通空橋路線"
-                        >
-                          <span className="material-symbols-outlined text-[15px]">map</span>
-                          <span>GIS</span>
+                          <span>課程大綱</span>
                         </button>
 
                         <button
                           onClick={() => onToggleCart(course.id)}
-                          className={`h-9 px-2.5 sm:px-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95 ${
+                          className={`h-9 px-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer ${
                             inCart
                               ? 'bg-secondary text-white hover:opacity-90'
                               : 'bg-primary text-white hover:bg-primary-container'

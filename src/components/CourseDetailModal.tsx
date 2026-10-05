@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Course } from '../types';
+import { Course, SDG_LIST } from '../types';
 
 interface CourseDetailModalProps {
   course: Course;
@@ -8,7 +8,6 @@ interface CourseDetailModalProps {
   onToggleCart: (courseId: string) => void;
   onToggleFavorite: (courseId: string) => void;
   onClose: () => void;
-  onNavigateToGis?: (course: Course) => void;
   showToast: (msg: string) => void;
 }
 
@@ -19,10 +18,20 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   onToggleCart,
   onToggleFavorite,
   onClose,
-  onNavigateToGis,
   showToast,
 }) => {
-  const [activeTab, setActiveTab] = useState<'syllabus' | 'grading' | 'prereq' | 'reviews'>('syllabus');
+  const [activeTab, setActiveTab] = useState<'syllabus' | 'sdgs' | 'competencies' | 'grading' | 'prereq' | 'reviews'>('syllabus');
+
+  const courseSdgs = course.sdgs && course.sdgs.length > 0 ? course.sdgs : [3, 4];
+  const activeSdgsList = SDG_LIST.filter(s => courseSdgs.includes(s.id));
+
+  const competencies = course.coreCompetencies || [
+    { code: 'a', name: '專業核心知識', percentage: 30 },
+    { code: 'b', name: '溝通表達與協作', percentage: 25 },
+    { code: 'c', name: '實務問題解決', percentage: 20 },
+    { code: 'd', name: '持續自我學習', percentage: 15 },
+    { code: 'e', name: '社會關懷與倫理', percentage: 10 },
+  ];
 
   const handleShare = () => {
     if (navigator.share) {
@@ -90,6 +99,18 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div className="bg-surface-card rounded-2xl p-5 shadow-sm border border-border-subtle">
             <div className="flex items-start justify-between gap-3">
               <div>
+                <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">eco</span>
+                    SDGs 永續目標認證
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">
+                    {course.category}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">
+                    {course.department}
+                  </span>
+                </div>
                 <h2 className="font-bold text-xl sm:text-2xl text-primary tracking-tight">
                   {course.name}
                 </h2>
@@ -128,6 +149,32 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   <span>{course.timeStr}</span>
                 </div>
               </div>
+
+              {/* SDGs Badges in Hero */}
+              <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-border-subtle/60">
+                <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 shrink-0">
+                  <span className="material-symbols-outlined text-[15px]">eco</span>
+                  SDGs 永續目標：
+                </span>
+                {activeSdgsList.map(item => (
+                  <span
+                    key={item.id}
+                    className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1"
+                    style={{ backgroundColor: item.color }}
+                  >
+                    <span className="material-symbols-outlined text-[12px]">{item.icon}</span>
+                    <span>{item.code} {item.name}</span>
+                  </span>
+                ))}
+              </div>
+
+              {course.officeHours && (
+                <div className="flex items-center gap-1.5 text-[11px] text-text-secondary pt-1.5 border-t border-border-subtle/60">
+                  <span className="material-symbols-outlined text-text-muted text-[15px]">contact_support</span>
+                  <span className="font-semibold text-primary">提供諮詢時間：</span>
+                  <span className="font-medium text-on-surface">{course.officeHours}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -189,7 +236,9 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {[
               { id: 'syllabus', label: '課程大綱與週次' },
-              { id: 'grading', label: '成績評量標準' },
+              { id: 'sdgs', label: `SDGs 永續目標 (${activeSdgsList.length})` },
+              { id: 'competencies', label: '核心能力指標' },
+              { id: 'grading', label: '成績評定標準' },
               { id: 'prereq', label: '先修與擋修規則' },
               { id: 'reviews', label: '學長姐修課心得' },
             ].map(tab => (
@@ -206,6 +255,142 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Tab: SDGs 永續目標 */}
+          {activeTab === 'sdgs' && (
+            <div className="space-y-4 text-xs animate-in fade-in">
+              <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle">
+                <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                      <span className="material-symbols-outlined text-[20px]">eco</span>
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
+                        <span>本課程對應聯合國永續發展目標 (SDGs 17 項目標)</span>
+                        <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          北護校務規範
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-text-muted">
+                        本校落實教育部與聯合國永續發展藍圖 (SDGs)，本門課已認列 {activeSdgsList.length} 項核心永續指標
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    已認證 {activeSdgsList.length} 項
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                  {activeSdgsList.map(item => (
+                    <div
+                      key={item.id}
+                      className="p-3.5 rounded-xl border border-border-subtle bg-surface-container-low flex items-start gap-3 shadow-2xs"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs"
+                        style={{ backgroundColor: item.color }}
+                      >
+                        <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="font-bold text-xs text-on-surface">
+                            {item.code} {item.name}
+                          </span>
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.2 rounded">
+                            已勾稽
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-text-muted block font-mono">{item.enName}</span>
+                        <p className="text-[11px] text-text-secondary mt-1 line-clamp-2 leading-relaxed">
+                          {item.id === 3
+                            ? '致力於提升全民健康與福祉，培育醫療照護、臨床技能與健康促進專業人才。'
+                            : item.id === 4
+                            ? '提供包容、公平的優質教育與專業培訓，落實臨床終身學習與高階實作演練。'
+                            : item.id === 9
+                            ? '促進醫療科技創新、資訊科技應用與智慧醫院基礎建設之研發落地。'
+                            : item.id === 10
+                            ? '消弭健康照護資源不平等，推廣弱勢族群、偏鄉醫療與長照可及性。'
+                            : item.id === 17
+                            ? '促進跨領域、跨學院與跨醫療院所多元夥伴合作，深化產學研鏈結。'
+                            : '落實永續發展目標精神，融入專業課程教學設計與實習活動。'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: 核心能力指標 (Core Competencies matching IMG_0342.png) */}
+          {activeTab === 'competencies' && (
+            <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle space-y-4 text-xs animate-in fade-in">
+              <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">psychology</span>
+                  </span>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-primary">
+                      {course.department} 實施之科系所（專業）核心能力指標
+                    </h4>
+                    <p className="text-[11px] text-text-muted">
+                      依教育部技職專業核心能力指標與校級五大素養評量
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                  小計：100%
+                </span>
+              </div>
+
+              {/* Competency Indicators Bar List matching IMG_0342.png */}
+              <div className="space-y-3 pt-1">
+                {competencies.map(c => (
+                  <div key={c.code} className="flex items-center gap-3">
+                    <div className="w-28 sm:w-36 flex items-center gap-1.5 shrink-0">
+                      <span className="text-emerald-600 font-bold text-xs">✓</span>
+                      <span className="text-text-muted font-bold text-xs font-mono">{c.code}</span>
+                      <span className="text-text-muted text-xs">—</span>
+                      <span className="font-bold text-on-surface text-xs truncate">{c.name}</span>
+                    </div>
+
+                    <div className="w-10 text-right font-bold text-xs text-primary shrink-0">
+                      {c.percentage}%
+                    </div>
+
+                    <div className="flex-1 bg-surface-container rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          c.percentage > 0 ? 'bg-primary' : 'bg-transparent'
+                        }`}
+                        style={{ width: `${c.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Office Hours Info Card */}
+              {course.officeHours && (
+                <div className="mt-4 p-3.5 rounded-xl bg-surface-container-low border border-border-subtle flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px] text-primary">schedule</span>
+                    <div>
+                      <span className="font-bold text-xs text-on-surface block">授課教師課後諮詢時間</span>
+                      <span className="text-[11px] text-text-muted">歡迎學生於諮詢時段至研究室研討課業或生涯輔導</span>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-lg bg-surface-card text-xs font-bold text-primary border border-border-subtle">
+                    {course.officeHours}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tab 1: Syllabus */}
           {activeTab === 'syllabus' && (
@@ -425,33 +610,78 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Clinical Simulation Center Lab Preview */}
-          <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle">
-            <div className="flex items-center justify-between mb-2 text-xs">
-              <span className="text-text-muted">上課場域實景預覽</span>
-              <span className="text-primary font-bold flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px]">photo_camera</span>
-                學思樓臨床技能中心
+          {/* SDGs 聯合國永續發展目標 (SDGs 目標) - Official NTUNHS system10.ntunhs.edu.tw format */}
+          <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle">
+            <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">eco</span>
+                </span>
+                <div>
+                  <h4 className="font-bold text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
+                    <span>SDGs 目標（聯合國 17 項永續發展目標）</span>
+                    <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      北護校務規範
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-text-muted mt-0.5">
+                    本校培育具備永續發展關懷之專業人才，本課程已通過校級永續指標對應檢核
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
+                已對應 {activeSdgsList.length} 項指標
               </span>
             </div>
-            <div className="w-full h-36 rounded-xl overflow-hidden shadow-xs border border-border-subtle bg-surface-container flex items-center justify-center relative">
-              <img
-                alt="北護學思樓臨床技能中心實景"
-                className="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr2nMcfE0kSxaD3MLyXFeiIOwVhA7YPRxmwMVuDXaUBQjxnmmVgi85GzL77fjLmwvb4BglaV2JW5pmpk9PtQ4DW_tGTqAXXmX6XMxSBYHWaSJDYOaYWcDHguNP7BT8ALEDJlXbLG_04tK7FGEa8wUj0KZM7xrZGpY4n-X_-m0y0pgkV54dulCxsk0rDzPStGHqv8ZMkX77O962zEomVAWzEZb9V-CZCJLSWGxcExK_xRpR1uocnDwO"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-              <span className="material-symbols-outlined text-primary text-[32px] absolute pointer-events-none">
-                domain
-              </span>
+
+            {/* Active SDGs Highlight Badges */}
+            <div className="flex flex-wrap gap-2 mb-3.5 p-3 rounded-xl bg-surface-container-low border border-border-subtle">
+              {activeSdgsList.map(item => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-xs"
+                  style={{ backgroundColor: item.color }}
+                >
+                  <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                  <span>{item.code} {item.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* 17 SDGs Official Checklist Table (Matching NTUNHS system10.ntunhs.edu.tw) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              {SDG_LIST.map(sdg => {
+                const isChecked = courseSdgs.includes(sdg.id);
+                return (
+                  <div
+                    key={sdg.id}
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-all ${
+                      isChecked
+                        ? 'bg-emerald-50/80 border-emerald-300 font-bold text-emerald-950 shadow-xs'
+                        : 'bg-surface-container-lowest/50 border-border-subtle/60 text-text-muted opacity-70'
+                    }`}
+                  >
+                    <span
+                      className={`w-4 h-4 rounded flex items-center justify-center text-[12px] shrink-0 ${
+                        isChecked
+                          ? 'bg-emerald-600 text-white font-bold'
+                          : 'border border-border-subtle bg-white text-transparent'
+                      }`}
+                    >
+                      {isChecked ? '✓' : ''}
+                    </span>
+                    <span className="truncate" title={`${sdg.code} ${sdg.name}`}>
+                      {sdg.code} {sdg.name}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Fixed Modal Bottom Action Bar */}
-        <div className="p-4 bg-surface-card border-t border-border-subtle flex flex-col gap-2 shrink-0">
+        <div className="p-4 pb-safe bg-surface-card border-t border-border-subtle flex flex-col gap-2 shrink-0">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 text-secondary font-bold">
               <span className="material-symbols-outlined text-[16px]">verified</span>
@@ -472,19 +702,6 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               </span>
               <span>{isInCart ? '已在模擬課表中 (點擊移出)' : '加入選課模擬車'}</span>
             </button>
-
-            {onNavigateToGis && (
-              <button
-                onClick={() => {
-                  onClose();
-                  onNavigateToGis(course);
-                }}
-                className="px-4 py-3 rounded-xl bg-surface-container text-primary font-bold text-xs flex items-center justify-center hover:bg-surface-container-high transition-colors"
-                title="查看教室 GIS 導航"
-              >
-                <span className="material-symbols-outlined text-[20px]">map</span>
-              </button>
-            )}
           </div>
         </div>
       </div>

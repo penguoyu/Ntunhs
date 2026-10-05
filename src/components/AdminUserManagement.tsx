@@ -3,7 +3,7 @@ import { UserAccount, UserRole } from '../types';
 
 interface AdminUserManagementProps {
   users: UserAccount[];
-  currentUser: UserAccount;
+  currentUser: UserAccount | null;
   onAddUser: (user: UserAccount) => void;
   onUpdateUser: (user: UserAccount) => void;
   onDeleteUser: (userId: string) => void;
@@ -142,7 +142,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
 
   const confirmDelete = () => {
     if (!deletingUser) return;
-    if (deletingUser.id === currentUser.id) {
+    if (currentUser && deletingUser.id === currentUser.id) {
       showToast('無法刪除目前正在登入使用的管理員帳號！');
       setDeletingUser(null);
       return;
@@ -301,7 +301,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
       {viewLayout === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredUsers.map(user => {
-            const isCurrent = user.id === currentUser.id;
+            const isCurrent = currentUser ? user.id === currentUser.id : false;
             return (
               <div
                 key={user.id}
@@ -420,7 +420,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {filteredUsers.map(user => {
-                  const isCurrent = user.id === currentUser.id;
+                  const isCurrent = currentUser ? user.id === currentUser.id : false;
                   return (
                     <tr key={user.id} className="hover:bg-surface-container-low transition-colors">
                       <td className="py-3.5 px-4">

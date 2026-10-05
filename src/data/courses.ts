@@ -27,6 +27,7 @@ export const COURSES_DATA: Course[] = [
     college: '健康科技學院',
     teacher: '陳政憲 特聘教授',
     teacherTitle: '特聘教授 (校內分機 2841)',
+    officeHours: '週二 13:30~15:30 (資科大樓 I408)',
     location: '資科大樓 I502 專業實驗室',
     building: '資訊科技大樓',
     room: 'I502',
@@ -37,6 +38,14 @@ export const COURSES_DATA: Course[] = [
     capacity: 50,
     isEMI: false,
     isCrossDisciplinary: true,
+    sdgs: [3, 4, 9, 17],
+    coreCompetencies: [
+      { code: 'a', name: '資訊科技應用', percentage: 35 },
+      { code: 'b', name: '問題解決', percentage: 25 },
+      { code: 'c', name: '持續學習', percentage: 15 },
+      { code: 'd', name: '團隊合作', percentage: 15 },
+      { code: 'e', name: '溝通表達', percentage: 10 }
+    ],
     prerequisite: '先修條件：已滿足（物件導向程式設計 及格）',
     prerequisitePassed: true,
     description: '深入探討現代智慧醫院核心系統（HIS/EMR/PACS），聚焦 HL7 FHIR 國際標準之 RESTful API 架構與臨床資料交換規範，包含校立附設醫院雲端沙盒實作及醫療資安防護演練。',
@@ -44,7 +53,7 @@ export const COURSES_DATA: Course[] = [
     ratingCount: 168,
     passRate: 94.2,
     averageScore: 84.6,
-    tags: ['衝突安全 (無衝堂)', '資管系核心必修', '智慧醫療認證', '附醫實務沙盒'],
+    tags: ['衝突安全 (無衝堂)', '資管系核心必修', '智慧醫療認證', '附醫實務沙盒', 'SDG 3 健康福祉', 'SDG 9 工業創新'],
     accentColor: 'primary',
     syllabus: {
       objectives: '培養學生具備跨域醫療資料系統分析、FHIR交換規範對接實務，奠定智慧醫療資訊研發基礎。',
@@ -1989,6 +1998,82 @@ export const COURSES_DATA: Course[] = [
   // ==========================================
   // 【人類發展與健康學院 - 生死與健康心理諮商系】北護王牌特色科系
   // ==========================================
+
+  // 55. 人類發展學 (真實北護課查系統 system10.ntunhs.edu.tw 開課資訊)
+  {
+    id: 'DPC1001',
+    code: '1151-01A0',
+    name: '人類發展學',
+    englishName: 'Human Development',
+    credits: 2.0,
+    category: '專業必修',
+    department: '生死與健康心理諮商系 (DPC)',
+    college: '人類發展與健康學院',
+    teacher: '鄧明宇 教授',
+    teacherTitle: '專任副教授 / 諮商心理師 (校內分機 3125)',
+    officeHours: '週四 12:30~13:30',
+    location: '親仁樓 G209 專業教室',
+    building: '親仁樓',
+    room: 'G209',
+    day: 4, // Thursday
+    periods: [3, 4],
+    timeStr: '週四 10:10-12:00 (第 3-4 節)',
+    enrolled: 48,
+    capacity: 55,
+    isEMI: false,
+    isCrossDisciplinary: true,
+    sdgs: [3, 4, 17],
+    coreCompetencies: [
+      { code: 'a', name: '溝通表達', percentage: 30 },
+      { code: 'b', name: '持續學習', percentage: 10 },
+      { code: 'c', name: '人際互動', percentage: 20 },
+      { code: 'd', name: '團隊合作', percentage: 20 },
+      { code: 'e', name: '問題解決', percentage: 20 },
+      { code: 'f', name: '創新', percentage: 0 },
+      { code: 'g', name: '工作責任及紀律', percentage: 0 },
+      { code: 'h', name: '資訊科技應用', percentage: 0 },
+    ],
+    prerequisite: '無先修限制（本系日間部四技一年級必修）',
+    prerequisitePassed: true,
+    description: '本課程旨在促使學生理解家庭如何型塑自己的發展，進而可以擴展理解他人發展的視框，作為諮商輔導的基礎。內容包含生命週期、自我價值、生命力、家庭溝通模式、家庭規條、與人連結。',
+    rating: 4.8,
+    ratingCount: 142,
+    passRate: 96.5,
+    averageScore: 86.8,
+    tags: ['生死系必修', 'SDG 3 健康福祉', 'SDG 4 優質教育', 'SDG 17 夥伴關係', '諮商基礎'],
+    accentColor: 'secondary',
+    syllabus: {
+      objectives: '促使學生理解家庭如何型塑自己的發展，進而擴展理解他人發展的視框，奠定諮商輔導實務基礎。',
+      weeks: [
+        { week: '1', tag: '導論', title: '課程介紹、報告的倫理問題', desc: '修課規範、倫理守則與分組討論架構說明。' },
+        { week: '2', tag: '學理', title: '人類發展之基礎理論、研究方法', desc: '皮亞傑認知發展論、艾瑞克森心理社會期及生態系統論。' },
+        { week: '3', tag: '生理', title: '遺傳與環境對發展的影響、嬰兒生理與動作發展', desc: '大腦發育、神經可塑性與反射動作成熟。' },
+        { week: '4', tag: '認知', title: '嬰兒的認知發展、社會發展', desc: '客體恆存、依附關係（Attachment）與情緒表達。' },
+        { week: '5', tag: '語言', title: '嬰兒的語言發展與早期互動', desc: '語言獲取機制、親子互動對話共讀。' },
+        { week: '6-8', tag: '兒童', title: '幼兒期與學齡期身心社會發展', desc: '道德發展、遊戲角色、同儕關係形成。' },
+        { week: '9', tag: '期中考', title: '期中考核與個案觀察筆試', desc: '兒童觀察報告與期中進度考核。' },
+        { week: '10-14', tag: '青少年', title: '青少年期自我認同、情緒與社會適應', desc: '認同混淆、家庭規條衝撞、同儕團體影響。' },
+        { week: '15-17', tag: '成年老年', title: '成年期親密關係、中年過渡與老年臨終反思', desc: '跨世代訪談報告分析與家庭溝通模式重構。' },
+        { week: '18', tag: '期末考', title: '期末線上總結評量與反思回饋', desc: '整合全人生發展歷程之綜合測驗。' }
+      ],
+      grading: [
+        { item: '跨世代訪談報告', percent: 30, desc: '選擇長輩深入訪談家庭生命週期' },
+        { item: '期末考試', percent: 30, desc: '依學期課程教授內容進行線上測驗' },
+        { item: '兒童發展報告', percent: 25, desc: '4-5人一組選擇模擬實驗影片或兒童觀察' },
+        { item: '課室參與平時作業', percent: 15, desc: '出席、上課參與情形、學習作業' }
+      ],
+      textbook: {
+        title: '人類發展 (Human Development)',
+        edition: '作者：林美珍、黃世琤、柯華葳 • 心理出版社',
+        availablePaper: 6,
+        hasEbook: true,
+        callNumber: 'BF713 / L56 (總館2F)'
+      },
+      reviews: [
+        { id: 'rev-dpc1', author: '諮商系二甲 蕭學姊', semester: '113-1', rating: 5, content: '鄧老師非常溫暖有智慧，跨世代訪談報告讓我重新認識家人的生命故事，是非常有深度的好課！' }
+      ]
+    }
+  },
 
   // 56. 悲傷輔導與重大失落危機陪伴實務
   {

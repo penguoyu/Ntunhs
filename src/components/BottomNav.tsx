@@ -20,10 +20,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   const isAdmin = userRole === 'admin';
 
-  const navContainerClass = `fixed bottom-0 z-50 pb-safe bg-surface-card/95 backdrop-blur-xl shadow-[0_-4px_16px_rgba(15,23,42,0.06)] border-t border-border-subtle ${
+  const navContainerClass = `z-40 pb-safe bg-surface-card/95 backdrop-blur-xl shadow-[0_-4px_16px_rgba(15,23,42,0.06)] border-t border-border-subtle ${
     deviceMode === 'mobile'
-      ? 'w-full max-w-[430px] left-1/2 -translate-x-1/2'
-      : 'left-0 w-full xl:hidden'
+      ? 'sticky bottom-0 w-full max-w-[430px]'
+      : 'fixed bottom-0 left-0 w-full xl:hidden'
   }`;
 
   if (isAdmin) {
@@ -165,8 +165,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               : 'text-on-surface-variant hover:text-primary font-normal'
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">account_circle</span>
-          <span className="text-[10px] leading-tight">帳號中心</span>
+          <span className="material-symbols-outlined text-[20px]">
+            {userRole ? 'account_circle' : 'login'}
+          </span>
+          <span className="text-[10px] leading-tight">
+            {userRole ? '帳號中心' : '登入/帳號'}
+          </span>
         </button>
       </div>
     </nav>

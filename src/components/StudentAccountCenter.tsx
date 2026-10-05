@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { UserAccount, StudentProfile, Course } from '../types';
 
 interface StudentAccountCenterProps {
-  currentUser: UserAccount;
+  currentUser: UserAccount | null;
   student: StudentProfile;
   scheduleCourses: Course[];
   cartCourses: Course[];
@@ -11,6 +11,7 @@ interface StudentAccountCenterProps {
   onOpenLogin: () => void;
   onNavigateTab: (tab: any) => void;
   onSwitchToAdmin: () => void;
+  onLogout: () => void;
   showToast: (msg: string) => void;
 }
 
@@ -24,15 +25,16 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
   onOpenLogin,
   onNavigateTab,
   onSwitchToAdmin,
+  onLogout,
   showToast,
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'academic' | 'courses' | 'security'>('profile');
   
   // Profile edit form
-  const [name, setName] = useState(currentUser.name);
-  const [email, setEmail] = useState(currentUser.email);
-  const [phone, setPhone] = useState(currentUser.phone || '0912-345-678');
-  const [department, setDepartment] = useState(currentUser.department);
+  const [name, setName] = useState(currentUser?.name || student.name);
+  const [email, setEmail] = useState(currentUser?.email || student.email || 'student@ntunhs.edu.tw');
+  const [phone, setPhone] = useState(currentUser?.phone || '0912-345-678');
+  const [department, setDepartment] = useState(currentUser?.department || student.department);
   const [address, setAddress] = useState('台北市北投區明德路365號 (北護宿舍A棟)');
   const [emergencyContact, setEmergencyContact] = useState('張父 • 0920-111-222');
 
@@ -43,6 +45,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) return;
     const updatedUser: UserAccount = {
       ...currentUser,
       name,
@@ -82,6 +85,38 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
   const totalScheduleCredits = scheduleCourses.reduce((sum, c) => sum + c.credits, 0);
   const totalCartCredits = cartCourses.reduce((sum, c) => sum + c.credits, 0);
 
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col w-full max-w-4xl mx-auto pb-20">
+        <div className="bg-surface-card rounded-3xl p-8 sm:p-10 shadow-lg border border-border-subtle text-center flex flex-col items-center">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <span className="material-symbols-outlined text-[42px]">account_circle</span>
+          </div>
+          <h2 className="text-2xl font-bold text-on-surface">您目前處於訪客瀏覽模式</h2>
+          <p className="text-sm text-text-muted mt-2 max-w-md">
+            登入您的北護校務帳號（學號 / 教職員工號），即可同步您的學籍身分、歷年修業學分、個人專屬課表與模擬選課志願。
+          </p>
+
+          <div className="flex items-center gap-3 mt-6">
+            <button
+              onClick={onOpenLogin}
+              className="px-6 py-3 rounded-2xl bg-primary text-white font-bold text-sm shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">login</span>
+              <span>立即登入 / 註冊校務帳號</span>
+            </button>
+            <button
+              onClick={() => onNavigateTab('search-courses')}
+              className="px-5 py-3 rounded-2xl bg-surface-container hover:bg-surface-container-high text-xs font-bold text-on-surface transition-colors"
+            >
+              繼續瀏覽課程
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full max-w-5xl mx-auto pb-20">
       {/* Student Banner Card */}
@@ -103,12 +138,16 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {currentUser.name}
                 </h1>
-                <span className="px-3 py-0.5 rounded-full bg-emerald-400 text-emerald-950 text-xs font-bold shadow-xs">
-                  學生身分 (在學良好)
+                <span className={`px-3 py-0.5 rounded-full text-xs font-bold shadow-xs ${
+                  currentUser.role === 'admin'
+                    ? 'bg-amber-400 text-amber-950'
+                    : 'bg-emerald-400 text-emerald-950'
+                }`}>
+                  {currentUser.role === 'admin' ? '課程管理者' : '學生身分 (在學良好)'}
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-primary-fixed-dim mt-1 font-mono">
-                學號：{currentUser.studentId || currentUser.username} • {currentUser.department}
+                {currentUser.role === 'student' ? `學號：${currentUser.studentId || currentUser.username}` : `帳號：${currentUser.username}`} • {currentUser.department}
               </p>
               <div className="flex items-center gap-3 mt-2 text-xs text-white/80">
                 <span className="flex items-center gap-1">
@@ -131,7 +170,14 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
               className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white font-bold text-xs flex items-center gap-1.5 transition-colors border border-white/20"
             >
               <span className="material-symbols-outlined text-[16px]">switch_account</span>
-              <span>切換/登入其他帳號</span>
+              <span>切換/登入帳號</span>
+            </button>
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 rounded-xl bg-rose-500/80 hover:bg-rose-600 backdrop-blur-sm text-white font-bold text-xs flex items-center gap-1.5 transition-colors border border-white/20 shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[16px]">logout</span>
+              <span>安全登出</span>
             </button>
             <button
               onClick={onSwitchToAdmin}
@@ -139,7 +185,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
               title="切換至教務處課務管理員視角"
             >
               <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-              <span>進入教務課務管理後台</span>
+              <span>進入教務管理後台</span>
             </button>
           </div>
         </div>

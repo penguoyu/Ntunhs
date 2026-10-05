@@ -8,15 +8,18 @@ interface LoginModalProps {
   users: UserAccount[];
   onLogin: (user: UserAccount) => void;
   onRegister: (newUser: UserAccount) => void;
+  onLogout?: () => void;
   showToast: (msg: string) => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onClose,
+  currentUser,
   users,
   onLogin,
   onRegister,
+  onLogout,
   showToast,
 }) => {
   const [tab, setTab] = useState<'quick' | 'password' | 'register'>('quick');
@@ -159,8 +162,37 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </button>
         </div>
 
+        {/* Current Logged-in Account Banner */}
+        {currentUser && (
+          <div className="mx-4 sm:mx-6 mt-3 p-3 rounded-2xl bg-surface-container border border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span className="text-text-muted">目前登入：</span>
+              <span className="font-bold text-on-surface">{currentUser.name}</span>
+              <span className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${
+                currentUser.role === 'admin' ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
+              }`}>
+                {currentUser.role === 'admin' ? '管理者' : '學生'}
+              </span>
+            </div>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onLogout();
+                }}
+                className="px-3 py-1 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold border border-rose-200 transition-colors flex items-center justify-center gap-1 shrink-0"
+              >
+                <span className="material-symbols-outlined text-[15px]">logout</span>
+                <span>登出目前帳號</span>
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-4 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {tab === 'quick' && (
             <div className="space-y-4">
               <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 text-xs text-primary">
