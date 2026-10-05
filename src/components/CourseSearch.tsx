@@ -5,6 +5,7 @@ interface CourseSearchProps {
   courses: Course[];
   cart: string[];
   favorites: string[];
+  scheduleCourses?: Course[];
   onToggleCart: (courseId: string) => void;
   onToggleFavorite: (courseId: string) => void;
   onViewCourseDetail: (course: Course) => void;
@@ -17,6 +18,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
   courses,
   cart,
   favorites,
+  scheduleCourses,
   onToggleCart,
   onToggleFavorite,
   onViewCourseDetail,
@@ -48,6 +50,25 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
     '4-5': true,
     '4-6': true,
   });
+
+  const simCartCourses = useMemo(() => courses.filter(c => cart.includes(c.id)), [courses, cart]);
+
+  const getCourseConflict = (targetCourse: Course) => {
+    if (!targetCourse.day || !targetCourse.periods || targetCourse.periods.length === 0) {
+      return { hasConflict: false, conflictingWith: [] as Course[] };
+    }
+    const combined = [...(scheduleCourses || []), ...simCartCourses];
+    const matching = combined.filter(c =>
+      c.id !== targetCourse.id &&
+      c.day === targetCourse.day &&
+      c.periods?.some(p => targetCourse.periods?.includes(p))
+    );
+    const unique = Array.from(new Map(matching.map(c => [c.id, c])).values());
+    return {
+      hasConflict: unique.length > 0,
+      conflictingWith: unique,
+    };
+  };
 
   const hotSearches = [
     '醫療資訊系統',
@@ -149,6 +170,10 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
       }
       if (selectedQuickFilter === '博雅通識' && course.category !== '博雅通識') {
         return false;
+      }
+      if (selectedQuickFilter === '不衝堂優先') {
+        const { hasConflict } = getCourseConflict(course);
+        if (hasConflict) return false;
       }
       if (selectedQuickFilter === 'EMI全英語授課' && !course.isEMI) {
         return false;
@@ -1097,10 +1122,27 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                             EMI全英語授課
                           </span>
                         )}
-                        <span className="px-2 py-0.5 rounded-full bg-secondary-fixed/20 text-secondary font-semibold text-xs flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                          衝突安全 (無衝堂)
-                        </span>
+                        {(() => {
+                          const { hasConflict, conflictingWith } = getCourseConflict(course);
+                          if (hasConflict) {
+                            const dayZh = ['一', '二', '三', '四', '五'][course.day! - 1] || `${course.day}`;
+                            return (
+                              <span
+                                className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-1 border border-rose-300 dark:border-rose-800"
+                                title={`⚠️ 與預排課程《${conflictingWith.map(c => c.name).join('、')}》時段衝突 (週${dayZh} 第${course.periods?.join(',')}節)`}
+                              >
+                                <span className="material-symbols-outlined text-[13px] text-rose-600">warning</span>
+                                時段衝堂 (與《{conflictingWith[0]?.name.slice(0, 5)}...》)
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="px-2 py-0.5 rounded-full bg-secondary-fixed/20 text-secondary font-semibold text-xs flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                              衝突安全 (無衝堂)
+                            </span>
+                          );
+                        })()}
                         {course.prerequisite && (
                           <span className="px-2 py-0.5 rounded-full bg-surface-container text-text-secondary text-xs">
                             {course.prerequisite}

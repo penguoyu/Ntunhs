@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Course, SDG_LIST } from '../types';
 
 interface CourseDetailModalProps {
   course: Course;
   isInCart: boolean;
   isFavorite: boolean;
+  scheduleCourses?: Course[];
+  cartCourses?: Course[];
   onToggleCart: (courseId: string) => void;
   onToggleFavorite: (courseId: string) => void;
   onClose: () => void;
@@ -15,12 +17,26 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   course,
   isInCart,
   isFavorite,
+  scheduleCourses,
+  cartCourses,
   onToggleCart,
   onToggleFavorite,
   onClose,
   showToast,
 }) => {
   const [activeTab, setActiveTab] = useState<'syllabus' | 'sdgs' | 'competencies' | 'grading' | 'prereq' | 'reviews'>('syllabus');
+
+  const conflictCourses = useMemo(() => {
+    if (!course.day || !course.periods || course.periods.length === 0) return [];
+    const combined = [...(scheduleCourses || []), ...(cartCourses || [])];
+    const matching = combined.filter(c =>
+      c.id !== course.id &&
+      c.day === course.day &&
+      c.periods?.some(p => course.periods?.includes(p))
+    );
+    return Array.from(new Map(matching.map(c => [c.id, c])).values());
+  }, [course, scheduleCourses, cartCourses]);
+  const hasConflict = conflictCourses.length > 0;
 
   const courseSdgs = course.sdgs && course.sdgs.length > 0 ? course.sdgs : [3, 4];
   const activeSdgsList = SDG_LIST.filter(s => courseSdgs.includes(s.id));
@@ -682,12 +698,23 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 
         {/* Fixed Modal Bottom Action Bar */}
         <div className="p-4 pb-safe bg-surface-card border-t border-border-subtle flex flex-col gap-2 shrink-0">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-secondary font-bold">
-              <span className="material-symbols-outlined text-[16px]">verified</span>
-              <span>衝堂即時預檢：與您目前課表完全無衝堂</span>
-            </div>
-            <span className="text-[11px] text-text-muted">時段空檔正常</span>
+          <div className="flex items-center justify-between text-xs flex-wrap gap-1">
+            {hasConflict ? (
+              <div className="flex items-center gap-1.5 text-rose-600 font-bold min-w-0">
+                <span className="material-symbols-outlined text-[16px] animate-pulse shrink-0">warning</span>
+                <span className="truncate">
+                  ⚠️ 衝堂即時預檢：與《{conflictCourses.map(c => c.name).join('、')}》時段衝突（週{['一','二','三','四','五'][course.day! - 1]} 第{course.periods?.join(',')}節）
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-secondary font-bold">
+                <span className="material-symbols-outlined text-[16px]">verified</span>
+                <span>衝堂即時預檢：與您目前課表及預排完全無衝堂</span>
+              </div>
+            )}
+            <span className={`text-[11px] font-bold shrink-0 ${hasConflict ? 'text-rose-600' : 'text-text-muted'}`}>
+              {hasConflict ? '時段重疊衝突' : '時段空檔正常'}
+            </span>
           </div>
 
           <div className="flex gap-2">

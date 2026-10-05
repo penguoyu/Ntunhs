@@ -87,8 +87,17 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
       rowEnd: number;
       col: number;
       isConflict: boolean;
+      totalInGroup: number;
+      groupIndex: number;
     }
-    const placements: CoursePlacement[] = [];
+    const dayPlacements: Record<number, {
+      course: Course;
+      startPeriod: number;
+      endPeriod: number;
+      rowStart: number;
+      rowEnd: number;
+      col: number;
+    }[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
     scheduleCourses.forEach(course => {
       if (!course.day || !course.periods || course.periods.length === 0) return;
@@ -98,30 +107,52 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
       if (morning.length > 0) {
         const startPeriod = morning[0];
         const endPeriod = morning[morning.length - 1];
-        placements.push({
+        dayPlacements[course.day]?.push({
           course,
           startPeriod,
           endPeriod,
           rowStart: periodToRow(startPeriod),
           rowEnd: periodToRow(endPeriod) + 1,
           col: course.day + 1,
-          isConflict: conflictingCourseIds.has(course.id),
         });
       }
 
       if (afternoon.length > 0) {
         const startPeriod = afternoon[0];
         const endPeriod = afternoon[afternoon.length - 1];
-        placements.push({
+        dayPlacements[course.day]?.push({
           course,
           startPeriod,
           endPeriod,
           rowStart: periodToRow(startPeriod),
           rowEnd: periodToRow(endPeriod) + 1,
           col: course.day + 1,
-          isConflict: conflictingCourseIds.has(course.id),
         });
       }
+    });
+
+    const placements: CoursePlacement[] = [];
+    Object.keys(dayPlacements).forEach(dayKey => {
+      const day = Number(dayKey);
+      const list = dayPlacements[day];
+      if (!list || list.length === 0) return;
+
+      list.forEach(item => {
+        const overlaps = list.filter(other =>
+          item.startPeriod <= other.endPeriod && other.startPeriod <= item.endPeriod
+        );
+        overlaps.sort((a, b) => a.course.id.localeCompare(b.course.id));
+        const groupIndex = overlaps.findIndex(x => x.course.id === item.course.id);
+        const totalInGroup = overlaps.length;
+        const isConflict = overlaps.length > 1 || conflictingCourseIds.has(item.course.id);
+
+        placements.push({
+          ...item,
+          isConflict,
+          totalInGroup,
+          groupIndex: Math.max(0, groupIndex),
+        });
+      });
     });
 
     return placements;
@@ -439,8 +470,23 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
 
                   {/* Scheduled Courses */}
                   {coursePlacements.map((placement, idx) => {
-                    const { course, startPeriod, endPeriod, rowStart, rowEnd, col, isConflict } = placement;
+                    const {
+                      course,
+                      startPeriod,
+                      endPeriod,
+                      rowStart,
+                      rowEnd,
+                      col,
+                      isConflict,
+                      totalInGroup,
+                      groupIndex,
+                    } = placement;
                     const isMultiPeriod = endPeriod > startPeriod;
+
+                    const widthStyle = isConflict ? `calc(${100 / totalInGroup}% - 2px)` : '100%';
+                    const marginLeftStyle = isConflict
+                      ? `calc(${(groupIndex * 100) / totalInGroup}% + ${groupIndex > 0 ? 2 : 0}px)`
+                      : '0px';
 
                     return (
                       <div
@@ -448,11 +494,15 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                         style={{
                           gridColumn: col,
                           gridRow: `${rowStart} / ${rowEnd}`,
+                          width: widthStyle,
+                          marginLeft: marginLeftStyle,
+                          justifySelf: 'start',
+                          zIndex: isConflict ? 25 + groupIndex : 10,
                         }}
                         onClick={() => setSelectedCourseModal(course)}
-                        className={`p-2 sm:p-2.5 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group z-10 ${
+                        className={`p-2 sm:p-2.5 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group ${
                           isConflict
-                            ? 'bg-red-50 text-red-950 border-red-300 ring-1 ring-red-400'
+                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-950 dark:text-rose-100 border-2 border-rose-500 ring-2 ring-rose-400/50 animate-pulse'
                             : course.category.includes('必修')
                             ? 'bg-primary-fixed/90 hover:bg-primary-fixed text-on-primary-fixed border-primary/25'
                             : course.category.includes('跨') || course.isCrossDisciplinary

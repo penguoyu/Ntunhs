@@ -6,6 +6,7 @@ interface SimulationWorkstationProps {
   cart: string[];
   tier1Ids: string[];
   tier2Ids: string[];
+  scheduleIds?: string[];
   onSetTier1Ids: (ids: string[]) => void;
   onSetTier2Ids: (ids: string[]) => void;
   onRemoveFromCart: (id: string) => void;
@@ -43,6 +44,7 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
   cart,
   tier1Ids,
   tier2Ids,
+  scheduleIds,
   onSetTier1Ids,
   onSetTier2Ids,
   onRemoveFromCart,
@@ -65,13 +67,59 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
 
   // Timetable preview calculations
   const effectivePreviewCourses = useMemo(() => {
+    if (viewMode === 'official') {
+      return courses.filter(c => scheduleIds?.includes(c.id));
+    }
     let list = viewMode === 'contingency' ? [...tier1Courses, ...tier2Courses] : [...tier1Courses];
     if (hasAddedRecommended && !list.some(c => c.id === 'GE2109')) {
       const ge = courses.find(c => c.id === 'GE2109');
       if (ge) list = [...list, ge];
     }
     return list;
-  }, [viewMode, tier1Courses, tier2Courses, hasAddedRecommended, courses]);
+  }, [viewMode, tier1Courses, tier2Courses, hasAddedRecommended, courses, scheduleIds]);
+
+  // Conflict Detection for Simulation Preview
+  const simConflicts = useMemo(() => {
+    interface SimConflictPair {
+      c1: Course;
+      c2: Course;
+      day: number;
+      dayZh: string;
+      periods: number[];
+    }
+    const pairs: SimConflictPair[] = [];
+    const conflictingCourseIds = new Set<string>();
+    const conflictMap = new Map<string, { otherCourse: Course; periods: number[]; dayZh: string }[]>();
+
+    for (let i = 0; i < effectivePreviewCourses.length; i++) {
+      for (let j = i + 1; j < effectivePreviewCourses.length; j++) {
+        const c1 = effectivePreviewCourses[i];
+        const c2 = effectivePreviewCourses[j];
+        if (c1.day && c2.day && c1.day === c2.day && c1.periods && c2.periods) {
+          const overlap = c1.periods.filter(p => c2.periods?.includes(p));
+          if (overlap.length > 0) {
+            conflictingCourseIds.add(c1.id);
+            conflictingCourseIds.add(c2.id);
+            const dayZh = SIM_DAYS.find(d => d.day === c1.day)?.zh || String(c1.day);
+            pairs.push({
+              c1,
+              c2,
+              day: c1.day,
+              dayZh,
+              periods: overlap.sort((a, b) => a - b),
+            });
+
+            if (!conflictMap.has(c1.id)) conflictMap.set(c1.id, []);
+            conflictMap.get(c1.id)!.push({ otherCourse: c2, periods: overlap, dayZh });
+
+            if (!conflictMap.has(c2.id)) conflictMap.set(c2.id, []);
+            conflictMap.get(c2.id)!.push({ otherCourse: c1, periods: overlap, dayZh });
+          }
+        }
+      }
+    }
+    return { pairs, conflictingCourseIds, conflictMap };
+  }, [effectivePreviewCourses]);
 
   const simOccupiedSlots = useMemo(() => {
     const slots = new Set<string>();
@@ -97,8 +145,21 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
       rowEnd: number;
       col: number;
       isTier2: boolean;
+      isConflict: boolean;
+      conflictWithNames: string[];
+      totalInGroup: number;
+      groupIndex: number;
     }
-    const placements: Placement[] = [];
+
+    const dayPlacements: Record<number, {
+      course: Course;
+      startPeriod: number;
+      endPeriod: number;
+      rowStart: number;
+      rowEnd: number;
+      col: number;
+      isTier2: boolean;
+    }[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
     effectivePreviewCourses.forEach(course => {
       if (!course.day || !course.periods || course.periods.length === 0) return;
@@ -109,7 +170,7 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
       if (morning.length > 0) {
         const start = morning[0];
         const end = morning[morning.length - 1];
-        placements.push({
+        dayPlacements[course.day]?.push({
           course,
           startPeriod: start,
           endPeriod: end,
@@ -123,7 +184,7 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
       if (afternoon.length > 0) {
         const start = afternoon[0];
         const end = afternoon[afternoon.length - 1];
-        placements.push({
+        dayPlacements[course.day]?.push({
           course,
           startPeriod: start,
           endPeriod: end,
@@ -135,8 +196,37 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
       }
     });
 
-    return placements;
-  }, [effectivePreviewCourses, tier2Ids]);
+    const finalPlacements: Placement[] = [];
+
+    Object.keys(dayPlacements).forEach(dayKey => {
+      const day = Number(dayKey);
+      const list = dayPlacements[day];
+      if (!list || list.length === 0) return;
+
+      list.forEach(item => {
+        const overlaps = list.filter(other =>
+          item.startPeriod <= other.endPeriod && other.startPeriod <= item.endPeriod
+        );
+        overlaps.sort((a, b) => a.course.id.localeCompare(b.course.id));
+        const groupIndex = overlaps.findIndex(x => x.course.id === item.course.id);
+        const totalInGroup = overlaps.length;
+        const isConflict = overlaps.length > 1 || simConflicts.conflictingCourseIds.has(item.course.id);
+        const conflictWithNames = overlaps
+          .filter(x => x.course.id !== item.course.id)
+          .map(x => x.course.name);
+
+        finalPlacements.push({
+          ...item,
+          isConflict,
+          conflictWithNames,
+          totalInGroup,
+          groupIndex: Math.max(0, groupIndex),
+        });
+      });
+    });
+
+    return finalPlacements;
+  }, [effectivePreviewCourses, tier2Ids, simConflicts]);
 
   const simEmptySlots = useMemo(() => {
     const slots: { day: number; period: number; zh: string; time: string }[] = [];
@@ -199,7 +289,14 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
   };
 
   const handleValidatePrereqs = () => {
-    showToast('【智慧衝堂與先修檢核】全數合規！擋修條件通過，時段 100% 無碰撞。');
+    if (simConflicts.pairs.length > 0) {
+      const desc = simConflicts.pairs
+        .map(p => `《${p.c1.name}》與《${p.c2.name}》(週${p.dayZh} 第${p.periods.join(',')}節)`)
+        .join('；');
+      showToast(`⚠️【衝堂檢核警示】發現 ${simConflicts.pairs.length} 處時段衝堂衝突！${desc}。請將衝突科目移至備選梯隊 (Tier 2)。`);
+    } else {
+      showToast('【智慧衝堂與先修檢核】全數合規！擋修條件通過，預排時段 100% 無碰撞。');
+    }
   };
 
   const handleAddRecommended = () => {
@@ -294,17 +391,38 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
           </div>
         </div>
 
-        <div className="bg-surface-card p-4 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between">
+        <div className={`p-4 rounded-2xl shadow-sm border flex items-center justify-between transition-all ${
+          simConflicts.pairs.length > 0
+            ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800'
+            : 'bg-surface-card border-border-subtle'
+        }`}>
           <div className="flex flex-col">
             <span className="text-xs text-text-muted font-semibold">衝堂防護與檢核</span>
             <div className="flex items-center gap-1.5 mt-1">
-              <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
-              <span className="font-bold text-base text-secondary">零時段碰撞</span>
+              {simConflicts.pairs.length > 0 ? (
+                <>
+                  <span className="material-symbols-outlined text-rose-600 text-[20px] animate-pulse">warning</span>
+                  <span className="font-bold text-base text-rose-600">{simConflicts.pairs.length} 處時段衝堂</span>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                  <span className="font-bold text-base text-secondary">零時段碰撞</span>
+                </>
+              )}
             </div>
-            <span className="text-[11px] text-text-muted">第一志願時段全數獨立</span>
+            <span className={`text-[11px] ${simConflicts.pairs.length > 0 ? 'text-rose-600 font-bold' : 'text-text-muted'}`}>
+              {simConflicts.pairs.length > 0 ? '需調整志願或移入備案' : '第一志願時段全數獨立'}
+            </span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-secondary-fixed/20 flex items-center justify-center text-secondary">
-            <span className="material-symbols-outlined text-[22px]">security</span>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            simConflicts.pairs.length > 0
+              ? 'bg-rose-100 dark:bg-rose-900/50 text-rose-600'
+              : 'bg-secondary-fixed/20 text-secondary'
+          }`}>
+            <span className="material-symbols-outlined text-[22px]">
+              {simConflicts.pairs.length > 0 ? 'crisis_alert' : 'security'}
+            </span>
           </div>
         </div>
 
@@ -324,6 +442,58 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Top Conflict Alert Banner if conflicts exist */}
+      {simConflicts.pairs.length > 0 && (
+        <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border-2 border-rose-500/80 text-rose-950 dark:text-rose-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-xs animate-pulse">
+              <span className="material-symbols-outlined text-[22px]">warning</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-base text-rose-700 dark:text-rose-300">
+                  ⚠️ 模擬預排偵測到 {simConflicts.pairs.length} 處時段衝堂衝突！
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white font-bold text-[10px]">
+                  需排解衝突
+                </span>
+              </div>
+              <div className="text-xs text-rose-900/90 dark:text-rose-200/90 mt-1.5 flex flex-col gap-1">
+                {simConflicts.pairs.map((p, pIdx) => (
+                  <div key={`conflict-pair-${pIdx}`} className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold underline decoration-rose-400">
+                      《{p.c1.name}》
+                    </span>
+                    <span>與</span>
+                    <span className="font-bold underline decoration-rose-400">
+                      《{p.c2.name}》
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded bg-rose-200 dark:bg-rose-800 text-rose-900 dark:text-rose-100 font-mono text-[11px] font-bold">
+                      週{p.dayZh} 第{p.periods.join(',')}節
+                    </span>
+                    <span>時段衝突重疊</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-rose-700 dark:text-rose-300 mt-1.5">
+                衝突科目已於下方週課表中並排展示並高亮標註「⚠️ 衝堂」。建議將衝堂科目點選「移至備案」移入 Tier 2 志願梯隊，確保系統分發安全。
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
+            {simConflicts.pairs[0] && (
+              <button
+                onClick={() => moveTier1ToTier2(simConflicts.pairs[0].c2.id)}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all active:scale-95 flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">low_priority</span>
+                <span>將《{simConflicts.pairs[0].c2.name}》移至備案</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Dual Column Layout */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
@@ -348,13 +518,20 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
             <div className="flex flex-col gap-3">
               {tier1Courses.map((course, index) => {
                 const isHovered = highlightedCourseId === course.id;
+                const conflictItems = simConflicts.conflictMap.get(course.id) || [];
+                const hasConflict = conflictItems.length > 0;
+
                 return (
                   <div
                     key={course.id}
                     onMouseEnter={() => setHighlightedCourseId(course.id)}
                     onMouseLeave={() => setHighlightedCourseId(null)}
-                    className={`p-3.5 rounded-xl bg-surface-container-low hover:bg-surface-card transition-all shadow-xs border ${
-                      isHovered ? 'border-primary ring-2 ring-primary/20' : 'border-border-subtle'
+                    className={`p-3.5 rounded-xl transition-all shadow-xs border ${
+                      isHovered
+                        ? 'border-primary ring-2 ring-primary/20 bg-surface-card'
+                        : hasConflict
+                        ? 'border-2 border-rose-400 bg-rose-50/50 dark:bg-rose-950/20'
+                        : 'bg-surface-container-low hover:bg-surface-card border-border-subtle'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -382,13 +559,19 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-[11px] font-bold px-2 py-0.2 rounded bg-surface-container-high text-primary">
                               {course.code}
                             </span>
                             <span className="text-[11px] font-bold px-1.5 py-0.2 rounded bg-primary-container text-white">
                               {course.category}
                             </span>
+                            {hasConflict && (
+                              <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-rose-600 text-white flex items-center gap-1 shadow-2xs animate-pulse">
+                                <span className="material-symbols-outlined text-[12px]">warning</span>
+                                衝堂衝突
+                              </span>
+                            )}
                           </div>
                           <span className="text-xs font-bold text-primary">{course.credits} 學分</span>
                         </div>
@@ -410,6 +593,25 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
                             {course.location}
                           </span>
                         </div>
+
+                        {/* Inline Conflict Warning & Quick Resolution Action */}
+                        {hasConflict && (
+                          <div className="mt-2.5 p-2 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-rose-300 dark:border-rose-800">
+                            <div className="flex items-center gap-1 min-w-0">
+                              <span className="material-symbols-outlined text-[15px] text-rose-600 shrink-0">error</span>
+                              <span className="truncate">
+                                與《{conflictItems.map(x => x.otherCourse.name).join('、')}》（週{conflictItems[0]?.dayZh} 第{conflictItems[0]?.periods.join(',')}節）衝堂
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => moveTier1ToTier2(course.id)}
+                              className="px-2.5 py-1 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shrink-0 transition-colors shadow-2xs flex items-center gap-1 self-start sm:self-auto"
+                            >
+                              <span className="material-symbols-outlined text-[13px]">low_priority</span>
+                              <span>移至備案 (解衝堂)</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Actions */}
@@ -573,7 +775,7 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
 
           {/* Color Key Legend */}
           <div className="flex items-center justify-between text-xs text-text-muted flex-wrap gap-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded bg-primary-container"></span>
                 <span>資管必選</span>
@@ -589,6 +791,10 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
               <div className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded bg-tertiary-fixed-dim"></span>
                 <span>備案候補</span>
+              </div>
+              <div className="flex items-center gap-1 text-rose-600 font-bold">
+                <span className="w-2.5 h-2.5 rounded bg-rose-600 animate-pulse"></span>
+                <span>衝堂衝突</span>
               </div>
             </div>
             <span className="text-[11px] text-general-sky font-semibold">點選課表塊可檢視課堂</span>
@@ -673,8 +879,25 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
 
                 {/* Scheduled Simulation Courses */}
                 {simCoursePlacements.map((placement, idx) => {
-                  const { course, startPeriod, endPeriod, rowStart, rowEnd, col, isTier2 } = placement;
+                  const {
+                    course,
+                    startPeriod,
+                    endPeriod,
+                    rowStart,
+                    rowEnd,
+                    col,
+                    isTier2,
+                    isConflict,
+                    conflictWithNames,
+                    totalInGroup,
+                    groupIndex,
+                  } = placement;
                   const isMultiPeriod = endPeriod > startPeriod;
+
+                  const widthStyle = isConflict ? `calc(${100 / totalInGroup}% - 2px)` : '100%';
+                  const marginLeftStyle = isConflict
+                    ? `calc(${(groupIndex * 100) / totalInGroup}% + ${groupIndex > 0 ? 2 : 0}px)`
+                    : '0px';
 
                   return (
                     <div
@@ -682,10 +905,16 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
                       style={{
                         gridColumn: col,
                         gridRow: `${rowStart} / ${rowEnd}`,
+                        width: widthStyle,
+                        marginLeft: marginLeftStyle,
+                        justifySelf: 'start',
+                        zIndex: isConflict ? 25 + groupIndex : 10,
                       }}
                       onClick={() => onViewCourseDetail(course)}
-                      className={`p-2 rounded-lg flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group z-10 ${
-                        isTier2
+                      className={`p-1.5 sm:p-2 rounded-lg flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group ${
+                        isConflict
+                          ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-950 dark:text-rose-100 border-2 border-rose-500 ring-2 ring-rose-400/50 animate-pulse'
+                          : isTier2
                           ? 'bg-tertiary-fixed-dim/25 border-dashed border-tertiary-fixed-dim text-on-surface'
                           : course.category.includes('必修')
                           ? 'bg-primary-container text-white border-primary/30'
@@ -695,29 +924,53 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
                           ? 'bg-clinical-purple text-white border-purple-400/30'
                           : 'bg-surface-container-highest text-on-surface border-border-subtle'
                       }`}
-                      title={`${course.name} (${course.code}) | ${course.location} | ${course.teacher}`}
+                      title={
+                        isConflict
+                          ? `⚠️【衝堂警告】${course.name} 與 ${conflictWithNames.join('、')} 於第${startPeriod}-${endPeriod}節時段重疊！點擊檢視`
+                          : `${course.name} (${course.code}) | ${course.location} | ${course.teacher}`
+                      }
                     >
                       <div>
                         <div className="flex items-center justify-between gap-1 mb-0.5">
                           <span
                             className={`text-[9px] px-1 py-0.2 rounded font-bold ${
-                              isTier2
+                              isConflict
+                                ? 'bg-rose-600 text-white shadow-2xs'
+                                : isTier2
                                 ? 'bg-tertiary text-white'
                                 : 'bg-white/20'
                             }`}
                           >
-                            {isTier2 ? '備案 (Tier 2)' : `${course.category.slice(0, 2)} ${course.credits.toFixed(1)}`}
+                            {isConflict
+                              ? '⚠️ 衝堂'
+                              : isTier2
+                              ? '備案 (Tier 2)'
+                              : `${course.category.slice(0, 2)} ${course.credits.toFixed(1)}`}
                           </span>
-                          <span className="text-[9px] opacity-80 font-mono">
+                          <span
+                            className={`text-[9px] font-mono ${
+                              isConflict ? 'text-rose-700 dark:text-rose-300 font-bold' : 'opacity-80'
+                            }`}
+                          >
                             {isMultiPeriod ? `P${startPeriod}-${endPeriod}` : `P${startPeriod}`}
                           </span>
                         </div>
-                        <span className="font-bold text-xs truncate block leading-tight mt-0.5">
+                        <span
+                          className={`font-bold text-xs truncate block leading-tight mt-0.5 ${
+                            isConflict ? 'text-rose-950 dark:text-rose-100 font-extrabold' : ''
+                          }`}
+                        >
                           {course.name}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] opacity-85 mt-1 pt-1 border-t border-white/10">
+                      <div
+                        className={`flex items-center justify-between text-[10px] mt-1 pt-1 border-t ${
+                          isConflict
+                            ? 'border-rose-300/60 text-rose-800 dark:text-rose-200'
+                            : 'border-white/10 opacity-85'
+                        }`}
+                      >
                         <span className="truncate max-w-[80px]">{course.location || course.room}</span>
                         <span className="truncate max-w-[65px] opacity-80">{course.teacher}</span>
                       </div>
@@ -747,10 +1000,17 @@ export const SimulationWorkstation: React.FC<SimulationWorkstationProps> = ({
           </div>
 
           <div className="p-3 rounded-xl bg-surface-container-low flex items-center justify-between text-xs border border-border-subtle">
-            <div className="flex items-center gap-1.5 text-text-secondary">
-              <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
-              <span>時程防衝堂演算法演算完成：當前預排 0 節衝突，時段分佈均衡</span>
-            </div>
+            {simConflicts.pairs.length > 0 ? (
+              <div className="flex items-center gap-1.5 text-rose-600 font-bold">
+                <span className="material-symbols-outlined text-rose-600 text-[18px] animate-pulse">warning</span>
+                <span>時程防衝堂警示：當前預排有 {simConflicts.pairs.length} 處時段衝堂，請調整志願或移至備案</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-text-secondary">
+                <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
+                <span>時程防衝堂演算法演算完成：當前預排 0 節衝突，時段分佈均衡</span>
+              </div>
+            )}
             <button
               onClick={onApplyToSchedule}
               className="text-primary hover:underline font-bold flex items-center gap-1"

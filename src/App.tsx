@@ -274,9 +274,23 @@ export default function App() {
       setTier2Ids(tier2Ids.filter(id => id !== courseId));
       showToast('已自模擬工作台移出');
     } else {
+      const target = courses.find(c => c.id === courseId);
       setCart([...cart, courseId]);
       setTier1Ids([...tier1Ids, courseId]);
-      showToast('已加入選課模擬工作台！');
+
+      if (target && target.day && target.periods && target.periods.length > 0) {
+        const activeSimCourses = courses.filter(c => tier1Ids.includes(c.id) || cart.includes(c.id));
+        const conflicting = activeSimCourses.filter(c =>
+          c.id !== target.id && c.day === target.day && c.periods?.some(p => target.periods?.includes(p))
+        );
+        if (conflicting.length > 0) {
+          const names = conflicting.map(c => `《${c.name}》`).join('、');
+          const dayZh = ['一', '二', '三', '四', '五'][target.day - 1] || `${target.day}`;
+          showToast(`⚠️【模擬衝堂提醒】已加入工作台！注意：《${target.name}》與預排中的 ${names}（週${dayZh} 第${target.periods.join(',')}節）衝堂！`);
+          return;
+        }
+      }
+      showToast('已加入選課模擬工作台！時段無碰撞');
     }
   };
 
@@ -292,8 +306,17 @@ export default function App() {
 
   const handleApplyToSchedule = () => {
     const merged = Array.from(new Set([...scheduleIds, ...tier1Ids]));
+    const mergedCourses = courses.filter(c => merged.includes(c.id));
+    const hasConflict = mergedCourses.some((c1, i) =>
+      mergedCourses.some((c2, j) => i !== j && c1.day === c2.day && c1.periods?.some(p => c2.periods?.includes(p)))
+    );
+
     setScheduleIds(merged);
-    showToast('已成功套用模擬志願至個人週課表！');
+    if (hasConflict) {
+      showToast('⚠️ 已套用模擬志願至個人週課表！課表中含有衝堂課程，已標註紅色衝堂警示，請及時排解。');
+    } else {
+      showToast('已成功套用模擬志願至個人週課表！時段完全無衝堂。');
+    }
     setCurrentTab('my-schedule');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -411,6 +434,7 @@ export default function App() {
               courses={courses}
               cart={cart}
               favorites={favorites}
+              scheduleCourses={scheduleCourses}
               onToggleCart={handleToggleCart}
               onToggleFavorite={handleToggleFavorite}
               onViewCourseDetail={course => setInspectingCourse(course)}
@@ -441,6 +465,7 @@ export default function App() {
               cart={cart}
               tier1Ids={tier1Ids}
               tier2Ids={tier2Ids}
+              scheduleIds={scheduleIds}
               onSetTier1Ids={setTier1Ids}
               onSetTier2Ids={setTier2Ids}
               onRemoveFromCart={id => {
@@ -580,6 +605,8 @@ export default function App() {
             course={inspectingCourse}
             isInCart={cart.includes(inspectingCourse.id)}
             isFavorite={favorites.includes(inspectingCourse.id)}
+            scheduleCourses={scheduleCourses}
+            cartCourses={cartCourses}
             onToggleCart={handleToggleCart}
             onToggleFavorite={handleToggleFavorite}
             onClose={() => setInspectingCourse(null)}
