@@ -93,13 +93,18 @@ export interface Course {
   timeStr: string;
   enrolled: number;
   capacity: number;
+  /** 本階段登記人數；未設定時由 registeredCount() 產生示範值 */
+  registered?: number;
   isEMI?: boolean;
   isCrossDisciplinary?: boolean;
   sdgs?: number[]; // 1 to 17 (聯合國 SDGs 永續發展目標)
   sdgsSummary?: string; // SDGs 永續指標簡述
   coreCompetencies?: CoreCompetency[];
   prerequisite?: string;
+  /** @deprecated 改由 requires + 學生已及格科目計算，見 src/lib/schedule.ts */
   prerequisitePassed?: boolean;
+  /** 先修條件：每一組至少需及格其中一科，例如 [['資料結構', '程式設計']] */
+  requires?: string[][];
   description: string;
   rating: number;
   ratingCount: number;
@@ -128,6 +133,8 @@ export interface UserAccount {
   studentId?: string;
   phone?: string;
   status: 'active' | 'suspended';
+  /** SHA-256 雜湊；示範帳號未設定時使用 DEMO_PASSWORD_HASH */
+  passwordHash?: string;
   lastLogin?: string;
   createdAt: string;
 }
@@ -157,6 +164,8 @@ export interface StudentProfile {
   microDegree: string;
   microDegreeCredits: number;
   microDegreeTarget: number;
+  /** 已及格科目名稱（用於先修檢核） */
+  passedCourses?: string[];
   email?: string;
   phone?: string;
 }

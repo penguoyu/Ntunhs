@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { UserAccount, UserRole } from '../types';
+import { UserAccount } from '../types';
+import { DEMO_PASSWORD_HASH, sha256Hex } from '../data/users';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -33,11 +34,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [regStudentId, setRegStudentId] = useState('');
   const [regDepartment, setRegDepartment] = useState('資訊管理系 四技三年級');
   const [regEmail, setRegEmail] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('student');
+  const [regPassword, setRegPassword] = useState('');
+  // 自行註冊一律為學生；管理者帳號只能由現有管理者在「帳號管理」建立
+  const regRole = 'student' as const;
 
   if (!isOpen) return null;
 
-  const handlePasswordLogin = (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = usernameInput.trim().toLowerCase();
     const matched = users.find(
@@ -54,6 +57,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       return;
     }
 
+    if (!window.crypto?.subtle) {
+      showToast('瀏覽器無法進行密碼驗證，請改用 localhost 或 HTTPS 網址開啟');
+      return;
+    }
+    const inputHash = await sha256Hex(passwordInput);
+    if (inputHash !== (matched.passwordHash ?? DEMO_PASSWORD_HASH)) {
+      showToast('帳號或密碼錯誤');
+      setPasswordInput('');
+      return;
+    }
+    setPasswordInput('');
+
     onLogin(matched);
     showToast(`歡迎回來，${matched.name} (${matched.role === 'admin' ? '課程管理員' : '學生'})！`);
     onClose();
@@ -69,17 +84,32 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     onClose();
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName.trim() || !regEmail.trim()) {
       showToast('請填寫完整姓名與 Email');
       return;
     }
+    if (regPassword.length < 8) {
+      showToast('密碼至少需要 8 個字元');
+      return;
+    }
+    if (!window.crypto?.subtle) {
+      showToast('瀏覽器無法進行密碼加密，請改用 localhost 或 HTTPS 網址開啟');
+      return;
+    }
+    const username = regStudentId.trim() || `user_${Date.now().toString().slice(-4)}`;
+    if (users.some(u => u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === regEmail.trim().toLowerCase())) {
+      showToast('此學號或 Email 已被註冊');
+      return;
+    }
+    const passwordHash = await sha256Hex(regPassword);
 
     const newId = `usr_${Date.now()}`;
     const newUser: UserAccount = {
       id: newId,
-      username: regStudentId.trim() || `user_${Date.now().toString().slice(-4)}`,
+      username,
+      passwordHash,
       name: regName.trim(),
       email: regEmail.trim(),
       role: regRole,
@@ -320,7 +350,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     type="password"
                     value={passwordInput}
                     onChange={e => setPasswordInput(e.target.value)}
-                    placeholder="請輸入密碼 (預設任意輸入即可通過)"
+                    required
+                    placeholder="示範帳號密碼：ntunhs2026"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border-subtle bg-surface-bg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
@@ -352,37 +383,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
           {tab === 'register' && (
             <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
-                  帳號類型 / 角色權限
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setRegRole('student')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                      regRole === 'student'
-                        ? 'border-secondary bg-secondary/10 text-secondary'
-                        : 'border-border-subtle bg-surface-bg text-text-muted hover:bg-surface-container'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">school</span>
-                    <span>學生 (選課/模擬)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRegRole('admin')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                      regRole === 'admin'
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border-subtle bg-surface-bg text-text-muted hover:bg-surface-container'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">shield_person</span>
-                    <span>課程管理者 (CRUD/匯入)</span>
-                  </button>
-                </div>
-              </div>
+              <p className="text-[11px] text-text-muted bg-surface-container-low rounded-xl px-3 py-2">
+                自行註冊的帳號為學生身分；課程管理者帳號需由教務處於「帳號管理」建立。
+              </p>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -425,7 +428,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   <option value="語言治療與聽力學系 二年級">語言治療與聽力學系 (SLPA)</option>
                   <option value="運動保健系 三年級">運動保健系 (SPE/EX)</option>
                   <option value="助產及婦女健康照護系">助產及婦女健康照護系 (NMW)</option>
-                  <option value="教務處課務組">教務處課務組 (管理職務)</option>
                 </select>
               </div>
 
@@ -437,6 +439,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   value={regEmail}
                   onChange={e => setRegEmail(e.target.value)}
                   placeholder="name@ntunhs.edu.tw 或 個人信箱"
+                  className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-on-surface mb-1">設定密碼（至少 8 字元）</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={regPassword}
+                  onChange={e => setRegPassword(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-sm"
                 />
               </div>

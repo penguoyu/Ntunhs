@@ -258,7 +258,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
             匯入課程查詢系統輸出結果 (Batch Course Import & Sync)
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            可無縫匯入北護課程查詢系統、校務行政系統所匯出的最新開課資料集，並進行差異比對後一鍵套用
+            匯入課程查詢系統或校務系統匯出的開課資料，比對差異後再套用
           </p>
         </div>
 

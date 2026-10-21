@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Course, SDG_LIST } from '../types';
+import { gradingStyle, registeredCount, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
 
 interface CourseDetailModalProps {
   course: Course;
@@ -38,7 +39,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   }, [course, scheduleCourses, cartCourses]);
   const hasConflict = conflictCourses.length > 0;
 
-  const courseSdgs = course.sdgs && course.sdgs.length > 0 ? course.sdgs : [3, 4];
+  const courseSdgs = course.sdgs ?? [];
   const activeSdgsList = SDG_LIST.filter(s => courseSdgs.includes(s.id));
 
   const competencies = course.coreCompetencies || [
@@ -118,7 +119,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 <div className="flex items-center gap-1.5 flex-wrap mb-1">
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">eco</span>
-                    SDGs 永續目標認證
+                    SDGs 課程
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">
                     {course.category}
@@ -151,7 +152,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-lg bg-surface-card text-secondary font-bold text-xs shadow-xs">
-                  {course.rating.toFixed(1)} ★ 歷年特優
+                  {course.rating.toFixed(1)} ★（{course.ratingCount} 人評分）
                 </span>
               </div>
 
@@ -199,8 +200,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             {/* Metric 1: Capacity Strain */}
             <div className="bg-surface-card rounded-xl p-3.5 flex flex-col justify-between shadow-xs border border-border-subtle">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-text-muted font-semibold">即時餘額</span>
-                <span className="w-2 h-2 rounded-full bg-conflict-danger animate-pulse"></span>
+                <span className="text-[11px] text-text-muted font-semibold">剩餘名額</span>
               </div>
               <div className="my-1.5">
                 <div className="flex items-baseline gap-1">
@@ -216,7 +216,9 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   ></div>
                 </div>
               </div>
-              <span className="text-[10px] text-conflict-danger font-bold">緊張度 96%</span>
+              <span className="text-[10px] text-text-muted">
+                {seatsLeft(course) === 0 ? '已額滿' : `本階段登記 ${registeredCount(course)} 人`}
+              </span>
             </div>
 
             {/* Metric 2: Grade Stats */}
@@ -231,20 +233,20 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   當率 {course.passRate ? (100 - course.passRate).toFixed(1) : 3.2}%
                 </p>
               </div>
-              <span className="text-[10px] text-text-muted">溫和給分型</span>
+              <span className="text-[10px] text-text-muted">{gradingStyle(course)}</span>
             </div>
 
             {/* Metric 3: Student Ratings */}
             <div className="bg-surface-card rounded-xl p-3.5 flex flex-col justify-between shadow-xs border border-border-subtle">
-              <span className="text-[11px] text-text-muted font-semibold">學生綜合評價</span>
+              <span className="text-[11px] text-text-muted font-semibold">學長姐評價</span>
               <div className="my-1.5">
                 <div className="flex items-baseline gap-1">
                   <span className="font-bold text-xl sm:text-2xl text-primary">{course.rating.toFixed(1)}</span>
-                  <span className="text-amber-500 text-xs">★</span>
+                  <span className="text-[11px] text-text-muted">/ 5</span>
                 </div>
-                <div className="text-amber-500 text-[10px] mt-0.5">★★★★★</div>
+                <div className="text-amber-500 text-[10px] mt-0.5">{starText(course.rating)}</div>
               </div>
-              <span className="text-[10px] text-text-muted">{course.ratingCount} 則評語</span>
+              <span className="text-[10px] text-text-muted">{course.ratingCount} 人評分</span>
             </div>
           </div>
 
@@ -256,7 +258,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               { id: 'competencies', label: '核心能力指標' },
               { id: 'grading', label: '成績評定標準' },
               { id: 'prereq', label: '先修與擋修規則' },
-              { id: 'reviews', label: '學長姐修課心得' },
+              { id: 'reviews', label: '學長姐修課參考' },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -283,10 +285,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     </span>
                     <div>
                       <h4 className="font-bold text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
-                        <span>本課程對應聯合國永續發展目標 (SDGs 17 項目標)</span>
-                        <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          北護校務規範
-                        </span>
+                        <span>本課程對應的 SDGs 目標</span>
                       </h4>
                       <p className="text-[11px] text-text-muted">
                         本校落實教育部與聯合國永續發展藍圖 (SDGs)，本門課已認列 {activeSdgsList.length} 項核心永續指標
@@ -294,7 +293,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     </div>
                   </div>
                   <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    已認證 {activeSdgsList.length} 項
+                    {activeSdgsList.length} 項
                   </span>
                 </div>
 
@@ -314,9 +313,6 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                         <div className="flex items-center justify-between gap-1 mb-0.5">
                           <span className="font-bold text-xs text-on-surface">
                             {item.code} {item.name}
-                          </span>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.2 rounded">
-                            已勾稽
                           </span>
                         </div>
                         <span className="text-[10px] text-text-muted block font-mono">{item.enName}</span>
@@ -544,48 +540,44 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle flex items-center gap-5">
                 <div className="text-center flex flex-col items-center">
                   <span className="font-bold text-3xl text-primary leading-none">{course.rating.toFixed(1)}</span>
-                  <div className="flex text-amber-500 text-xs my-1">★★★★★</div>
-                  <span className="text-[10px] text-text-muted">{course.ratingCount} 則評分</span>
+                  <div className="flex text-amber-500 text-xs my-1">{starText(course.rating)}</div>
+                  <span className="text-[10px] text-text-muted">{course.ratingCount} 人評分</span>
                 </div>
-                <div className="flex-1 flex flex-col gap-1.5 text-text-muted text-[11px]">
-                  <div className="flex items-center gap-2">
-                    <span>收穫程度</span>
-                    <div className="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full rounded-full" style={{ width: '95%' }}></div>
-                    </div>
-                    <span className="font-bold text-primary">4.9</span>
+                <dl className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+                  <div>
+                    <dt className="text-text-muted">本系學長姐修過</dt>
+                    <dd className="font-bold text-on-surface">{seniorsTaken(course)} 人</dd>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>紮實程度</span>
-                    <div className="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full rounded-full" style={{ width: '90%' }}></div>
-                    </div>
-                    <span className="font-bold text-primary">4.7</span>
+                  <div>
+                    <dt className="text-text-muted">歷年平均分數</dt>
+                    <dd className="font-bold text-on-surface">{course.averageScore ?? '—'} 分</dd>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>甜度指數</span>
-                    <div className="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
-                      <div className="bg-primary h-full rounded-full" style={{ width: '80%' }}></div>
-                    </div>
-                    <span className="font-bold text-primary">4.2</span>
+                  <div>
+                    <dt className="text-text-muted">及格率</dt>
+                    <dd className="font-bold text-on-surface">{course.passRate != null ? `${course.passRate}%` : '—'}</dd>
                   </div>
-                </div>
+                  <div>
+                    <dt className="text-text-muted">給分</dt>
+                    <dd className="font-bold text-on-surface">{gradingStyle(course)}</dd>
+                  </div>
+                </dl>
               </div>
 
               <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle space-y-3">
-                {(course.syllabus?.reviews || [
-                  { id: '1', author: '護理系大三 陳學姊', semester: '112-2', rating: 5, content: '老師上課超生動！用臨床案例把心電圖和氣道抽痰技巧講得非常透徹，技術考前務必在模擬病房多借假人練習。' },
-                  { id: '2', author: '護理系大四 林學長', semester: '111-2', rating: 4, content: '大推！每週雖然有案例研討，但大三去醫院臨床實習時真的發現非常有幫助。' }
-                ]).map(rev => (
-                  <div key={rev.id} className="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-on-surface">{rev.author}</span>
-                      <span className="text-amber-500 text-xs">★★★★★</span>
+                {course.syllabus?.reviews?.length ? (
+                  course.syllabus.reviews.map(rev => (
+                    <div key={rev.id} className="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-on-surface">{rev.author}</span>
+                        <span className="text-amber-500 text-xs">{starText(rev.rating)}</span>
+                      </div>
+                      <span className="text-[10px] text-text-muted">{rev.semester} 修習</span>
+                      <p className="text-xs text-text-secondary mt-1 leading-relaxed">{rev.content}</p>
                     </div>
-                    <span className="text-[10px] text-text-muted">{rev.semester} 修習</span>
-                    <p className="text-xs text-text-secondary mt-1 leading-relaxed">{rev.content}</p>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="py-4 text-center text-text-muted">這門課還沒有修課心得。</p>
+                )}
               </div>
             </div>
           )}
@@ -635,10 +627,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 </span>
                 <div>
                   <h4 className="font-bold text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
-                    <span>SDGs 目標（聯合國 17 項永續發展目標）</span>
-                    <span className="px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      北護校務規範
-                    </span>
+                    <span>SDGs 目標</span>
                   </h4>
                   <p className="text-[11px] text-text-muted mt-0.5">
                     本校培育具備永續發展關懷之專業人才，本課程已通過校級永續指標對應檢核
@@ -703,13 +692,13 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className="flex items-center gap-1.5 text-rose-600 font-bold min-w-0">
                 <span className="material-symbols-outlined text-[16px] animate-pulse shrink-0">warning</span>
                 <span className="truncate">
-                  ⚠️ 衝堂即時預檢：與《{conflictCourses.map(c => c.name).join('、')}》時段衝突（週{['一','二','三','四','五'][course.day! - 1]} 第{course.periods?.join(',')}節）
+                  與《{conflictCourses.map(c => c.name).join('、')}》時段衝突（週{['一','二','三','四','五'][course.day! - 1]} 第{course.periods?.join(',')}節）
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 text-secondary font-bold">
                 <span className="material-symbols-outlined text-[16px]">verified</span>
-                <span>衝堂即時預檢：與您目前課表及預排完全無衝堂</span>
+                <span>與目前課表、預選清單不衝堂</span>
               </div>
             )}
             <span className={`text-[11px] font-bold shrink-0 ${hasConflict ? 'text-rose-600' : 'text-text-muted'}`}>

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Course, CourseCategory } from '../types';
+import { SEMESTER_LABEL } from '../data/semester';
 
 interface AdminCourseManagementProps {
   courses: Course[];
@@ -230,13 +231,13 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
               <span>課務管理工作台</span>
             </span>
             <span className="text-text-muted text-xs">•</span>
-            <span className="text-xs text-text-muted">113 學年度 第 2 學期</span>
+            <span className="text-xs text-text-muted">{SEMESTER_LABEL}</span>
           </div>
           <h2 className="text-2xl font-bold text-primary tracking-tight mt-1">
             課程維護與開課管理 (Course Management)
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            提供課務組與開課單位即時新增、修改、刪除、查詢及容量額度調配
+            新增、修改、刪除開課資料，調整名額
           </p>
         </div>
 

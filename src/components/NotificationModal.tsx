@@ -17,7 +17,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     {
       id: 1,
       type: 'warning',
-      title: '【教務即時推播】教室與排課異動速報',
+      title: '上課教室異動',
       desc: '下週二 (03/25)《醫療資訊系統與FHIR標準》期中成果展示，原 I502 網路實驗室移至「資科大樓 2 樓國際演講廳」，請提早 5 分鐘抵達。',
       time: '10 分鐘前',
       actionText: '查看週課表',
@@ -26,8 +26,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     {
       id: 2,
       type: 'info',
-      title: '【名額候補推播 (SSE 80ms)】',
-      desc: '您於《重症護理臨床情境模擬》之候補排序由 #3 推進至 #2，預估釋出退選名額機率高達 85%！',
+      title: '候補順位更新',
+      desc: '《重症護理臨床情境模擬》候補順位由第 3 位升至第 2 位。',
       time: '25 分鐘前',
       actionText: '進入模擬工作台',
       tabTarget: 'simulation-cart',
@@ -35,8 +35,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     {
       id: 3,
       type: 'alert',
-      title: '【畢業審查智慧預警】通識學分缺漏',
-      desc: '您尚缺博雅通識（社會科學領域 2 學分），推薦選修週五《醫學倫理與智慧科技法規》，本學期與現有排課完全零碰撞。',
+      title: '通識學分不足',
+      desc: '博雅通識社會科學領域尚缺 2 學分，週五《醫學倫理與智慧科技法規》與目前課表不衝堂。',
       time: '2 小時前',
       actionText: '查看學分審查',
       tabTarget: 'graduation-audit',
@@ -49,7 +49,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
           <div className="flex items-center gap-2 text-primary font-bold">
             <span className="material-symbols-outlined text-[20px]">notifications_active</span>
-            <span>校務與選課即時推播中心</span>
+            <span>通知</span>
           </div>
           <button
             onClick={onClose}

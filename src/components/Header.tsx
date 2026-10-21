@@ -17,7 +17,6 @@ interface HeaderProps {
   onOpenUserProfile: () => void;
   onQuickSwitchRole: () => void;
   onLogout: () => void;
-  onOpenSecurityAudit?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -34,7 +33,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenUserProfile,
   onQuickSwitchRole,
   onLogout,
-  onOpenSecurityAudit,
 }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
@@ -139,46 +137,10 @@ export const Header: React.FC<HeaderProps> = ({
                       ? 'bg-primary-container text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
                   }`}
-                  title="課程查詢與智能篩選"
+                  title="查詢課程、預選與即時課表"
                 >
                   <span className="material-symbols-outlined text-[18px]">explore</span>
-                  <span>課程查詢</span>
-                </button>
-                <button
-                  onClick={() => onSelectTab('simulation-cart')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                    currentTab === 'simulation-cart'
-                      ? 'bg-primary-container text-white shadow-sm'
-                      : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
-                  }`}
-                  title="預選課工作台與志願模擬"
-                >
-                  <span className="material-symbols-outlined text-[18px]">tune</span>
-                  <span>選課模擬</span>
-                </button>
-                <button
-                  onClick={() => onSelectTab('my-schedule')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                    currentTab === 'my-schedule'
-                      ? 'bg-primary-container text-white shadow-sm'
-                      : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
-                  }`}
-                  title="個人週課表與排程檢視"
-                >
-                  <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-                  <span>我的課表</span>
-                </button>
-                <button
-                  onClick={() => onSelectTab('conflict-resolver')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                    currentTab === 'conflict-resolver'
-                      ? 'bg-primary-container text-white shadow-sm'
-                      : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
-                  }`}
-                  title="衝突與先修診斷分析"
-                >
-                  <span className="material-symbols-outlined text-[18px]">warning</span>
-                  <span>衝堂診斷</span>
+                  <span>選課</span>
                 </button>
                 <button
                   onClick={() => onSelectTab('graduation-audit')}
@@ -228,16 +190,6 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* Security Audit Badge Button */}
-            <button
-              onClick={onOpenSecurityAudit}
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1 border border-emerald-200 transition-colors shrink-0 shadow-xs cursor-pointer"
-              title="查看專題資安合規與弱點檢測證明 (0 Medium/High 弱點)"
-            >
-              <span className="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
-              <span className="hidden sm:inline">資安合格: 0弱點</span>
-            </button>
-
             {/* Device Switch Button (Desktop/Mobile) */}
             <button
               onClick={onToggleDeviceMode}
@@ -254,11 +206,14 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenNotifications}
               className="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"
-              aria-label="即時課務通知"
+              aria-label={unreadCount > 0 ? `通知，${unreadCount} 則未讀` : '通知'}
+              title="通知中心"
             >
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-conflict-danger ring-2 ring-white"></span>
+                <span className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-conflict-danger text-white text-[10px] font-bold leading-4 text-center ring-2 ring-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </button>
 
@@ -316,16 +271,6 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className="material-symbols-outlined text-[18px] text-secondary">switch_account</span>
                       <span>切換身分 / 更換帳號</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onOpenSecurityAudit?.();
-                      }}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[18px] text-emerald-600">verified_user</span>
-                      <span>資安合規與弱點報告 (0弱點)</span>
-                    </button>
                     <div className="border-t border-border-subtle my-1"></div>
                     <button
                       onClick={() => {
@@ -335,7 +280,7 @@ export const Header: React.FC<HeaderProps> = ({
                       className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
                     >
                       <span className="material-symbols-outlined text-[18px]">logout</span>
-                      <span>登出系統 (安全登出)</span>
+                      <span>登出</span>
                     </button>
                   </div>
                 )}
@@ -374,9 +319,9 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-base text-primary truncate">北護課程通</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  isAdmin 
-                    ? 'bg-amber-100 text-amber-900' 
+                <span className={`shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  isAdmin
+                    ? 'bg-amber-100 text-amber-900'
                     : currentUser 
                       ? 'bg-primary-fixed text-on-primary-fixed'
                       : 'bg-surface-container-high text-text-muted'
@@ -392,11 +337,8 @@ export const Header: React.FC<HeaderProps> = ({
                   {currentTab === 'admin-import' && '匯入課查'}
                   {currentTab === 'admin-users' && '帳號管理'}
                   {currentTab === 'admin-analytics' && '選課監控'}
-                  {currentTab === 'search-courses' && '課程查詢'}
-                  {currentTab === 'my-schedule' && '個人課表'}
-                  {currentTab === 'simulation-cart' && '選課模擬'}
+                  {currentTab === 'search-courses' && '選課'}
                   {currentTab === 'graduation-audit' && '畢業審查'}
-                  {currentTab === 'conflict-resolver' && '衝突診斷'}
                   {currentTab === 'user-profile' && '個人帳號中心'}
                 </span>
               </div>
@@ -404,49 +346,46 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0">
             {/* Quick Switch Button (when logged in) */}
             {currentUser && (
               <button
                 onClick={onQuickSwitchRole}
-                className={`p-1.5 rounded-lg border text-xs font-bold active:scale-95 transition-all ${
+                className={`w-10 py-1 rounded-lg border flex flex-col items-center gap-0.5 active:scale-95 transition-all ${
                   isAdmin ? 'border-amber-400 bg-amber-50 text-amber-900' : 'border-emerald-400 bg-emerald-50 text-emerald-900'
                 }`}
-                title="切換身分"
+                title={isAdmin ? '切換為學生身分' : '切換為管理者身分'}
               >
-                <span className="material-symbols-outlined text-[17px]">
+                <span className="material-symbols-outlined text-[17px] leading-none">
                   {isAdmin ? 'school' : 'admin_panel_settings'}
                 </span>
+                <span className="text-[9px] font-bold leading-none">{isAdmin ? '學生端' : '管理端'}</span>
               </button>
             )}
 
-            {/* Mobile Security Audit Button */}
-            <button
-              onClick={onOpenSecurityAudit}
-              className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors text-xs active:scale-95 cursor-pointer"
-              title="資安檢測合規證明 (0 弱點)"
-            >
-              <span className="material-symbols-outlined text-[18px]">verified_user</span>
-            </button>
-
             <button
               onClick={onToggleDeviceMode}
-              className="p-1.5 rounded-lg hover:bg-surface-container text-primary transition-colors text-xs active:scale-95"
-              title="切換視圖"
+              className="w-10 py-1 rounded-lg hover:bg-surface-container text-primary transition-colors flex flex-col items-center gap-0.5 active:scale-95"
+              title={deviceMode === 'desktop' ? '切換為手機版面' : '切換為桌面版面'}
             >
-              <span className="material-symbols-outlined text-[18px]">
+              <span className="material-symbols-outlined text-[18px] leading-none">
                 {deviceMode === 'desktop' ? 'devices' : 'desktop_mac'}
               </span>
+              <span className="text-[9px] font-bold leading-none">{deviceMode === 'desktop' ? '手機版' : '桌面版'}</span>
             </button>
 
             <button
               onClick={onOpenNotifications}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all relative"
-              aria-label="通知中心"
+              className="w-9 py-1 flex flex-col items-center gap-0.5 rounded-lg text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all relative"
+              aria-label={unreadCount > 0 ? `通知中心，${unreadCount} 則未讀` : '通知中心'}
+              title="通知中心"
             >
-              <span className="material-symbols-outlined text-[19px]">notifications</span>
+              <span className="material-symbols-outlined text-[19px] leading-none">notifications</span>
+              <span className="text-[9px] font-bold leading-none">通知</span>
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-conflict-danger ring-2 ring-white"></span>
+                <span className="absolute -top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-conflict-danger text-white text-[10px] font-bold leading-4 text-center ring-2 ring-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </button>
 
@@ -571,7 +510,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="w-full p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">logout</span>
-              <span>登出此帳號 (安全登出)</span>
+              <span>登出</span>
             </button>
           </div>
         )}
