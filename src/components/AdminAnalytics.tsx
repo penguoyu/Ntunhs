@@ -1,5 +1,6 @@
 import React from 'react';
 import { Course } from '../types';
+import { SEMESTER_CODE } from '../data/semester';
 
 interface AdminAnalyticsProps {
   courses: Course[];
@@ -45,7 +46,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
             <span>校務選課大數據</span>
           </span>
           <span className="text-text-muted text-xs">•</span>
-          <span className="text-xs text-text-muted">即時模擬選課監控儀表板</span>
+          <span className="text-xs text-text-muted">選課狀況總覽</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-primary tracking-tight mt-1">
           選課需求與容量監控分析 (Analytics & Capacity Optimization)
@@ -103,7 +104,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
               <span className="material-symbols-outlined text-[18px]">account_balance</span>
               <span>各學院開課規模與填補率</span>
             </h3>
-            <span className="text-xs text-text-muted">113-2 學期</span>
+            <span className="text-xs text-text-muted">{SEMESTER_CODE} 學期</span>
           </div>
 
           <div className="space-y-4">

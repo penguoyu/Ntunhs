@@ -6,7 +6,7 @@ export const INITIAL_USERS: UserAccount[] = [
     id: 'usr_stu_1',
     username: '11124026',
     name: '張哲宇',
-    email: 'yee45987@gmail.com',
+    email: 'chang.zy@ntunhs.edu.tw',
     role: 'student',
     department: '資訊管理系 四技三年級甲班',
     studentId: '11124026',
@@ -84,5 +84,18 @@ export const INITIAL_USERS: UserAccount[] = [
     createdAt: '2024-09-01',
   }
 ];
+
+/**
+ * 示範帳號共用密碼「ntunhs2026」的 SHA-256 雜湊。
+ * 注意：這是純前端專題，驗證只在瀏覽器執行，正式上線必須改由後端驗證。
+ */
+export const DEMO_PASSWORD_HASH = '939670e04b184238896618402417ac7af495c05e2700f35b3e10199a93a69376';
+
+export const sha256Hex = async (text: string): Promise<string> => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+};
 
 export const DEFAULT_STUDENT_USER = INITIAL_USERS[0];

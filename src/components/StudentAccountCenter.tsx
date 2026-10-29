@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserAccount, StudentProfile, Course } from '../types';
+import { SEMESTER_CODE } from '../data/semester';
 
 interface StudentAccountCenterProps {
   currentUser: UserAccount | null;
@@ -177,7 +178,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
               className="px-4 py-2 rounded-xl bg-rose-500/80 hover:bg-rose-600 backdrop-blur-sm text-white font-bold text-xs flex items-center gap-1.5 transition-colors border border-white/20 shadow-xs"
             >
               <span className="material-symbols-outlined text-[16px]">logout</span>
-              <span>安全登出</span>
+              <span>登出</span>
             </button>
             <button
               onClick={onSwitchToAdmin}
@@ -372,7 +373,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
             <div>
               <h3 className="font-bold text-base text-primary mb-1">學籍狀態與選課權益審查</h3>
               <p className="text-xs text-text-muted">
-                教務處 113-2 最新核定修業指標、優先選課權重與微學程認證狀態
+                {SEMESTER_CODE} 修業狀況、選課優先順序與微學程進度
               </p>
             </div>
 
@@ -479,7 +480,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-on-surface flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px] text-secondary">event_available</span>
-                  <span>113-2 正式排定週課表 ({scheduleCourses.length} 門，共 {totalScheduleCredits} 學分)</span>
+                  <span>{SEMESTER_CODE} 週課表 ({scheduleCourses.length} 門，共 {totalScheduleCredits} 學分)</span>
                 </span>
                 <button
                   onClick={() => onNavigateTab('my-schedule')}

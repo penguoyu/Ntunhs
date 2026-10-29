@@ -1,5 +1,6 @@
 import React from 'react';
 import { StudentProfile } from '../types';
+import { SEMESTER_CODE } from '../data/semester';
 
 interface GraduationAuditProps {
   student: StudentProfile;
@@ -48,7 +49,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
           </div>
 
           <button
-            onClick={() => showToast('已同步教務處最新成績資料庫 (113-2)')}
+            onClick={() => showToast(`已重新整理成績資料（${SEMESTER_CODE}）`)}
             className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all shrink-0"
             aria-label="更新學分資料"
           >
@@ -60,7 +61,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
         <div className="mt-4 pt-3 grid grid-cols-3 gap-2 text-center relative z-10 bg-primary/40 rounded-xl p-3 backdrop-blur-sm border border-white/10">
           <div className="flex flex-col">
             <span className="text-[11px] text-on-primary-container">當前學期</span>
-            <span className="font-bold text-sm sm:text-base text-white mt-0.5">113-2</span>
+            <span className="font-bold text-sm sm:text-base text-white mt-0.5">{SEMESTER_CODE}</span>
           </div>
           <div className="flex flex-col border-x border-white/15">
             <span className="text-[11px] text-on-primary-container">累積 GPA</span>
@@ -160,7 +161,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
         <div className="bg-surface-container-low rounded-xl p-3 flex items-center justify-between text-xs border border-border-subtle">
           <div className="flex items-center gap-2 text-text-secondary">
             <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
-            <span>若本學期全數通過，達成率將達</span>
+            <span>本學期全數通過後</span>
           </div>
           <span className="text-secondary font-bold text-sm">81.3% (104 / 128)</span>
         </div>
@@ -171,7 +172,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
           <div className="flex items-center gap-1.5 text-primary font-bold text-base">
             <span className="material-symbols-outlined text-[20px]">bar_chart</span>
-            <span>四大核心領域指標</span>
+            <span>各類別學分</span>
           </div>
           <span className="text-xs text-text-muted">點擊各項檢視科目</span>
         </div>
@@ -186,7 +187,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-full">
-                  已全數達成
+                  已修畢
                 </span>
                 <span className="font-bold text-sm text-on-surface">18 / 18</span>
               </div>
@@ -195,7 +196,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               <div className="h-full bg-secondary rounded-full" style={{ width: '100%' }}></div>
             </div>
             <span className="text-text-muted">
-              已抵免國文(4)、大一英文(4)、體育與軍訓全數合規。
+              國文(4)、大一英文(4)、體育與軍訓皆已修畢。
             </span>
           </div>
 
@@ -282,11 +283,11 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-emerald-600 text-[18px]">eco</span>
-                <span className="font-bold text-sm text-on-surface">校級 SDGs 永續發展目標指標門檻</span>
+                <span className="font-bold text-sm text-on-surface">SDGs 永續課程門檻</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                  已達標 (超越門檻)
+                  已達標
                 </span>
                 <span className="font-bold text-sm text-emerald-800">8 / 4 項</span>
               </div>
@@ -295,7 +296,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               <div className="h-full bg-emerald-600 rounded-full" style={{ width: '100%' }}></div>
             </div>
             <span className="text-text-muted text-xs">
-              已修畢課程涵蓋 SDG 3 健康福祉、SDG 4 優質教育、SDG 9 產業創新、SDG 17 永續夥伴等 8 項永續目標，超越北護畢業基本門檻 (4 項)。
+              已修課程涵蓋 SDG 3、4、9、17 等 8 項目標（畢業需 4 項）。
             </span>
           </div>
         </div>
@@ -306,11 +307,8 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
           <div className="flex items-center gap-1.5 text-conflict-danger font-bold text-base">
             <span className="material-symbols-outlined text-[20px]">account_tree</span>
-            <span>關鍵擋修與先修鏈預警</span>
+            <span>先修條件</span>
           </div>
-          <span className="text-xs text-primary font-bold bg-primary-fixed px-2.5 py-0.5 rounded-full">
-            先修防護網
-          </span>
         </div>
 
         <div className="space-y-3 text-xs">
@@ -324,7 +322,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               </div>
               <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold text-[11px] flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">lock_open</span>
-                已解鎖可修
+                可修
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-text-secondary pl-4">
@@ -364,7 +362,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
           className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-primary-container active:scale-[0.98] transition-all"
         >
           <span className="material-symbols-outlined text-[20px]">filter_alt</span>
-          <span>從尚缺領域中，一鍵篩選本學期可修課程</span>
+          <span>查看可補足缺額的課程</span>
         </button>
 
         <button

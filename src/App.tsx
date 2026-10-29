@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ActiveTab, Course, UserAccount, StudentProfile } from './types';
 import { COURSES_DATA, CURRENT_STUDENT, INITIAL_SCHEDULE_COURSE_IDS } from './data/courses';
 import { INITIAL_USERS, DEFAULT_STUDENT_USER } from './data/users';
+import { SEMESTER_LABEL } from './data/semester';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
-import { CourseSearch } from './components/CourseSearch';
-import { WeeklySchedule } from './components/WeeklySchedule';
-import { SimulationWorkstation } from './components/SimulationWorkstation';
-import { ConflictResolver } from './components/ConflictResolver';
+import { CourseSelection } from './components/CourseSelection';
 import { GraduationAudit } from './components/GraduationAudit';
 import { CourseDetailModal } from './components/CourseDetailModal';
 import { NotificationModal } from './components/NotificationModal';
@@ -18,11 +16,43 @@ import { AdminCourseManagement } from './components/AdminCourseManagement';
 import { AdminCourseImport } from './components/AdminCourseImport';
 import { AdminUserManagement } from './components/AdminUserManagement';
 import { AdminAnalytics } from './components/AdminAnalytics';
-import { SecurityAuditModal } from './components/SecurityAuditModal';
+import { AllocationResultModal } from './components/AllocationResultModal';
+import { AllocationResult, allocate, findConflicts } from './lib/schedule';
+
+/**
+ * 資料版本：修改 src/data 內的預設資料後請一併更新，
+ * 瀏覽器中舊的 localStorage 快取就會被清掉，改用新的預設資料。
+ */
+const DATA_VERSION = '2026-10-20';
+const DATA_KEYS = [
+  'ntunhs_courses_catalog',
+  'ntunhs_cart',
+  'ntunhs_tier1',
+  'ntunhs_tier2',
+  'ntunhs_schedule',
+  'ntunhs_student_profile',
+  'ntunhs_users',
+  'ntunhs_current_user',
+];
+try {
+  if (localStorage.getItem('ntunhs_data_version') !== DATA_VERSION) {
+    DATA_KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('ntunhs_data_version', DATA_VERSION);
+  }
+} catch {
+  /* localStorage 不可用時直接使用預設資料 */
+}
+
+/** 示範用預選清單：含一門衝堂、一門未符先修，方便展示提醒 */
+const DEFAULT_CART = ['IM3208', 'HA_COMM', 'IM3301'];
+
+/** 舊分頁已合併到「選課」頁 */
+const MERGED_TABS: ActiveTab[] = ['my-schedule', 'simulation-cart', 'conflict-resolver'];
+const normalizeTab = (tab: ActiveTab): ActiveTab => (MERGED_TABS.includes(tab) ? 'search-courses' : tab);
 
 export default function App() {
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
-  const [semester] = useState('113學年 第2學期');
+  const semester = SEMESTER_LABEL;
 
   // Users & Auth state - default is strictly Student view (張哲宇, 11124026)
   const [users, setUsers] = useState<UserAccount[]>(() => {
@@ -75,27 +105,9 @@ export default function App() {
   const [cart, setCart] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('ntunhs_cart');
-      return saved ? JSON.parse(saved) : ['IM3012', 'NUR3402', 'IM3105', 'CS301'];
+      return saved ? JSON.parse(saved) : DEFAULT_CART;
     } catch {
-      return ['IM3012', 'NUR3402', 'IM3105', 'CS301'];
-    }
-  });
-
-  const [tier1Ids, setTier1Ids] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('ntunhs_tier1');
-      return saved ? JSON.parse(saved) : ['CS301', 'IM3012', 'NUR3402', 'IM3105'];
-    } catch {
-      return ['CS301', 'IM3012', 'NUR3402', 'IM3105'];
-    }
-  });
-
-  const [tier2Ids, setTier2Ids] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('ntunhs_tier2');
-      return saved ? JSON.parse(saved) : ['NUR_CRIT', 'IM3208'];
-    } catch {
-      return ['NUR_CRIT', 'IM3208'];
+      return DEFAULT_CART;
     }
   });
 
@@ -122,8 +134,8 @@ export default function App() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
-  const [isSecurityAuditOpen, setIsSecurityAuditOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [allocationResults, setAllocationResults] = useState<AllocationResult[] | null>(null);
 
   // Persistence to local storage
   useEffect(() => {
@@ -151,14 +163,6 @@ export default function App() {
   }, [cart]);
 
   useEffect(() => {
-    localStorage.setItem('ntunhs_tier1', JSON.stringify(tier1Ids));
-  }, [tier1Ids]);
-
-  useEffect(() => {
-    localStorage.setItem('ntunhs_tier2', JSON.stringify(tier2Ids));
-  }, [tier2Ids]);
-
-  useEffect(() => {
     localStorage.setItem('ntunhs_schedule', JSON.stringify(scheduleIds));
   }, [scheduleIds]);
 
@@ -166,11 +170,16 @@ export default function App() {
     localStorage.setItem('ntunhs_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
+  const toastTimer = useRef<number | undefined>(undefined);
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3200);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToastMessage(null), 3200);
+  };
+
+  const goToTab = (tab: ActiveTab) => {
+    setCurrentTab(normalizeTab(tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Auth & Role handling
@@ -204,12 +213,16 @@ export default function App() {
 
   const handleQuickSwitchRole = () => {
     if (!currentUser || currentUser.role === 'admin') {
-      const studentUser = users.find(u => u.role === 'student' && u.status === 'active') || INITIAL_USERS[2];
+      const studentUser =
+        users.find(u => u.role === 'student' && u.status === 'active') ||
+        INITIAL_USERS.find(u => u.role === 'student')!;
       setCurrentUser(studentUser);
       setCurrentTab('search-courses');
       showToast(`已切換為學生身分：${studentUser.name} (${studentUser.department})`);
     } else {
-      const adminUser = users.find(u => u.role === 'admin' && u.status === 'active') || INITIAL_USERS[0];
+      const adminUser =
+        users.find(u => u.role === 'admin' && u.status === 'active') ||
+        INITIAL_USERS.find(u => u.role === 'admin')!;
       setCurrentUser(adminUser);
       setCurrentTab('admin-courses');
       showToast(`已切換為課程管理者身分：${adminUser.name} (${adminUser.department})`);
@@ -228,8 +241,6 @@ export default function App() {
   const handleDeleteCourse = (courseId: string) => {
     setCourses(prev => prev.filter(c => c.id !== courseId));
     setCart(prev => prev.filter(id => id !== courseId));
-    setTier1Ids(prev => prev.filter(id => id !== courseId));
-    setTier2Ids(prev => prev.filter(id => id !== courseId));
     setScheduleIds(prev => prev.filter(id => id !== courseId));
   };
 
@@ -266,76 +277,61 @@ export default function App() {
     setUsers(prev => prev.filter(u => u.id !== userId));
   };
 
-  // Student Cart & Schedule Actions
+  // Student Cart & Schedule Actions（購物車陣列順序 = 志願序）
   const handleToggleCart = (courseId: string) => {
     if (cart.includes(courseId)) {
       setCart(cart.filter(id => id !== courseId));
-      setTier1Ids(tier1Ids.filter(id => id !== courseId));
-      setTier2Ids(tier2Ids.filter(id => id !== courseId));
-      showToast('已自模擬工作台移出');
+      showToast('已移出預選清單');
+      return;
+    }
+    const target = courses.find(c => c.id === courseId);
+    setCart([...cart, courseId]);
+    if (!target) return;
+    const planned = courses.filter(c => scheduleIds.includes(c.id) || cart.includes(c.id));
+    const clashes = findConflicts(target, planned);
+    if (clashes.length > 0) {
+      showToast(`已加入預選，但與 ${clashes.map(c => `《${c.name}》`).join('、')} 衝堂`);
     } else {
-      const target = courses.find(c => c.id === courseId);
-      setCart([...cart, courseId]);
-      setTier1Ids([...tier1Ids, courseId]);
-
-      if (target && target.day && target.periods && target.periods.length > 0) {
-        const activeSimCourses = courses.filter(c => tier1Ids.includes(c.id) || cart.includes(c.id));
-        const conflicting = activeSimCourses.filter(c =>
-          c.id !== target.id && c.day === target.day && c.periods?.some(p => target.periods?.includes(p))
-        );
-        if (conflicting.length > 0) {
-          const names = conflicting.map(c => `《${c.name}》`).join('、');
-          const dayZh = ['一', '二', '三', '四', '五'][target.day - 1] || `${target.day}`;
-          showToast(`⚠️【模擬衝堂提醒】已加入工作台！注意：《${target.name}》與預排中的 ${names}（週${dayZh} 第${target.periods.join(',')}節）衝堂！`);
-          return;
-        }
-      }
-      showToast('已加入選課模擬工作台！時段無碰撞');
+      showToast(`已加入預選：《${target.name}》`);
     }
   };
 
   const handleToggleFavorite = (courseId: string) => {
     if (favorites.includes(courseId)) {
       setFavorites(favorites.filter(id => id !== courseId));
-      showToast('已從我的收藏移除');
+      showToast('已從收藏移除');
     } else {
       setFavorites([...favorites, courseId]);
-      showToast('已加入我的最愛收藏！');
+      showToast('已加入收藏');
     }
   };
 
-  const handleApplyToSchedule = () => {
-    const merged = Array.from(new Set([...scheduleIds, ...tier1Ids]));
-    const mergedCourses = courses.filter(c => merged.includes(c.id));
-    const hasConflict = mergedCourses.some((c1, i) =>
-      mergedCourses.some((c2, j) => i !== j && c1.day === c2.day && c1.periods?.some(p => c2.periods?.includes(p)))
-    );
-
-    setScheduleIds(merged);
-    if (hasConflict) {
-      showToast('⚠️ 已套用模擬志願至個人週課表！課表中含有衝堂課程，已標註紅色衝堂警示，請及時排解。');
-    } else {
-      showToast('已成功套用模擬志願至個人週課表！時段完全無衝堂。');
-    }
-    setCurrentTab('my-schedule');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleDropCourse = (courseId: string) => {
+    const target = courses.find(c => c.id === courseId);
+    setScheduleIds(scheduleIds.filter(id => id !== courseId));
+    showToast(`已退選《${target?.name ?? courseId}》`);
   };
 
-  const handleResolveConflict = (solutionId: number) => {
-    if (solutionId === 1) {
-      showToast('已切換為《社區高齡照護科技》B班（週二時段）！零衝堂達成。');
-    } else {
-      if (!scheduleIds.includes('LTC_CASE')) {
-        setScheduleIds([...scheduleIds.filter(id => id !== 'HA_COMM'), 'LTC_CASE']);
-      }
-      showToast('已切換為《長期照護評估與個案管理》！');
-    }
+  /** 模擬送出登記：依志願序電腦分發，未分發的課保留在預選清單 */
+  const handleSubmitCart = () => {
+    const byId = new Map(courses.map(c => [c.id, c]));
+    const schedule = scheduleIds.map(id => byId.get(id)).filter((c): c is Course => !!c);
+    const registering = cart
+      .filter(id => !scheduleIds.includes(id))
+      .map(id => byId.get(id))
+      .filter((c): c is Course => !!c);
+    const { results, accepted } = allocate(registering, schedule, studentProfile);
+    const newIds = new Set(results.filter(r => r.outcome === 'accepted').map(r => r.course.id));
+
+    setScheduleIds(accepted.map(c => c.id));
+    setCart(cart.filter(id => !newIds.has(id)));
+    setCourses(prev => prev.map(c => (newIds.has(c.id) ? { ...c, enrolled: c.enrolled + 1 } : c)));
+    setAllocationResults(results);
   };
 
   // Derived objects for student timetable
   const scheduleCourses = courses.filter(c => scheduleIds.includes(c.id));
   const cartCourses = courses.filter(c => cart.includes(c.id));
-  const totalCartCredits = cartCourses.reduce((sum, c) => sum + c.credits, 0);
 
   return (
     <div
@@ -353,10 +349,7 @@ export default function App() {
         {/* Main Header */}
         <Header
           currentTab={currentTab}
-          onSelectTab={tab => {
-            setCurrentTab(tab);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onSelectTab={goToTab}
           student={studentProfile}
           currentUser={currentUser}
           semester={semester}
@@ -371,7 +364,6 @@ export default function App() {
           onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
           onQuickSwitchRole={handleQuickSwitchRole}
           onLogout={handleLogout}
-          onOpenSecurityAudit={() => setIsSecurityAuditOpen(true)}
         />
 
         {/* Content View Container */}
@@ -430,73 +422,20 @@ export default function App() {
           {/* ========================================= */}
 
           {currentTab === 'search-courses' && (
-            <CourseSearch
+            <CourseSelection
               courses={courses}
+              student={studentProfile}
+              semester={semester}
+              scheduleIds={scheduleIds}
               cart={cart}
               favorites={favorites}
-              scheduleCourses={scheduleCourses}
+              compact={deviceMode === 'mobile'}
               onToggleCart={handleToggleCart}
+              onReorderCart={setCart}
               onToggleFavorite={handleToggleFavorite}
+              onDropCourse={handleDropCourse}
+              onSubmitCart={handleSubmitCart}
               onViewCourseDetail={course => setInspectingCourse(course)}
-              onGoToSimulation={() => {
-                setCurrentTab('simulation-cart');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              student={studentProfile}
-              totalCredits={totalCartCredits}
-            />
-          )}
-
-          {currentTab === 'my-schedule' && (
-            <WeeklySchedule
-              scheduleCourses={scheduleCourses}
-              onViewCourseDetail={course => setInspectingCourse(course)}
-              onOpenConflictResolver={() => {
-                setCurrentTab('conflict-resolver');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              showToast={showToast}
-            />
-          )}
-
-          {currentTab === 'simulation-cart' && (
-            <SimulationWorkstation
-              courses={courses}
-              cart={cart}
-              tier1Ids={tier1Ids}
-              tier2Ids={tier2Ids}
-              scheduleIds={scheduleIds}
-              onSetTier1Ids={setTier1Ids}
-              onSetTier2Ids={setTier2Ids}
-              onRemoveFromCart={id => {
-                setCart(cart.filter(x => x !== id));
-                setTier1Ids(tier1Ids.filter(x => x !== id));
-                setTier2Ids(tier2Ids.filter(x => x !== id));
-                showToast('已自模擬工作台移出');
-              }}
-              onAddToCart={id => {
-                if (!cart.includes(id)) {
-                  setCart([...cart, id]);
-                }
-                if (!tier1Ids.includes(id)) {
-                  setTier1Ids([...tier1Ids, id]);
-                }
-              }}
-              onApplyToSchedule={handleApplyToSchedule}
-              onViewCourseDetail={course => setInspectingCourse(course)}
-              showToast={showToast}
-            />
-          )}
-
-          {currentTab === 'conflict-resolver' && (
-            <ConflictResolver
-              onResolveConflict={handleResolveConflict}
-              onBack={() => {
-                setCurrentTab('my-schedule');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              onViewCourseDetail={course => setInspectingCourse(course)}
-              showToast={showToast}
             />
           )}
 
@@ -521,12 +460,9 @@ export default function App() {
               onUpdateUser={handleUpdateUser}
               onUpdateStudent={setStudentProfile}
               onOpenLogin={() => setIsLoginModalOpen(true)}
-              onNavigateTab={tab => {
-                setCurrentTab(tab);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onNavigateTab={goToTab}
               onSwitchToAdmin={() => {
-                const adminUser = users.find(u => u.role === 'admin') || INITIAL_USERS[4];
+                const adminUser = users.find(u => u.role === 'admin') || INITIAL_USERS.find(u => u.role === 'admin')!;
                 setCurrentUser(adminUser);
                 setCurrentTab('admin-courses');
                 showToast(`已切換為教務處課務管理員身分：${adminUser.name}`);
@@ -589,12 +525,9 @@ export default function App() {
         {/* Mobile Fixed Bottom Navigation (Role-Adaptive) */}
         <BottomNav
           currentTab={currentTab}
-          onSelectTab={tab => {
-            setCurrentTab(tab);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onSelectTab={goToTab}
           cartCount={cart.length}
-          hasConflict={true}
+          hasConflict={false}
           userRole={currentUser?.role}
           deviceMode={deviceMode}
         />
@@ -618,10 +551,7 @@ export default function App() {
         <NotificationModal
           isOpen={isNotificationOpen}
           onClose={() => setIsNotificationOpen(false)}
-          onNavigateTab={tab => {
-            setCurrentTab(tab as ActiveTab);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigateTab={tab => goToTab(tab as ActiveTab)}
         />
 
         {/* Login Modal */}
@@ -650,11 +580,9 @@ export default function App() {
           />
         )}
 
-        {/* Security Compliance & Vulnerability Audit Certificate Modal */}
-        <SecurityAuditModal
-          isOpen={isSecurityAuditOpen}
-          onClose={() => setIsSecurityAuditOpen(false)}
-        />
+        {allocationResults && (
+          <AllocationResultModal results={allocationResults} onClose={() => setAllocationResults(null)} />
+        )}
 
         {/* Global Toast Notification */}
         {toastMessage && (
