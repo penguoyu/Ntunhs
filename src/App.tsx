@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ActiveTab, Course, UserAccount, StudentProfile } from './types';
-import { COURSES_DATA, CURRENT_STUDENT, INITIAL_SCHEDULE_COURSE_IDS } from './data/courses';
+import { COURSES_DATA } from './data/courses';
+import { StudentPlan, GUEST_PLAN_KEY, emptyPlan, defaultPlanFor } from './data/studentPlans';
 import { INITIAL_USERS, DEFAULT_STUDENT_USER } from './data/users';
 import { SEMESTER_LABEL } from './data/semester';
 import { Header } from './components/Header';
@@ -23,7 +24,7 @@ import { AllocationResult, allocate, findConflicts } from './lib/schedule';
  * 資料版本：修改 src/data 內的預設資料後請一併更新，
  * 瀏覽器中舊的 localStorage 快取就會被清掉，改用新的預設資料。
  */
-const DATA_VERSION = '2026-10-20';
+const DATA_VERSION = '2026-10-29';
 const DATA_KEYS = [
   'ntunhs_courses_catalog',
   'ntunhs_cart',
@@ -33,6 +34,8 @@ const DATA_KEYS = [
   'ntunhs_student_profile',
   'ntunhs_users',
   'ntunhs_current_user',
+  'ntunhs_favorites',
+  'ntunhs_user_plans',
 ];
 try {
   if (localStorage.getItem('ntunhs_data_version') !== DATA_VERSION) {
@@ -42,9 +45,6 @@ try {
 } catch {
   /* localStorage 不可用時直接使用預設資料 */
 }
-
-/** 示範用預選清單：含一門衝堂、一門未符先修，方便展示提醒 */
-const DEFAULT_CART = ['IM3208', 'HA_COMM', 'IM3301'];
 
 /** 舊分頁已合併到「選課」頁 */
 const MERGED_TABS: ActiveTab[] = ['my-schedule', 'simulation-cart', 'conflict-resolver'];
@@ -77,15 +77,6 @@ export default function App() {
     }
   });
 
-  const [studentProfile, setStudentProfile] = useState<StudentProfile>(() => {
-    try {
-      const saved = localStorage.getItem('ntunhs_student_profile');
-      return saved ? JSON.parse(saved) : CURRENT_STUDENT;
-    } catch {
-      return CURRENT_STUDENT;
-    }
-  });
-
   // Current tab - default is Student Course Search
   const [currentTab, setCurrentTab] = useState<ActiveTab>(() => {
     return currentUser?.role === 'admin' ? 'admin-courses' : 'search-courses';
@@ -101,33 +92,40 @@ export default function App() {
     }
   });
 
-  // Student Cart & Simulation State
-  const [cart, setCart] = useState<string[]>(() => {
+  // 每位學生各自的課表、預選清單、收藏與學籍資料（以帳號 id 區分；訪客為空白課表）
+  const [plans, setPlans] = useState<Record<string, StudentPlan>>(() => {
     try {
-      const saved = localStorage.getItem('ntunhs_cart');
-      return saved ? JSON.parse(saved) : DEFAULT_CART;
+      const saved = localStorage.getItem('ntunhs_user_plans');
+      const parsed = saved ? JSON.parse(saved) : {};
+      delete parsed[GUEST_PLAN_KEY];
+      return parsed;
     } catch {
-      return DEFAULT_CART;
+      return {};
     }
   });
 
-  const [scheduleIds, setScheduleIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('ntunhs_schedule');
-      return saved ? JSON.parse(saved) : INITIAL_SCHEDULE_COURSE_IDS;
-    } catch {
-      return INITIAL_SCHEDULE_COURSE_IDS;
-    }
-  });
+  const planKey = currentUser?.role === 'student' ? currentUser.id : GUEST_PLAN_KEY;
+  const fallbackPlan = () => (currentUser?.role === 'student' ? defaultPlanFor(currentUser) : emptyPlan());
+  const plan: StudentPlan = plans[planKey] ?? fallbackPlan();
 
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('ntunhs_favorites');
-      return saved ? JSON.parse(saved) : ['IM3012', 'NURS201'];
-    } catch {
-      return ['IM3012', 'NURS201'];
-    }
-  });
+  type Updater<T> = T | ((prev: T) => T);
+  const updatePlan = <K extends keyof StudentPlan>(field: K, value: Updater<StudentPlan[K]>) => {
+    setPlans(prev => {
+      const current = prev[planKey] ?? fallbackPlan();
+      const next =
+        typeof value === 'function' ? (value as (p: StudentPlan[K]) => StudentPlan[K])(current[field]) : value;
+      return { ...prev, [planKey]: { ...current, [field]: next } };
+    });
+  };
+
+  const studentProfile = plan.profile;
+  const cart = plan.cart;
+  const scheduleIds = plan.scheduleIds;
+  const favorites = plan.favorites;
+  const setStudentProfile = (v: Updater<StudentProfile>) => updatePlan('profile', v);
+  const setCart = (v: Updater<string[]>) => updatePlan('cart', v);
+  const setScheduleIds = (v: Updater<string[]>) => updatePlan('scheduleIds', v);
+  const setFavorites = (v: Updater<string[]>) => updatePlan('favorites', v);
 
   // Modal inspection states
   const [inspectingCourse, setInspectingCourse] = useState<Course | null>(null);
@@ -151,24 +149,13 @@ export default function App() {
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('ntunhs_student_profile', JSON.stringify(studentProfile));
-  }, [studentProfile]);
+    const { [GUEST_PLAN_KEY]: _guest, ...saved } = plans;
+    localStorage.setItem('ntunhs_user_plans', JSON.stringify(saved));
+  }, [plans]);
 
   useEffect(() => {
     localStorage.setItem('ntunhs_courses_catalog', JSON.stringify(courses));
   }, [courses]);
-
-  useEffect(() => {
-    localStorage.setItem('ntunhs_cart', JSON.stringify(cart));
-  }, [cart]);
-
-  useEffect(() => {
-    localStorage.setItem('ntunhs_schedule', JSON.stringify(scheduleIds));
-  }, [scheduleIds]);
-
-  useEffect(() => {
-    localStorage.setItem('ntunhs_favorites', JSON.stringify(favorites));
-  }, [favorites]);
 
   const toastTimer = useRef<number | undefined>(undefined);
   const showToast = (msg: string) => {
@@ -189,20 +176,16 @@ export default function App() {
       setCurrentTab('admin-courses');
     } else {
       setCurrentTab('search-courses');
-      if (user.studentId) {
-        setStudentProfile(prev => ({
-          ...prev,
-          name: user.name,
-          studentId: user.studentId || user.username,
-          department: user.department,
-          email: user.email,
-        }));
-      }
     }
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    // 訪客每次都從空白課表開始
+    setPlans(prev => {
+      const { [GUEST_PLAN_KEY]: _guest, ...rest } = prev;
+      return rest;
+    });
     setCurrentTab('search-courses');
     showToast('您已成功安全登出系統。目前為訪客瀏覽模式');
   };
@@ -240,8 +223,20 @@ export default function App() {
 
   const handleDeleteCourse = (courseId: string) => {
     setCourses(prev => prev.filter(c => c.id !== courseId));
-    setCart(prev => prev.filter(id => id !== courseId));
-    setScheduleIds(prev => prev.filter(id => id !== courseId));
+    // 從所有學生的課表、預選清單與收藏移除
+    setPlans(prev =>
+      Object.fromEntries(
+        Object.entries(prev).map(([key, p]) => [
+          key,
+          {
+            ...p,
+            cart: p.cart.filter(id => id !== courseId),
+            scheduleIds: p.scheduleIds.filter(id => id !== courseId),
+            favorites: p.favorites.filter(id => id !== courseId),
+          },
+        ])
+      )
+    );
   };
 
   // Batch Import Course Callback

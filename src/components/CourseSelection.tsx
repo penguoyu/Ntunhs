@@ -833,7 +833,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         <div>
           <h1 className="text-xl font-bold text-on-surface">選課</h1>
           <p className="text-xs text-text-muted mt-0.5">
-            {semester}・{student.name}（{student.department}）
+            {semester}・{student.name}{student.department && `（${student.department}）`}
           </p>
         </div>
         <div className="relative min-w-0">
