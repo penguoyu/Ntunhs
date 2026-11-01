@@ -48,7 +48,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     );
 
     if (!matched) {
-      showToast('查無此帳號！請確認學號、工號或 Email 是否正確');
+      showToast('查無此帳號。請確認學號、工號或 Email 是否正確');
       return;
     }
 
@@ -70,7 +70,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setPasswordInput('');
 
     onLogin(matched);
-    showToast(`歡迎回來，${matched.name} (${matched.role === 'admin' ? '課程管理員' : '學生'})！`);
+    showToast(`歡迎回來，${matched.name} (${matched.role === 'admin' ? '課程管理員' : '學生'})`);
     onClose();
   };
 
@@ -123,7 +123,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
     onRegister(newUser);
     onLogin(newUser);
-    showToast(`註冊成功！歡迎加入北護課程系統，${newUser.name}`);
+    showToast(`註冊成功。歡迎加入北護課程系統，${newUser.name}`);
     onClose();
   };
 
@@ -135,13 +135,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       >
         {/* Top Header */}
         <div className="p-6 pb-4 bg-primary text-white flex items-start justify-between relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex items-center gap-3 relative z-10">
             <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center text-white border border-white/20">
               <span className="material-symbols-outlined text-[28px]">lock_person</span>
             </div>
             <div>
-              <h3 className="font-bold text-lg text-white">北護單一入口認證登入</h3>
+              <h3 className="font-semibold text-lg text-white">北護單一入口認證登入</h3>
               <p className="text-xs text-primary-fixed-dim mt-0.5">
                 國立臺北護理健康大學 • 課程管理與選課系統
               </p>
@@ -159,7 +158,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <div className="flex border-b border-border-subtle bg-surface-container-low px-4 pt-2">
           <button
             onClick={() => setTab('quick')}
-            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            className={`flex-1 py-2.5 text-xs sm:text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
               tab === 'quick'
                 ? 'border-primary text-primary bg-surface-card rounded-t-xl shadow-xs'
                 : 'border-transparent text-text-muted hover:text-on-surface'
@@ -170,7 +169,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </button>
           <button
             onClick={() => setTab('password')}
-            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            className={`flex-1 py-2.5 text-xs sm:text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
               tab === 'password'
                 ? 'border-primary text-primary bg-surface-card rounded-t-xl shadow-xs'
                 : 'border-transparent text-text-muted hover:text-on-surface'
@@ -181,7 +180,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </button>
           <button
             onClick={() => setTab('register')}
-            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            className={`flex-1 py-2.5 text-xs sm:text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
               tab === 'register'
                 ? 'border-primary text-primary bg-surface-card rounded-t-xl shadow-xs'
                 : 'border-transparent text-text-muted hover:text-on-surface'
@@ -198,8 +197,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
               <span className="text-text-muted">目前登入：</span>
-              <span className="font-bold text-on-surface">{currentUser.name}</span>
-              <span className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${
+              <span className="font-semibold text-on-surface">{currentUser.name}</span>
+              <span className={`px-2 py-0.2 rounded-full text-[11px] font-semibold ${
                 currentUser.role === 'admin' ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
               }`}>
                 {currentUser.role === 'admin' ? '管理者' : '學生'}
@@ -212,7 +211,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   onClose();
                   onLogout();
                 }}
-                className="px-3 py-1 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold border border-rose-200 transition-colors flex items-center justify-center gap-1 shrink-0"
+                className="px-3 py-1 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-medium border border-rose-200 transition-colors flex items-center justify-center gap-1 shrink-0"
               >
                 <span className="material-symbols-outlined text-[15px]">logout</span>
                 <span>登出目前帳號</span>
@@ -226,13 +225,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           {tab === 'quick' && (
             <div className="space-y-4">
               <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 text-xs text-primary">
-                <span className="font-bold">💡 評估演示專用：</span>
-                點擊下方預設角色即可瞬間登入，立即體驗「課程管理者」全功能或「學生」選課模擬！
+                <span className="font-semibold">展示用：</span>
+                點擊下方預設角色即可瞬間登入，立即體驗「課程管理者」全功能或「學生」選課模擬
               </div>
 
               {/* Course Administrators section */}
               <div>
-                <div className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 flex items-center gap-1">
+                <div className="text-xs font-medium text-text-muted mb-2 flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px] text-tertiary">admin_panel_settings</span>
                   <span>課程管理者權限 (Admin)</span>
                 </div>
@@ -243,18 +242,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       <button
                         key={u.id}
                         onClick={() => handleQuickLogin(u)}
-                        className="w-full text-left p-3.5 rounded-2xl bg-surface-container-low hover:bg-surface-container border border-border-subtle hover:border-primary/40 transition-all flex items-center justify-between group active:scale-[0.99]"
+                        className="w-full text-left p-3.5 rounded-2xl bg-surface-container-low hover:bg-surface-container border border-border-subtle hover:border-primary/40 transition flex items-center justify-between group active:scale-[0.99]"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-semibold text-sm shadow-xs">
                             <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">
+                              <span className="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors">
                                 {u.name}
                               </span>
-                              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold">
                                 課程管理者
                               </span>
                             </div>
@@ -273,7 +272,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
               {/* Students section */}
               <div className="pt-2">
-                <div className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 flex items-center gap-1">
+                <div className="text-xs font-medium text-text-muted mb-2 flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px] text-secondary">school</span>
                   <span>學生選課身分 (Student)</span>
                 </div>
@@ -284,15 +283,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       <button
                         key={u.id}
                         onClick={() => handleQuickLogin(u)}
-                        className="w-full text-left p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container border border-border-subtle hover:border-secondary/40 transition-all flex items-center justify-between group active:scale-[0.99]"
+                        className="w-full text-left p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container border border-border-subtle hover:border-secondary/40 transition flex items-center justify-between group active:scale-[0.99]"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center font-bold text-sm">
+                          <div className="w-10 h-10 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center font-semibold text-sm">
                             <span className="material-symbols-outlined text-[20px]">person</span>
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-on-surface group-hover:text-secondary transition-colors">
+                              <span className="font-semibold text-sm text-on-surface group-hover:text-secondary transition-colors">
                                 {u.name}
                               </span>
                               <span className="text-xs text-text-muted font-mono">
@@ -317,7 +316,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           {tab === 'password' && (
             <form onSubmit={handlePasswordLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1.5">
+                <label className="block text-xs font-medium text-on-surface mb-1.5">
                   校園帳號 / 學號 / 教職員工號 / Email
                 </label>
                 <div className="relative">
@@ -339,7 +338,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1.5">
+                <label className="block text-xs font-medium text-on-surface mb-1.5">
                   密碼
                 </label>
                 <div className="relative">
@@ -373,7 +372,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm shadow-md hover:bg-primary-container active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm shadow-md hover:bg-primary-container active:scale-[0.99] transition flex items-center justify-center gap-2 mt-2"
               >
                 <span className="material-symbols-outlined text-[18px]">login</span>
                 <span>驗證並登入系統</span>
@@ -389,7 +388,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">姓名</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">姓名</label>
                   <input
                     type="text"
                     required
@@ -400,7 +399,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     {regRole === 'student' ? '學號' : '教職員編號'}
                   </label>
                   <input
@@ -414,7 +413,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">所屬院系 / 單位</label>
+                <label className="block text-xs font-medium text-on-surface mb-1">所屬院系 / 單位</label>
                 <select
                   value={regDepartment}
                   onChange={e => setRegDepartment(e.target.value)}
@@ -432,7 +431,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">電子郵件 (Email)</label>
+                <label className="block text-xs font-medium text-on-surface mb-1">電子郵件 (Email)</label>
                 <input
                   type="email"
                   required
@@ -444,7 +443,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">設定密碼（至少 8 字元）</label>
+                <label className="block text-xs font-medium text-on-surface mb-1">設定密碼（至少 8 字元）</label>
                 <input
                   type="password"
                   required
@@ -458,7 +457,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-secondary text-white font-bold text-sm shadow-md hover:bg-secondary/90 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 mt-2"
+                className="w-full py-2.5 rounded-xl bg-secondary text-white font-semibold text-sm shadow-md hover:bg-secondary/90 active:scale-[0.99] transition flex items-center justify-center gap-1.5 mt-2"
               >
                 <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
                 <span>完成註冊並直接登入</span>

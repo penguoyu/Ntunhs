@@ -176,7 +176,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
 
   return (
     <div className="rounded-xl border border-border-subtle overflow-hidden bg-surface-card">
-      <div className="grid grid-cols-[34px_repeat(5,minmax(0,1fr))] bg-surface-container-low text-[11px] font-bold text-text-secondary">
+      <div className="grid grid-cols-[34px_repeat(5,minmax(0,1fr))] bg-surface-container-low text-[11px] font-semibold text-text-secondary">
         <div />
         {DAY_LABELS.map(d => (
           <div key={d} className="py-1.5 text-center border-l border-border-subtle">
@@ -190,9 +190,9 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
             <div
               key={p}
               style={{ height: ROW_H }}
-              className="border-t border-border-subtle text-[10px] text-text-muted flex flex-col items-center justify-center leading-tight"
+              className="border-t border-border-subtle text-[11px] text-text-muted flex flex-col items-center justify-center leading-tight"
             >
-              <span className="font-bold text-text-secondary">{p}</span>
+              <span className="font-semibold text-text-secondary">{p}</span>
               <span>{PERIOD_TIMES[p]?.start}</span>
             </div>
           ))}
@@ -221,7 +221,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                     }`}
                     style={pos}
                   >
-                    <span className="flex items-center gap-0.5 text-[10px] font-bold leading-3 shrink-0">
+                    <span className="flex items-center gap-0.5 text-[11px] font-semibold leading-3 shrink-0">
                       <TriangleAlert size={10} className="shrink-0" />
                       {entries.length} 門衝堂
                     </span>
@@ -274,11 +274,11 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                       overflow: 'hidden',
                     }}
                   >
-                    {kind === 'cart' && <span className="font-bold mr-0.5">#{cartRank.get(course.id)}</span>}
+                    {kind === 'cart' && <span className="font-semibold mr-0.5">#{cartRank.get(course.id)}</span>}
                     {shortName(course.name)}
                   </span>
                   {showRoom && (
-                    <span className="mt-auto text-[10px] leading-3 opacity-75 truncate">{course.room}</span>
+                    <span className="mt-auto text-[11px] leading-3 opacity-75 truncate">{course.room}</span>
                   )}
                 </button>
               );
@@ -463,7 +463,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   const filterPanel = (
     <div className="space-y-5">
       <div>
-        <label htmlFor="dept" className="block text-xs font-bold text-text-secondary mb-1.5">
+        <label htmlFor="dept" className="block text-xs font-medium text-text-secondary mb-1.5">
           開課系所
         </label>
         <select
@@ -482,7 +482,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       </div>
 
       <div>
-        <p className="text-xs font-bold text-text-secondary mb-1.5">修別</p>
+        <p className="text-xs font-medium text-text-secondary mb-1.5">修別</p>
         <div className="flex flex-wrap gap-1.5">
           {(['全部', '必修', '選修', '通識'] as CategoryFilter[]).map(c => (
             <Chip key={c} active={category === c} onClick={() => setCategory(c)}>
@@ -493,7 +493,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       </div>
 
       <div>
-        <p className="text-xs font-bold text-text-secondary mb-1.5">星期（可複選）</p>
+        <p className="text-xs font-medium text-text-secondary mb-1.5">星期（可複選）</p>
         <div className="flex flex-wrap gap-1.5">
           {DAY_LABELS.map((d, i) => (
             <Chip
@@ -510,7 +510,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       </div>
 
       <div>
-        <p className="text-xs font-bold text-text-secondary mb-1.5">時段</p>
+        <p className="text-xs font-medium text-text-secondary mb-1.5">時段</p>
         <div className="flex flex-wrap gap-1.5">
           {(['全部', '上午', '下午', '晚上'] as TimeFilter[]).map(t => (
             <Chip key={t} active={timeOfDay === t} onClick={() => setTimeOfDay(t)}>
@@ -521,7 +521,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       </div>
 
       <div>
-        <label htmlFor="credits" className="block text-xs font-bold text-text-secondary mb-1.5">
+        <label htmlFor="credits" className="block text-xs font-medium text-text-secondary mb-1.5">
           學分
         </label>
         <select
@@ -581,7 +581,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
               <span className="font-mono text-text-muted">{c.code}</span>
               <span
-                className={`px-1.5 py-0.5 rounded font-bold ${
+                className={`px-1.5 py-0.5 rounded font-semibold ${
                   c.category.includes('必修')
                     ? 'bg-primary-fixed text-on-primary-fixed'
                     : c.category === '博雅通識'
@@ -591,15 +591,15 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
               >
                 {c.category}
               </span>
-              <span className="px-1.5 py-0.5 rounded border border-border-subtle text-text-secondary font-bold">
+              <span className="px-1.5 py-0.5 rounded border border-border-subtle text-text-secondary font-semibold">
                 {c.credits} 學分
               </span>
-              {c.isEMI && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">EMI</span>}
+              {c.isEMI && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">EMI</span>}
             </div>
             <button
               type="button"
               onClick={() => onViewCourseDetail(c)}
-              className="mt-1 text-left font-bold text-[15px] text-on-surface hover:text-primary hover:underline"
+              className="mt-1 text-left font-semibold text-[15px] text-on-surface hover:text-primary hover:underline"
             >
               {c.name}
             </button>
@@ -636,7 +636,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
               className="flex flex-col items-end gap-1"
               title={`已選 ${c.enrolled}／上限 ${c.capacity}${inSchedule ? '' : `，本階段登記 ${registeredCount(c)} 人`}`}
             >
-              <span className={`text-xs font-bold ${inSchedule ? 'text-secondary' : competition.className}`}>
+              <span className={`text-xs font-medium ${inSchedule ? 'text-secondary' : competition.className}`}>
                 {inSchedule ? '已選上' : competition.label}
               </span>
               <span className="w-16 h-1 rounded-full bg-surface-container overflow-hidden" aria-hidden>
@@ -666,7 +666,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
                   type="button"
                   onClick={() => onToggleCart(c.id)}
                   onFocus={() => setPreview(c)}
-                  className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1 ${
+                  className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1 ${
                     inCart
                       ? 'bg-secondary/10 text-secondary border border-secondary/40'
                       : 'bg-primary text-white hover:bg-primary-container'
@@ -703,8 +703,8 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
 
       <div className="rounded-xl border border-border-subtle bg-surface-card">
         <div className="px-4 py-3 border-b border-border-subtle flex items-center justify-between gap-2">
-          <h3 className="font-bold text-sm">預選清單（志願序）</h3>
-          <span className={`text-xs font-bold ${totalCredits > CREDIT_LIMIT ? 'text-conflict-danger' : 'text-text-secondary'}`}>
+          <h3 className="font-semibold text-sm">預選清單（志願序）</h3>
+          <span className={`text-xs font-medium ${totalCredits > CREDIT_LIMIT ? 'text-conflict-danger' : 'text-text-secondary'}`}>
             {scheduleCredits} + {cartCredits} = {totalCredits} / {CREDIT_LIMIT} 學分
           </span>
         </div>
@@ -726,7 +726,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
                 className={`flex items-center gap-2 px-3 py-2.5 ${dragId === c.id ? 'opacity-40' : ''}`}
               >
                 <GripVertical size={16} className="text-text-muted cursor-grab shrink-0" aria-hidden />
-                <span className="w-5 text-xs font-bold text-secondary shrink-0">{i + 1}</span>
+                <span className="w-5 text-xs font-medium text-secondary shrink-0">{i + 1}</span>
                 <div className="flex-1 min-w-0">
                   <button
                     type="button"
@@ -744,7 +744,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
                     ) : (
                       <span> ・ 預估 {Math.round(admissionChance(c, i + 1) * 100)}%</span>
                     )}
-                    {plannedClash.has(c.id) && <span className="text-conflict-danger font-bold"> ・ 衝堂</span>}
+                    {plannedClash.has(c.id) && <span className="text-conflict-danger font-semibold"> ・ 衝堂</span>}
                   </p>
                 </div>
                 <div className="flex items-center shrink-0">
@@ -785,7 +785,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             type="button"
             onClick={onSubmitCart}
             disabled={cartOnly.length === 0}
-            className="w-full py-2.5 rounded-lg bg-primary text-white text-sm font-bold flex items-center justify-center gap-1.5 hover:bg-primary-container disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-2.5 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center gap-1.5 hover:bg-primary-container disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send size={15} /> 送出登記並分發（模擬）
           </button>
@@ -796,7 +796,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       </div>
 
       <details className="rounded-xl border border-border-subtle bg-surface-card group">
-        <summary className="px-4 py-3 cursor-pointer text-sm font-bold flex items-center justify-between list-none">
+        <summary className="px-4 py-3 cursor-pointer text-sm font-semibold flex items-center justify-between list-none">
           已選上課程（{scheduleCourses.length} 門，{scheduleCredits} 學分）
           <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
         </summary>
@@ -807,7 +807,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
                 <p className="text-sm truncate">{c.name}</p>
                 <p className="text-[11px] text-text-muted">
                   {formatCourseTime(c)} ・ {c.credits} 學分
-                  {plannedClash.has(c.id) && <span className="text-conflict-danger font-bold"> ・ 衝堂</span>}
+                  {plannedClash.has(c.id) && <span className="text-conflict-danger font-semibold"> ・ 衝堂</span>}
                 </p>
               </div>
               <button
@@ -831,7 +831,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       {/* 頁首 */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-xl font-bold text-on-surface">選課</h1>
+          <h1 className="text-xl font-semibold text-on-surface">選課</h1>
           <p className="text-xs text-text-muted mt-0.5">
             {semester}・{student.name}{student.department && `（${student.department}）`}
           </p>
@@ -852,7 +852,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
                   aria-current={state === 'current' ? 'step' : undefined}
                   className={`px-2 py-1 rounded-md border whitespace-nowrap ${
                     state === 'current'
-                      ? 'bg-primary text-white border-primary font-bold'
+                      ? 'bg-primary text-white border-primary font-semibold'
                       : state === 'done'
                         ? 'border-border-subtle text-text-muted line-through decoration-text-muted/40'
                         : 'border-border-subtle text-text-secondary'
@@ -905,7 +905,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
               className={`${wide ? 'xl:hidden' : ''} px-3 rounded-xl border border-border-subtle bg-surface-card text-sm flex items-center gap-1.5`}
             >
               <SlidersHorizontal size={15} />
-              篩選{activeFilterCount > 0 && <span className="text-primary font-bold">({activeFilterCount})</span>}
+              篩選{activeFilterCount > 0 && <span className="text-primary font-semibold">({activeFilterCount})</span>}
             </button>
           </div>
 
@@ -955,13 +955,13 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
           compact ? 'sticky bottom-20 w-full mt-4' : 'fixed bottom-20 left-3 right-3 lg:hidden'
         } z-30 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-inverse-surface text-inverse-on-surface shadow-xl`}
       >
-        <span className="flex items-center gap-2 text-sm font-bold">
+        <span className="flex items-center gap-2 text-sm font-semibold">
           <CalendarDays size={18} />
           課表與預選
         </span>
         <span className="text-xs">
           預選 {cartOnly.length} 門・共 {totalCredits} 學分
-          {plannedClash.size > 0 && <span className="ml-1.5 text-red-300 font-bold">有衝堂</span>}
+          {plannedClash.size > 0 && <span className="ml-1.5 text-red-300 font-semibold">有衝堂</span>}
         </span>
       </button>
 
@@ -971,7 +971,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
           <div className="absolute inset-0 bg-black/40" onClick={() => setFiltersOpen(false)} />
           <div className="relative ml-auto w-[85%] max-w-sm h-full bg-surface p-4 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold">篩選條件</h2>
+              <h2 className="font-semibold">篩選條件</h2>
               <button type="button" onClick={() => setFiltersOpen(false)} aria-label="關閉">
                 <X size={20} />
               </button>
@@ -980,7 +980,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             <button
               type="button"
               onClick={() => setFiltersOpen(false)}
-              className="mt-4 w-full py-2.5 rounded-lg bg-primary text-white text-sm font-bold"
+              className="mt-4 w-full py-2.5 rounded-lg bg-primary text-white text-sm font-semibold"
             >
               顯示 {filtered.length} 門課程
             </button>
@@ -994,7 +994,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
           <div className="absolute inset-0 bg-black/40" onClick={() => setSheetOpen(false)} />
           <div className="relative bg-surface rounded-t-2xl max-h-[88vh] overflow-y-auto p-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold">課表與預選</h2>
+              <h2 className="font-semibold">課表與預選</h2>
               <button type="button" onClick={() => setSheetOpen(false)} aria-label="關閉">
                 <X size={20} />
               </button>

@@ -190,11 +190,11 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
     link.click();
     document.body.removeChild(link);
 
-    showToast('已成功匯出 NTUNHS_113_2_Timetable.ics 日曆檔案！');
+    showToast('已成功匯出 NTUNHS_113_2_Timetable.ics 日曆檔案');
   };
 
   const handleExportPNG = () => {
-    showToast('已為您生成高清課表預覽檔 (PNG)，長按或點擊即可儲存分享！');
+    showToast('已為您生成高清課表預覽檔 (PNG)，長按或點擊即可儲存分享');
   };
 
   const openOfficeHour = (teacherName: string) => {
@@ -209,7 +209,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 bg-surface-container-low px-3.5 py-2 rounded-xl text-primary">
             <span className="material-symbols-outlined text-general-sky text-[20px]">school</span>
-            <span className="font-bold text-sm sm:text-base">113學年度 第2學期</span>
+            <span className="font-semibold text-sm sm:text-base">113學年度 第2學期</span>
             <span className="text-[11px] text-text-muted px-2 py-0.5 bg-surface-card rounded-md font-semibold">
               校務系統即時連動
             </span>
@@ -218,7 +218,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           <div className="inline-flex p-1 bg-surface-container-low rounded-xl">
             <button
               onClick={() => setScheduleVersion('official')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
                 scheduleVersion === 'official'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-on-surface'
@@ -229,7 +229,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             </button>
             <button
               onClick={() => setScheduleVersion('simulation')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
                 scheduleVersion === 'simulation'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-on-surface'
@@ -247,7 +247,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           <div className="flex items-center bg-surface-container-low p-1 rounded-xl">
             <button
               onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                 viewMode === 'grid'
                   ? 'bg-surface-card text-primary shadow-xs'
                   : 'text-text-muted hover:text-on-surface'
@@ -258,7 +258,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                 viewMode === 'list'
                   ? 'bg-surface-card text-primary shadow-xs'
                   : 'text-text-muted hover:text-on-surface'
@@ -271,14 +271,14 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
 
           <button
             onClick={handleExportICS}
-            className="px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-primary font-bold text-xs flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-primary font-medium text-xs flex items-center gap-1.5 transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">event_available</span>
             <span>匯出至行事曆 (.ics)</span>
           </button>
           <button
             onClick={handleExportPNG}
-            className="px-3.5 py-2 rounded-xl bg-primary text-white hover:bg-primary-container font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
+            className="px-3.5 py-2 rounded-xl bg-primary text-white hover:bg-primary-container font-medium text-xs flex items-center gap-1.5 shadow-sm transition active:scale-95"
           >
             <span className="material-symbols-outlined text-[18px]">download</span>
             <span>產生課表圖檔 (PNG)</span>
@@ -291,16 +291,16 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
         {/* 1. Credits & Load */}
         <div className="bg-surface-card p-4 sm:p-5 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">已選修總學分</span>
+            <span className="text-xs text-text-muted font-medium">已選修總學分</span>
             <div className="flex items-baseline gap-1.5">
-              <span className="font-bold text-2xl sm:text-3xl text-primary">{totalCredits.toFixed(1)}</span>
+              <span className="font-semibold text-2xl sm:text-3xl text-primary">{totalCredits.toFixed(1)}</span>
               <span className="text-xs text-text-muted">/ 25.0 上限</span>
             </div>
             <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-xs text-general-sky bg-surface-container-low px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs text-general-sky bg-surface-container-low px-2 py-0.5 rounded-full font-medium">
                 必修 {requiredCredits.toFixed(0)}
               </span>
-              <span className="text-xs text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full font-medium">
                 選修 {electiveCredits.toFixed(0)}
               </span>
             </div>
@@ -324,7 +324,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                 strokeWidth="3.5"
               ></path>
             </svg>
-            <span className="absolute text-xs font-bold text-primary">
+            <span className="absolute text-xs font-medium text-primary">
               {Math.round((totalCredits / 25) * 100)}%
             </span>
           </div>
@@ -336,10 +336,10 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           className="bg-surface-card p-4 sm:p-5 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
         >
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">智慧衝堂稽核引擎</span>
+            <span className="text-xs text-text-muted font-medium">衝堂檢查</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xl text-secondary">零衝突</span>
-              <span className="text-xs text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full font-bold">
+              <span className="font-semibold text-xl text-secondary">零衝突</span>
+              <span className="text-xs text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full font-medium">
                 安全合規
               </span>
             </div>
@@ -355,13 +355,13 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           className="bg-surface-card p-4 sm:p-5 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between"
         >
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-emerald-800 font-semibold uppercase tracking-wider flex items-center gap-1">
+            <span className="text-xs text-emerald-800 font-medium flex items-center gap-1">
               <span className="material-symbols-outlined text-[15px] text-emerald-600">eco</span>
               SDGs 永續指標
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xl text-primary">{activeSdgItems.length} 項指標</span>
-              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+              <span className="font-semibold text-xl text-primary">{activeSdgItems.length} 項指標</span>
+              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
                 永續合規
               </span>
             </div>
@@ -375,10 +375,10 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
         {/* 4. Clinical & Lab Readiness */}
         <div className="bg-surface-card p-4 sm:p-5 rounded-2xl shadow-sm border border-border-subtle flex items-center justify-between">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">專業實習與臨床比重</span>
+            <span className="text-xs text-text-muted font-medium">專業實習與臨床比重</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-xl text-clinical-purple">5.0 學分</span>
-              <span className="text-xs text-clinical-purple bg-surface-container-high px-2 py-0.5 rounded-full font-bold">
+              <span className="font-semibold text-xl text-clinical-purple">5.0 學分</span>
+              <span className="text-xs text-clinical-purple bg-surface-container-high px-2 py-0.5 rounded-full font-medium">
                 專業擬真
               </span>
             </div>
@@ -402,7 +402,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
               </span>
               <button
                 onClick={() => setViewMode('list')}
-                className="text-secondary font-bold hover:underline flex items-center gap-0.5"
+                className="text-secondary font-semibold hover:underline flex items-center gap-0.5"
               >
                 <span>清單條列</span>
                 <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -416,7 +416,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   {/* Row 1, Col 1: Period Header */}
                   <div
                     style={{ gridColumn: 1, gridRow: 1 }}
-                    className="font-semibold text-text-muted text-xs flex items-center justify-center py-2 bg-surface-container-low/50 rounded-xl"
+                    className="font-medium text-text-muted text-xs flex items-center justify-center py-2 bg-surface-container-low/50 rounded-xl"
                   >
                     節次
                   </div>
@@ -428,12 +428,12 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                       style={{ gridColumn: d.day + 1, gridRow: 1 }}
                       className={`flex flex-col items-center py-2 rounded-xl text-xs transition-colors ${
                         d.day === 5
-                          ? 'bg-surface-container-high text-primary font-bold'
+                          ? 'bg-surface-container-high text-primary font-medium'
                           : 'bg-surface-container-low text-primary'
                       }`}
                     >
-                      <span className="text-text-muted text-[10px]">週{d.zh}</span>
-                      <span className="font-bold text-sm">{d.en}</span>
+                      <span className="text-text-muted text-[11px]">週{d.zh}</span>
+                      <span className="font-semibold text-sm">{d.en}</span>
                     </div>
                   ))}
 
@@ -444,8 +444,8 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                       style={{ gridColumn: 1, gridRow: periodToRow(p.period) }}
                       className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle h-full min-h-[76px]"
                     >
-                      <span className="font-bold text-primary text-sm sm:text-base">{p.period}</span>
-                      <span className="text-[10px] text-text-muted">{p.time}</span>
+                      <span className="font-semibold text-primary text-sm sm:text-base">{p.period}</span>
+                      <span className="text-[11px] text-text-muted">{p.time}</span>
                     </div>
                   ))}
 
@@ -454,8 +454,8 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                     style={{ gridColumn: 1, gridRow: 6 }}
                     className="flex flex-col justify-center items-center bg-surface-container-lowest rounded-xl p-1 text-center border border-border-subtle"
                   >
-                    <span className="font-bold text-xs text-text-muted">午休</span>
-                    <span className="text-[9px] text-text-muted">12:00</span>
+                    <span className="font-medium text-xs text-text-muted">午休</span>
+                    <span className="text-[11px] text-text-muted">12:00</span>
                   </div>
                   <div
                     style={{ gridColumn: '2 / 7', gridRow: 6 }}
@@ -465,7 +465,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                       <span className="material-symbols-outlined text-[18px] text-tertiary-container">restaurant</span>
                       <span>12:00 - 13:30 午餐與休整 | 學生一餐、親仁大樓咖啡館全開</span>
                     </span>
-                    <span className="text-secondary font-bold hidden sm:inline">午休 90 分鐘</span>
+                    <span className="text-secondary font-semibold hidden sm:inline">午休 90 分鐘</span>
                   </div>
 
                   {/* Scheduled Courses */}
@@ -500,9 +500,9 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                           zIndex: isConflict ? 25 + groupIndex : 10,
                         }}
                         onClick={() => setSelectedCourseModal(course)}
-                        className={`p-2 sm:p-2.5 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition-all active:scale-[0.99] border relative group ${
+                        className={`p-2 sm:p-2.5 rounded-xl flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md transition active:scale-[0.99] border relative group ${
                           isConflict
-                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-950 dark:text-rose-100 border-2 border-rose-500 ring-2 ring-rose-400/50 animate-pulse'
+                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-950 dark:text-rose-100 border-2 border-rose-500 ring-2 ring-rose-400/50'
                             : course.category.includes('必修')
                             ? 'bg-primary-fixed/90 hover:bg-primary-fixed text-on-primary-fixed border-primary/25'
                             : course.category.includes('跨') || course.isCrossDisciplinary
@@ -527,17 +527,17 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                                     : 'bg-clinical-purple'
                                 }`}
                               ></span>
-                              <span className="font-bold text-xs sm:text-sm truncate">
+                              <span className="font-medium text-xs sm:text-sm truncate">
                                 {course.name}
                               </span>
                             </div>
                             {isConflict ? (
-                              <span className="px-1.5 py-0.2 rounded bg-conflict-danger text-white text-[9px] font-bold shrink-0">
+                              <span className="px-1.5 py-0.2 rounded bg-conflict-danger text-white text-[11px] font-semibold shrink-0">
                                 衝堂
                               </span>
                             ) : (
                               <span
-                                className={`px-1.5 py-0.2 rounded text-[9px] font-bold shrink-0 ${
+                                className={`px-1.5 py-0.2 rounded text-[11px] font-semibold shrink-0 ${
                                   course.category.includes('必修')
                                     ? 'bg-primary text-white'
                                     : course.category.includes('跨') || course.isCrossDisciplinary
@@ -557,9 +557,9 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-[10px] opacity-75 mt-1 pt-1 border-t border-black/5 dark:border-white/5">
+                        <div className="flex items-center justify-between text-[11px] opacity-75 mt-1 pt-1 border-t border-black/5 dark:border-white/5">
                           <span className="truncate max-w-[85px] sm:max-w-none">{course.teacher}</span>
-                          <span className="font-mono text-[9px]">
+                          <span className="font-mono text-[11px]">
                             {isMultiPeriod ? `第${startPeriod}-${endPeriod}節` : `第${startPeriod}節`}
                           </span>
                         </div>
@@ -576,10 +576,10 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                         gridRow: periodToRow(slot.period),
                       }}
                       onClick={() => showToast(`週${slot.zh} 第${slot.period}節 (${slot.time}) 目前為自習空堂，無排課`)}
-                      className="h-full min-h-[76px] bg-surface-container-lowest/80 hover:bg-surface-container-low/90 rounded-xl border border-dashed border-border-subtle/80 flex flex-col items-center justify-center p-2 text-center transition-all group cursor-pointer shadow-2xs hover:border-primary/40"
+                      className="h-full min-h-[76px] bg-surface-container-lowest/80 hover:bg-surface-container-low/90 rounded-xl border border-dashed border-border-subtle/80 flex flex-col items-center justify-center p-2 text-center transition group cursor-pointer shadow-2xs hover:border-primary/40"
                       title={`週${slot.zh} 第${slot.period}節 (${slot.time}) 自修空堂`}
                     >
-                      <span className="text-[10px] text-text-muted/40 group-hover:text-primary transition-colors font-medium">
+                      <span className="text-[11px] text-text-muted/40 group-hover:text-primary transition-colors font-medium">
                         空堂
                       </span>
                     </div>
@@ -592,11 +592,11 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="mt-2 p-3 rounded-xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-border-subtle">
               <div className="flex items-center gap-2 text-secondary">
                 <span className="material-symbols-outlined text-[20px]">event_available</span>
-                <span className="font-bold text-xs sm:text-sm">
+                <span className="font-medium text-xs sm:text-sm">
                   週五專題研討日：跨域產學與智慧醫療專題實作
                 </span>
               </div>
-              <span className="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold w-fit">
+              <span className="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium w-fit">
                 自主專題研發 / 企業實習準備
               </span>
             </div>
@@ -619,7 +619,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
-                      <span className="font-bold text-base text-on-surface">{dayName}</span>
+                      <span className="font-semibold text-base text-on-surface">{dayName}</span>
                     </div>
                     <span className="text-xs text-text-muted">
                       共 {dayCourses.length} 門課 / {dayCredits.toFixed(1)} 學分
@@ -632,16 +632,16 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                         <div
                           key={course.id}
                           onClick={() => setSelectedCourseModal(course)}
-                          className="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex items-center justify-between cursor-pointer"
+                          className="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition flex items-center justify-between cursor-pointer"
                         >
                           <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold text-primary">{course.timeStr}</span>
-                              <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold">
+                              <span className="text-xs font-medium text-primary">{course.timeStr}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed text-[11px] font-semibold">
                                 {course.category} {course.credits}學分
                               </span>
                             </div>
-                            <span className="font-bold text-sm text-on-surface truncate">{course.name}</span>
+                            <span className="font-semibold text-sm text-on-surface truncate">{course.name}</span>
                             <span className="text-xs text-text-secondary mt-0.5">
                               {course.location} • {course.teacher}
                             </span>
@@ -670,8 +670,8 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-xs sm:text-sm text-primary">【教務即時推播】教室與排課異動速報</span>
-              <span className="text-[10px] bg-general-sky text-white px-2 py-0.2 rounded-full font-bold">
+              <span className="font-medium text-xs sm:text-sm text-primary">【教務即時推播】教室與排課異動速報</span>
+              <span className="text-[11px] bg-general-sky text-white px-2 py-0.2 rounded-full font-semibold">
                 即時同步正常
               </span>
             </div>
@@ -682,7 +682,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
         </div>
         <button
           onClick={() => showToast('已加載完整 3 則教務處教室異動通知日誌')}
-          className="text-xs font-bold px-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary rounded-xl transition-colors shrink-0"
+          className="text-xs font-medium px-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary rounded-xl transition-colors shrink-0"
         >
           檢視完整異動日誌 (3)
         </button>
@@ -696,9 +696,9 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
               <div className="flex items-center gap-1.5 text-primary">
                 <span className="material-symbols-outlined text-[20px]">support_agent</span>
-                <h3 className="font-bold text-sm sm:text-base">授課導師與 Office Hour 預約</h3>
+                <h3 className="font-semibold text-sm sm:text-base">授課導師與 Office Hour 預約</h3>
               </div>
-              <span className="text-[10px] font-bold text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-semibold text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full">
                 本週開放
               </span>
             </div>
@@ -712,17 +712,17 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                 className="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-between cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium text-xs">
                     陳
                   </div>
                   <div>
-                    <span className="font-bold text-xs text-on-surface block">陳建安 教授</span>
+                    <span className="font-medium text-xs text-on-surface block">陳建安 教授</span>
                     <span className="text-[11px] text-text-muted">演算法 • 資科大樓 I608室</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-general-sky font-bold block">週一 15:30-17:00</span>
-                  <span className="text-[10px] text-secondary font-semibold">尚餘 2 名額</span>
+                  <span className="text-xs text-general-sky font-medium block">週一 15:30-17:00</span>
+                  <span className="text-[11px] text-secondary font-semibold">尚餘 2 名額</span>
                 </div>
               </div>
 
@@ -731,17 +731,17 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                 className="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-between cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white font-medium text-xs">
                     林
                   </div>
                   <div>
-                    <span className="font-bold text-xs text-on-surface block">林郁芬 副教授</span>
+                    <span className="font-medium text-xs text-on-surface block">林郁芬 副教授</span>
                     <span className="text-[11px] text-text-muted">FHIR標準 • 資科大樓 I615室</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-general-sky font-bold block">週三 10:00-12:00</span>
-                  <span className="text-[10px] text-secondary font-semibold">尚餘 1 名額</span>
+                  <span className="text-xs text-general-sky font-medium block">週三 10:00-12:00</span>
+                  <span className="text-[11px] text-secondary font-semibold">尚餘 1 名額</span>
                 </div>
               </div>
 
@@ -750,17 +750,17 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                 className="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-between cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-clinical-purple flex items-center justify-center text-white font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-clinical-purple flex items-center justify-center text-white font-medium text-xs">
                     李
                   </div>
                   <div>
-                    <span className="font-bold text-xs text-on-surface block">李佳穎 主任護理師</span>
+                    <span className="font-medium text-xs text-on-surface block">李佳穎 主任護理師</span>
                     <span className="text-[11px] text-text-muted">臨床模擬 • 學思樓 F405</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-general-sky font-bold block">週四 16:30-17:30</span>
-                  <span className="text-[10px] text-text-muted">採信件預約</span>
+                  <span className="text-xs text-general-sky font-medium block">週四 16:30-17:30</span>
+                  <span className="text-[11px] text-text-muted">採信件預約</span>
                 </div>
               </div>
             </div>
@@ -768,7 +768,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
 
           <button
             onClick={() => openOfficeHour('預約課業導師')}
-            className="w-full mt-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
+            className="w-full mt-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary font-medium text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
           >
             <span className="material-symbols-outlined text-[16px]">calendar_add_on</span>
             <span>提出時段請益申請</span>
@@ -781,23 +781,23 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
               <div className="flex items-center gap-1.5 text-primary">
                 <span className="material-symbols-outlined text-[20px] text-emerald-600">eco</span>
-                <h3 className="font-bold text-sm sm:text-base">SDGs 永續目標修習分佈</h3>
+                <h3 className="font-semibold text-sm sm:text-base">SDGs 永續目標修習分佈</h3>
               </div>
-              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
                 已涵蓋 {activeSdgItems.length} 項指標
               </span>
             </div>
 
             {/* SDGs Badges Container */}
             <div className="p-3 bg-surface-container-low rounded-xl border border-border-subtle flex flex-col gap-2">
-              <span className="text-[11px] font-bold text-emerald-900">
+              <span className="text-[11px] font-semibold text-emerald-900">
                 本週課表已認列之聯合國 SDGs 永續目標：
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {activeSdgItems.map(item => (
                   <span
                     key={item.id}
-                    className="px-2.5 py-1 rounded-lg text-white font-bold text-xs shadow-2xs flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg text-white font-medium text-xs shadow-2xs flex items-center gap-1"
                     style={{ backgroundColor: item.color }}
                     title={`SDGs 永續目標：${item.code} ${item.name}`}
                   >
@@ -811,18 +811,18 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="grid grid-cols-2 gap-2 mt-1">
               <div className="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
                 <span className="text-[11px] text-text-muted">SDGs 核心能力覆蓋</span>
-                <span className="text-sm font-bold text-primary">專業實務 • 科技應用</span>
+                <span className="text-sm font-semibold text-primary">專業實務 • 科技應用</span>
               </div>
               <div className="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
                 <span className="text-[11px] text-text-muted">校級永續指標審查</span>
-                <span className="text-sm font-bold text-emerald-700">通過 (100% 合規)</span>
+                <span className="text-sm font-semibold text-emerald-700">通過 (100% 合規)</span>
               </div>
             </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between text-xs text-text-muted">
             <span>依北護校務發展藍圖與教育部永續指標規範</span>
-            <span className="font-bold text-emerald-800">免檢附紙本證明</span>
+            <span className="font-semibold text-emerald-800">免檢附紙本證明</span>
           </div>
         </div>
 
@@ -832,7 +832,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
               <div className="flex items-center gap-1.5 text-primary">
                 <span className="material-symbols-outlined text-[20px]">local_library</span>
-                <h3 className="font-bold text-sm sm:text-base">指定教材館藏與評鑑星等</h3>
+                <h3 className="font-semibold text-sm sm:text-base">指定教材館藏與評鑑星等</h3>
               </div>
               <span className="text-[11px] text-text-muted">圖書館連動</span>
             </div>
@@ -844,16 +844,16 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                     <span className="material-symbols-outlined text-[18px]">menu_book</span>
                   </div>
                   <div>
-                    <span className="font-bold text-xs text-on-surface block truncate max-w-[140px]">
+                    <span className="font-medium text-xs text-on-surface block truncate max-w-[140px]">
                       FHIR在現代醫療的應用
                     </span>
-                    <span className="text-[10px] text-text-muted">索書號：R858 / F44 (總館3F)</span>
+                    <span className="text-[11px] text-text-muted">索書號：R858 / F44 (總館3F)</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-secondary font-bold block">在架可借 (2本)</span>
+                  <span className="text-xs text-secondary font-medium block">在架可借 (2本)</span>
                   <button
-                    onClick={() => showToast('已向北護圖書館系統送出一鍵預約！')}
+                    onClick={() => showToast('已向北護圖書館系統送出一鍵預約')}
                     className="text-[11px] text-general-sky font-semibold hover:underline"
                   >
                     一鍵預約
@@ -867,24 +867,24 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                     <span className="material-symbols-outlined text-[18px]">auto_stories</span>
                   </div>
                   <div>
-                    <span className="font-bold text-xs text-on-surface block truncate max-w-[140px]">
+                    <span className="font-medium text-xs text-on-surface block truncate max-w-[140px]">
                       生醫統計分析入門 (R)
                     </span>
-                    <span className="text-[10px] text-text-muted">指定參考書 • 限館內閱覽</span>
+                    <span className="text-[11px] text-text-muted">指定參考書 • 限館內閱覽</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-tertiary-container font-semibold block">被借閱中</span>
-                  <span className="text-[10px] text-text-muted">預計 03/22 歸還</span>
+                  <span className="text-xs text-tertiary-container font-medium block">被借閱中</span>
+                  <span className="text-[11px] text-text-muted">預計 03/22 歸還</span>
                 </div>
               </div>
 
               {/* Rating summary */}
               <div className="bg-surface-container p-2.5 rounded-xl flex items-center justify-between mt-1">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-text-muted">歷年同課程綜合評鑑滿意度</span>
+                  <span className="text-[11px] text-text-muted">歷年同課程綜合評鑑滿意度</span>
                   <div className="flex items-center gap-1 mt-0.5">
-                    <span className="font-bold text-sm text-primary">4.8</span>
+                    <span className="font-semibold text-sm text-primary">4.8</span>
                     <div className="flex text-amber-500 text-[12px]">
                       <span>★</span>
                       <span>★</span>
@@ -892,12 +892,12 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                       <span>★</span>
                       <span>★</span>
                     </div>
-                    <span className="text-[10px] text-text-muted">(186份回饋)</span>
+                    <span className="text-[11px] text-text-muted">(186份回饋)</span>
                   </div>
                 </div>
                 <span
                   onClick={() => onViewCourseDetail(scheduleCourses[0] || ({} as any))}
-                  className="text-xs text-general-sky font-semibold cursor-pointer hover:underline"
+                  className="text-xs text-general-sky font-medium cursor-pointer hover:underline"
                 >
                   看學長姐評價 →
                 </span>
@@ -907,7 +907,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
 
           <button
             onClick={() => showToast('已連接北護圖書資源整合查詢系統 (Primo Discovery)')}
-            className="w-full mt-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
+            className="w-full mt-4 py-2 bg-surface-container-low hover:bg-surface-container text-primary font-medium text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
           >
             <span className="material-symbols-outlined text-[16px]">search</span>
             <span>開啟北護圖書資源整合查詢</span>
@@ -923,10 +923,10 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
 
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col min-w-0">
-                <span className="w-fit px-2.5 py-0.5 rounded-full font-bold text-xs bg-primary-fixed text-primary mb-1">
+                <span className="w-fit px-2.5 py-0.5 rounded-full font-medium text-xs bg-primary-fixed text-primary mb-1">
                   {selectedCourseModal.category} • {selectedCourseModal.credits} 學分
                 </span>
-                <h3 className="font-bold text-lg sm:text-xl text-primary">{selectedCourseModal.name}</h3>
+                <h3 className="font-semibold text-lg sm:text-xl text-primary">{selectedCourseModal.name}</h3>
                 <span className="text-xs text-text-muted mt-0.5">{selectedCourseModal.englishName}</span>
               </div>
               <button
@@ -940,15 +940,15 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="grid grid-cols-2 gap-3 py-1 text-xs">
               <div className="bg-surface-container-low p-3 rounded-xl">
                 <span className="text-text-muted block">上課教室</span>
-                <span className="font-bold text-on-surface text-sm mt-0.5 block">{selectedCourseModal.location}</span>
+                <span className="font-semibold text-on-surface text-sm mt-0.5 block">{selectedCourseModal.location}</span>
               </div>
               <div className="bg-surface-container-low p-3 rounded-xl">
                 <span className="text-text-muted block">授課教師</span>
-                <span className="font-bold text-on-surface text-sm mt-0.5 block">{selectedCourseModal.teacher}</span>
+                <span className="font-semibold text-on-surface text-sm mt-0.5 block">{selectedCourseModal.teacher}</span>
               </div>
               <div className="col-span-2 bg-surface-container-low p-3 rounded-xl">
                 <span className="text-text-muted block">上課時程</span>
-                <span className="font-bold text-on-surface text-sm mt-0.5 block">{selectedCourseModal.timeStr}</span>
+                <span className="font-semibold text-on-surface text-sm mt-0.5 block">{selectedCourseModal.timeStr}</span>
               </div>
             </div>
 
@@ -962,9 +962,9 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   navigator.clipboard?.writeText(
                     `【北護課表】${selectedCourseModal.name}\n教師: ${selectedCourseModal.teacher}\n地點: ${selectedCourseModal.location}\n時段: ${selectedCourseModal.timeStr}`
                   );
-                  showToast('課程資訊已複製到剪貼簿！');
+                  showToast('課程資訊已複製到剪貼簿');
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-medium text-xs flex items-center justify-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px]">content_copy</span>
                 <span>複製課堂資訊</span>
@@ -976,7 +976,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
                   setSelectedCourseModal(null);
                   onViewCourseDetail(course);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-container font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                className="flex-1 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-container font-medium text-xs flex items-center justify-center gap-1.5 transition shadow-sm"
               >
                 <span className="material-symbols-outlined text-[16px]">menu_book</span>
                 <span>檢視大綱與 SDGs 永續指標</span>
@@ -991,7 +991,7 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface-card w-full max-w-md rounded-2xl p-6 shadow-2xl flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-primary font-bold text-base">
+              <div className="flex items-center gap-2 text-primary font-semibold text-base">
                 <span className="material-symbols-outlined text-[20px]">calendar_add_on</span>
                 <span>預約導師晤談時段</span>
               </div>
@@ -1031,16 +1031,16 @@ export const WeeklySchedule: React.FC<WeeklyScheduleProps> = ({
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowOfficeHourModal(false)}
-                className="px-4 py-2 rounded-xl bg-surface-container text-text-secondary font-bold text-xs hover:bg-surface-container-high"
+                className="px-4 py-2 rounded-xl bg-surface-container text-text-secondary font-medium text-xs hover:bg-surface-container-high"
               >
                 取消
               </button>
               <button
                 onClick={() => {
                   setShowOfficeHourModal(false);
-                  showToast('已向授課導師發送 Office Hour 預約信，請留意校園信箱回覆！');
+                  showToast('已向授課導師發送 Office Hour 預約信，請留意校園信箱回覆');
                 }}
-                className="px-5 py-2 rounded-xl bg-primary text-white font-bold text-xs hover:bg-primary-container shadow-sm"
+                className="px-5 py-2 rounded-xl bg-primary text-white font-medium text-xs hover:bg-primary-container shadow-sm"
               >
                 送出預約申請
               </button>

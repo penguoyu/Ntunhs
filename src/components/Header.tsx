@@ -52,13 +52,13 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Logo size={40} />
             <div className="flex flex-col">
-              <span className="font-bold text-xl text-primary tracking-tight">北護課程通</span>
-              <span className="text-[11px] text-text-muted tracking-wider uppercase font-semibold">
-                NTUNHS COURSE MASTER
+              <span className="font-semibold text-xl text-primary tracking-tight">北護課程通</span>
+              <span className="text-[11px] text-text-muted font-semibold">
+                NTUNHS Course Master
               </span>
             </div>
             <div className="h-6 w-px bg-surface-container-high mx-2 hidden 2xl:block"></div>
-            <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-lg text-primary text-xs font-semibold shrink-0">
+            <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-lg text-primary text-xs font-medium shrink-0">
               <span className="material-symbols-outlined text-general-sky text-[18px]">calendar_month</span>
               <span>{semester}</span>
             </div>
@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
               <>
                 <button
                   onClick={() => onSelectTab('admin-courses')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'admin-courses'
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   onClick={() => onSelectTab('admin-import')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'admin-import'
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   onClick={() => onSelectTab('admin-users')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'admin-users'
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -107,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   onClick={() => onSelectTab('admin-analytics')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'admin-analytics'
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="h-5 w-px bg-border-subtle mx-1"></div>
                 <button
                   onClick={() => onSelectTab('search-courses')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 text-secondary hover:bg-secondary/10 whitespace-nowrap shrink-0`}
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1 text-secondary hover:bg-secondary/10 whitespace-nowrap shrink-0`}
                   title="切換至學生端選課視角預覽"
                 >
                   <span className="material-symbols-outlined text-[16px]">visibility</span>
@@ -132,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
               <>
                 <button
                   onClick={() => onSelectTab('search-courses')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'search-courses'
                       ? 'bg-primary-container text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -144,7 +144,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   onClick={() => onSelectTab('graduation-audit')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'graduation-audit'
                       ? 'bg-primary-container text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -156,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                   onClick={() => onSelectTab('user-profile')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                     currentTab === 'user-profile'
                       ? 'bg-primary-container text-white shadow-sm'
                       : 'text-text-secondary hover:text-on-surface hover:bg-surface-container-low'
@@ -172,35 +172,32 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Status Indicators & Profile */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Quick Switch Role One-Click Button (when logged in) */}
-            {currentUser && (
+            {/* 展示工具：身分切換與版型切換，集中在一組安靜的控制項 */}
+            <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-border-subtle" title="發表展示用的快速切換">
+              <span className="px-2 text-[11px] text-text-muted">展示</span>
+              {currentUser && (
+                <button
+                  onClick={onQuickSwitchRole}
+                  className="px-2.5 py-1.5 rounded-md text-xs font-medium text-text-secondary hover:bg-surface-container-low hover:text-primary flex items-center gap-1 transition-colors"
+                  title="在課程管理者與學生身分間快速切換"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {isAdmin ? 'switch_account' : 'admin_panel_settings'}
+                  </span>
+                  <span>{isAdmin ? '學生端' : '管理端'}</span>
+                </button>
+              )}
               <button
-                onClick={onQuickSwitchRole}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold border flex items-center gap-1.5 shadow-xs transition-all active:scale-95 ${
-                  isAdmin
-                    ? 'border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100'
-                    : 'border-emerald-400 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
-                }`}
-                title="點擊直接在課程管理者與學生身分間快速切換"
+                onClick={onToggleDeviceMode}
+                className="px-2.5 py-1.5 rounded-md text-xs font-medium text-text-secondary hover:bg-surface-container-low hover:text-primary flex items-center gap-1 transition-colors"
+                title="切換行動版 / 桌面版版型視圖"
               >
                 <span className="material-symbols-outlined text-[16px]">
-                  {isAdmin ? 'switch_account' : 'admin_panel_settings'}
+                  {deviceMode === 'desktop' ? 'smartphone' : 'computer'}
                 </span>
-                <span>{isAdmin ? '點擊切換為學生' : '點擊切換為管理者'}</span>
+                <span>{deviceMode === 'desktop' ? '手機版' : '桌面版'}</span>
               </button>
-            )}
-
-            {/* Device Switch Button (Desktop/Mobile) */}
-            <button
-              onClick={onToggleDeviceMode}
-              className="px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-xs font-semibold text-primary flex items-center gap-1 transition-colors"
-              title="切換行動版 / 桌面版版型視圖"
-            >
-              <span className="material-symbols-outlined text-[16px]">
-                {deviceMode === 'desktop' ? 'devices' : 'smartphone'}
-              </span>
-              <span>{deviceMode === 'desktop' ? '手機視圖' : '桌面視圖'}</span>
-            </button>
+            </div>
 
             {/* Notifications Button */}
             <button
@@ -211,7 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {unreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-conflict-danger text-white text-[10px] font-bold leading-4 text-center ring-2 ring-white">
+                <span className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-conflict-danger text-white text-[11px] font-semibold leading-4 text-center ring-2 ring-white">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -224,15 +221,15 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container rounded-xl cursor-pointer transition-colors border border-border-subtle"
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${
                     isAdmin ? 'bg-amber-600' : 'bg-primary'
                   }`}>
                     {currentUser.name.slice(0, 1)}
                   </div>
                   <div className="flex flex-col text-left">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-on-surface">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-on-surface">
                       <span>{currentUser.name}</span>
-                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                      <span className={`px-1.5 py-0.2 rounded-full text-[11px] font-semibold ${
                         isAdmin ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
                       }`}>
                         {isAdmin ? '課程管理者' : '學生'}
@@ -254,19 +251,19 @@ export const Header: React.FC<HeaderProps> = ({
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     <div className="px-3 py-2 border-b border-border-subtle mb-1">
-                      <div className="text-xs font-bold text-on-surface">{currentUser.name}</div>
+                      <div className="text-xs font-medium text-on-surface">{currentUser.name}</div>
                       <div className="text-[11px] text-text-muted font-mono">{currentUser.email}</div>
                     </div>
                     <button
                       onClick={onOpenUserProfile}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors"
+                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-medium text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors"
                     >
                       <span className="material-symbols-outlined text-[18px] text-primary">person</span>
                       <span>個人帳號資料與設定</span>
                     </button>
                     <button
                       onClick={onOpenLogin}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors cursor-pointer"
+                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-medium text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[18px] text-secondary">switch_account</span>
                       <span>切換身分 / 更換帳號</span>
@@ -277,7 +274,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setIsUserMenuOpen(false);
                         onLogout();
                       }}
-                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
+                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors"
                     >
                       <span className="material-symbols-outlined text-[18px]">logout</span>
                       <span>登出</span>
@@ -292,7 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
                 <button
                   onClick={onOpenLogin}
-                  className="px-4 py-2 rounded-xl bg-primary text-white hover:bg-primary-container font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                  className="px-4 py-2 rounded-xl bg-primary text-white hover:bg-primary-container font-medium text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition"
                 >
                   <span className="material-symbols-outlined text-[18px]">login</span>
                   <span>帳號登入 / 註冊</span>
@@ -318,8 +315,8 @@ export const Header: React.FC<HeaderProps> = ({
             <Logo size={30} />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-base text-primary truncate">北護課程通</span>
-                <span className={`shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                <span className="font-semibold text-base text-primary truncate">北護課程通</span>
+                <span className={`shrink-0 whitespace-nowrap text-[11px] px-1.5 py-0.2 rounded-full font-semibold ${
                   isAdmin
                     ? 'bg-amber-100 text-amber-900'
                     : currentUser 
@@ -351,39 +348,37 @@ export const Header: React.FC<HeaderProps> = ({
             {currentUser && (
               <button
                 onClick={onQuickSwitchRole}
-                className={`w-10 py-1 rounded-lg border flex flex-col items-center gap-0.5 active:scale-95 transition-all ${
-                  isAdmin ? 'border-amber-400 bg-amber-50 text-amber-900' : 'border-emerald-400 bg-emerald-50 text-emerald-900'
-                }`}
+                className="w-10 py-1 rounded-lg hover:bg-surface-container text-text-secondary transition-colors flex flex-col items-center gap-0.5 active:scale-95"
                 title={isAdmin ? '切換為學生身分' : '切換為管理者身分'}
               >
                 <span className="material-symbols-outlined text-[17px] leading-none">
                   {isAdmin ? 'school' : 'admin_panel_settings'}
                 </span>
-                <span className="text-[9px] font-bold leading-none">{isAdmin ? '學生端' : '管理端'}</span>
+                <span className="text-[11px] font-medium leading-none">{isAdmin ? '學生端' : '管理端'}</span>
               </button>
             )}
 
             <button
               onClick={onToggleDeviceMode}
-              className="w-10 py-1 rounded-lg hover:bg-surface-container text-primary transition-colors flex flex-col items-center gap-0.5 active:scale-95"
+              className="w-10 py-1 rounded-lg hover:bg-surface-container text-text-secondary transition-colors flex flex-col items-center gap-0.5 active:scale-95"
               title={deviceMode === 'desktop' ? '切換為手機版面' : '切換為桌面版面'}
             >
               <span className="material-symbols-outlined text-[18px] leading-none">
                 {deviceMode === 'desktop' ? 'devices' : 'desktop_mac'}
               </span>
-              <span className="text-[9px] font-bold leading-none">{deviceMode === 'desktop' ? '手機版' : '桌面版'}</span>
+              <span className="text-[11px] font-medium leading-none">{deviceMode === 'desktop' ? '手機版' : '桌面版'}</span>
             </button>
 
             <button
               onClick={onOpenNotifications}
-              className="w-9 py-1 flex flex-col items-center gap-0.5 rounded-lg text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all relative"
+              className="w-9 py-1 flex flex-col items-center gap-0.5 rounded-lg text-on-surface-variant hover:bg-surface-container active:scale-95 transition relative"
               aria-label={unreadCount > 0 ? `通知中心，${unreadCount} 則未讀` : '通知中心'}
               title="通知中心"
             >
               <span className="material-symbols-outlined text-[19px] leading-none">notifications</span>
-              <span className="text-[9px] font-bold leading-none">通知</span>
+              <span className="text-[11px] font-semibold leading-none">通知</span>
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-conflict-danger text-white text-[10px] font-bold leading-4 text-center ring-2 ring-white">
+                <span className="absolute -top-0.5 right-0.5 min-w-4 h-4 px-1 rounded-full bg-conflict-danger text-white text-[11px] font-semibold leading-4 text-center ring-2 ring-white">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -393,7 +388,7 @@ export const Header: React.FC<HeaderProps> = ({
             {currentUser ? (
               <div
                 onClick={() => setIsMobileUserMenuOpen(!isMobileUserMenuOpen)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white cursor-pointer active:scale-95 transition-transform text-xs font-bold shadow-xs ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-white cursor-pointer active:scale-95 transition-transform text-xs font-medium shadow-xs ${
                   isAdmin ? 'bg-amber-600' : 'bg-primary'
                 }`}
               >
@@ -402,7 +397,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <button
                 onClick={onOpenLogin}
-                className="px-2.5 py-1.5 rounded-xl bg-primary text-white font-bold text-xs flex items-center gap-1 shadow-xs active:scale-95 transition-all"
+                className="px-2.5 py-1.5 rounded-xl bg-primary text-white font-medium text-xs flex items-center gap-1 shadow-xs active:scale-95 transition"
               >
                 <span className="material-symbols-outlined text-[15px]">login</span>
                 <span>登入</span>
@@ -416,7 +411,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center overflow-x-auto no-scrollbar px-3 py-1.5 bg-surface-container-low border-t border-border-subtle text-xs gap-1.5">
             <button
               onClick={() => onSelectTab('admin-courses')}
-              className={`px-3 py-1 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
+              className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition ${
                 currentTab === 'admin-courses' ? 'bg-primary text-white shadow-xs' : 'text-text-muted hover:text-on-surface'
               }`}
             >
@@ -424,7 +419,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onSelectTab('admin-import')}
-              className={`px-3 py-1 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
+              className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition ${
                 currentTab === 'admin-import' ? 'bg-primary text-white shadow-xs' : 'text-text-muted hover:text-on-surface'
               }`}
             >
@@ -432,7 +427,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onSelectTab('admin-users')}
-              className={`px-3 py-1 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
+              className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition ${
                 currentTab === 'admin-users' ? 'bg-primary text-white shadow-xs' : 'text-text-muted hover:text-on-surface'
               }`}
             >
@@ -440,7 +435,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onSelectTab('admin-analytics')}
-              className={`px-3 py-1 rounded-full whitespace-nowrap font-bold text-xs transition-all ${
+              className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition ${
                 currentTab === 'admin-analytics' ? 'bg-primary text-white shadow-xs' : 'text-text-muted hover:text-on-surface'
               }`}
             >
@@ -448,7 +443,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onSelectTab('search-courses')}
-              className="px-3 py-1 rounded-full whitespace-nowrap font-bold text-xs text-secondary hover:bg-secondary/10 transition-colors"
+              className="px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs text-secondary hover:bg-secondary/10 transition-colors"
             >
               學生視角
             </button>
@@ -463,15 +458,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <div className="flex items-center justify-between p-2 rounded-xl bg-surface-container-low mb-2">
               <div className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${
                   isAdmin ? 'bg-amber-600' : 'bg-primary'
                 }`}>
                   {currentUser.name.slice(0, 1)}
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                  <div className="text-xs font-medium text-on-surface flex items-center gap-1.5">
                     <span>{currentUser.name}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-semibold ${
                       isAdmin ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
                     }`}>
                       {isAdmin ? '課程管理者' : '學生'}
@@ -488,14 +483,14 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="grid grid-cols-2 gap-2 mb-2">
               <button
                 onClick={onOpenUserProfile}
-                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-bold text-primary flex items-center justify-center gap-1.5 transition-colors"
+                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-medium text-primary flex items-center justify-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px]">person</span>
                 <span>個人資料</span>
               </button>
               <button
                 onClick={onOpenLogin}
-                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-bold text-secondary flex items-center justify-center gap-1.5 transition-colors"
+                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-medium text-secondary flex items-center justify-center gap-1.5 transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px]">switch_account</span>
                 <span>切換帳號</span>
@@ -507,7 +502,7 @@ export const Header: React.FC<HeaderProps> = ({
                 setIsMobileUserMenuOpen(false);
                 onLogout();
               }}
-              className="w-full p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">logout</span>
               <span>登出</span>

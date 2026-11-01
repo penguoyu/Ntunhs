@@ -50,6 +50,7 @@
   --color-on-error-container: #93000a;
   --color-inverse-surface: #283044;
   --color-inverse-on-surface: #eef0ff;
+  --color-on-surface: #131b2e;
 }
 
 @layer base {

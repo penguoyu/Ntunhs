@@ -136,7 +136,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
   const handleSaveCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formTeacher.trim()) {
-      showToast('請填寫課程名稱與授課教師！');
+      showToast('請填寫課程名稱與授課教師');
       return;
     }
 
@@ -226,14 +226,14 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
       <section className="w-full bg-surface-card shadow-xs px-6 py-5 mb-6 rounded-2xl border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
               <span>課務管理工作台</span>
             </span>
             <span className="text-text-muted text-xs">•</span>
             <span className="text-xs text-text-muted">{SEMESTER_LABEL}</span>
           </div>
-          <h2 className="text-2xl font-bold text-primary tracking-tight mt-1">
+          <h2 className="text-2xl font-semibold text-primary tracking-tight mt-1">
             課程維護與開課管理 (Course Management)
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
@@ -244,7 +244,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={openAddModal}
-            className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm shadow-md hover:bg-primary-container active:scale-95 transition flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[20px]">add_circle</span>
             <span>新增開課科目</span>
@@ -260,7 +260,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">開課總門數</div>
-            <div className="text-2xl font-bold text-primary">{courses.length} 門</div>
+            <div className="text-2xl font-semibold text-primary">{courses.length} 門</div>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">總開課名額 (容量)</div>
-            <div className="text-2xl font-bold text-secondary">
+            <div className="text-2xl font-semibold text-secondary">
               {courses.reduce((acc, c) => acc + c.capacity, 0).toLocaleString()} 席
             </div>
           </div>
@@ -282,7 +282,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">預選中選總人次</div>
-            <div className="text-2xl font-bold text-amber-600">
+            <div className="text-2xl font-semibold text-amber-600">
               {courses.reduce((acc, c) => acc + c.enrolled, 0).toLocaleString()} 人
             </div>
           </div>
@@ -294,7 +294,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">全英語 EMI 課程</div>
-            <div className="text-2xl font-bold text-indigo-600">
+            <div className="text-2xl font-semibold text-indigo-600">
               {courses.filter(c => c.isEMI).length} 門
             </div>
           </div>
@@ -322,7 +322,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           <select
             value={selectedCollege}
             onChange={e => setSelectedCollege(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-semibold"
+            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
           >
             <option value="ALL">全部學院 (All Colleges)</option>
             <option value="健康科技學院">健康科技學院</option>
@@ -334,7 +334,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           <select
             value={selectedCategory}
             onChange={e => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-semibold"
+            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
           >
             <option value="ALL">全部類別 (All Categories)</option>
             <option value="專業必修">專業必修</option>
@@ -348,7 +348,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as any)}
-            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-semibold"
+            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
           >
             <option value="id">依課程代碼排序</option>
             <option value="name">依課程名稱排序</option>
@@ -360,7 +360,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           <div className="flex items-center bg-surface-container-low p-1 rounded-xl shrink-0">
             <button
               onClick={() => setViewLayout('cards')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
                 viewLayout === 'cards'
                   ? 'bg-surface-card text-primary shadow-xs'
                   : 'text-text-muted hover:text-on-surface'
@@ -372,7 +372,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
             </button>
             <button
               onClick={() => setViewLayout('table')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
                 viewLayout === 'table'
                   ? 'bg-surface-card text-primary shadow-xs'
                   : 'text-text-muted hover:text-on-surface'
@@ -399,10 +399,10 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-primary/10 text-primary">
+                      <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-primary/10 text-primary">
                         {course.id}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                         course.category.includes('必修')
                           ? 'bg-rose-100 text-rose-800'
                           : course.category === '博雅通識'
@@ -412,14 +412,14 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                         {course.category} {course.credits}學分
                       </span>
                       {course.isEMI && (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] bg-indigo-100 text-indigo-800 font-bold">
+                        <span className="px-1.5 py-0.2 rounded text-[11px] bg-indigo-100 text-indigo-800 font-semibold">
                           EMI
                         </span>
                       )}
                     </div>
                     <h3
                       onClick={() => onViewCourseDetail(course)}
-                      className="font-bold text-base text-on-surface hover:text-primary transition-colors cursor-pointer mt-1 truncate"
+                      className="font-semibold text-base text-on-surface hover:text-primary transition-colors cursor-pointer mt-1 truncate"
                     >
                       {course.name}
                     </h3>
@@ -465,14 +465,14 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
 
                 <div className="flex items-center justify-between pt-1 border-t border-border-subtle text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold font-mono">
+                    <span className="font-semibold font-mono">
                       {course.enrolled} / {course.capacity} 席
                     </span>
                     <span className="text-[11px] text-text-muted">({fillPercent}%)</span>
                   </div>
                   <button
                     onClick={() => onViewCourseDetail(course)}
-                    className="text-primary font-bold hover:underline flex items-center gap-0.5 text-xs"
+                    className="text-primary font-medium hover:underline flex items-center gap-0.5 text-xs"
                   >
                     <span>大綱與評分</span>
                     <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -487,7 +487,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border-subtle bg-surface-container-low text-text-muted font-bold">
+                <tr className="border-b border-border-subtle bg-surface-container-low text-text-muted font-semibold">
                   <th className="py-3 px-4">課程代碼 / 編號</th>
                   <th className="py-3 px-4">課程名稱</th>
                   <th className="py-3 px-4">開課系所 / 學院</th>
@@ -503,11 +503,11 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   const fillPercent = Math.min(100, Math.round((course.enrolled / course.capacity) * 100));
                   return (
                     <tr key={course.id} className="hover:bg-surface-container-low transition-colors group">
-                      <td className="py-3.5 px-4 font-mono font-bold text-primary">
+                      <td className="py-3.5 px-4 font-mono font-semibold text-primary">
                         <div className="flex items-center gap-1.5">
                           <span>{course.id}</span>
                           {course.isEMI && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-800 font-bold">
+                            <span className="px-1.5 py-0.5 rounded text-[11px] bg-indigo-100 text-indigo-800 font-semibold">
                               EMI
                             </span>
                           )}
@@ -518,7 +518,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                       <td className="py-3.5 px-4">
                         <button
                           onClick={() => onViewCourseDetail(course)}
-                          className="font-bold text-sm text-on-surface hover:text-primary transition-colors text-left"
+                          className="font-semibold text-sm text-on-surface hover:text-primary transition-colors text-left"
                         >
                           {course.name}
                         </button>
@@ -533,7 +533,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                           course.category.includes('必修')
                             ? 'bg-rose-100 text-rose-800'
                             : course.category === '博雅通識'
@@ -556,10 +556,10 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
 
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold font-mono">
+                          <span className="font-semibold font-mono">
                             {course.enrolled} / {course.capacity}
                           </span>
-                          <span className="text-[10px] text-text-muted">({fillPercent}%)</span>
+                          <span className="text-[11px] text-text-muted">({fillPercent}%)</span>
                         </div>
                         <div className="w-20 h-1.5 rounded-full bg-border-subtle mt-1 overflow-hidden">
                           <div
@@ -607,7 +607,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
           <span className="material-symbols-outlined text-[48px] text-text-muted/60 mb-2">
             search_off
           </span>
-          <p className="font-bold text-sm">查無符合條件的課程</p>
+          <p className="font-semibold text-sm">查無符合條件的課程</p>
           <p className="text-xs mt-1">請嘗試變更搜尋關鍵字或清除篩選條件</p>
         </div>
       )}
@@ -621,7 +621,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                 <span className="material-symbols-outlined text-[24px]">
                   {editingCourse ? 'edit_note' : 'add_box'}
                 </span>
-                <h3 className="font-bold text-lg">
+                <h3 className="font-semibold text-lg">
                   {editingCourse ? `編輯課程：${editingCourse.name} (${editingCourse.id})` : '新增北護開課科目'}
                 </h3>
               </div>
@@ -639,7 +639,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
             <form onSubmit={handleSaveCourse} className="p-6 overflow-y-auto space-y-4 flex-1">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     課程識別 ID
                   </label>
                   <input
@@ -652,7 +652,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     教務課務代碼
                   </label>
                   <input
@@ -668,7 +668,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     中文課程名稱
                   </label>
                   <input
@@ -681,7 +681,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     英文課程名稱
                   </label>
                   <input
@@ -696,7 +696,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">開課學院</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">開課學院</label>
                   <select
                     value={formCollege}
                     onChange={e => setFormCollege(e.target.value as any)}
@@ -709,7 +709,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">開課系所</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">開課系所</label>
                   <input
                     type="text"
                     required
@@ -720,7 +720,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">修別類別</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">修別類別</label>
                   <select
                     value={formCategory}
                     onChange={e => setFormCategory(e.target.value as any)}
@@ -739,7 +739,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">學分數</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">學分數</label>
                   <input
                     type="number"
                     step="0.5"
@@ -751,7 +751,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">授課教師</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">授課教師</label>
                   <input
                     type="text"
                     required
@@ -762,7 +762,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">教師職稱/備註</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">教師職稱/備註</label>
                   <input
                     type="text"
                     value={formTeacherTitle}
@@ -775,7 +775,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
 
               <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">上課校舍大樓</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">上課校舍大樓</label>
                   <select
                     value={formBuilding}
                     onChange={e => setFormBuilding(e.target.value)}
@@ -792,7 +792,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">教室編號</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">教室編號</label>
                   <input
                     type="text"
                     value={formRoom}
@@ -802,7 +802,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">星期 (1-5)</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">星期 (1-5)</label>
                   <select
                     value={formDay}
                     onChange={e => setFormDay(parseInt(e.target.value))}
@@ -816,7 +816,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">修課名額上限</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">修課名額上限</label>
                   <input
                     type="number"
                     min="5"
@@ -829,7 +829,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
               </div>
 
               <div className="flex items-center gap-6 pt-1">
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-on-surface">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-on-surface">
                   <input
                     type="checkbox"
                     checked={formIsEMI}
@@ -838,7 +838,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                   <span>EMI 全英語授課認證</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-on-surface">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-on-surface">
                   <input
                     type="checkbox"
                     checked={formIsCross}
@@ -850,7 +850,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">先修條件</label>
+                <label className="block text-xs font-medium text-on-surface mb-1">先修條件</label>
                 <input
                   type="text"
                   value={formPrereq}
@@ -861,7 +861,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">課程大綱簡介</label>
+                <label className="block text-xs font-medium text-on-surface mb-1">課程大綱簡介</label>
                 <textarea
                   rows={3}
                   value={formDescription}
@@ -872,7 +872,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
+                <label className="block text-xs font-medium text-on-surface mb-1">
                   標籤 (以逗號隔開)
                 </label>
                 <input
@@ -891,13 +891,13 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                     setIsAddModalOpen(false);
                     setEditingCourse(null);
                   }}
-                  className="px-4 py-2.5 rounded-xl border border-border-subtle text-xs font-bold hover:bg-surface-container"
+                  className="px-4 py-2.5 rounded-xl border border-border-subtle text-xs font-medium hover:bg-surface-container"
                 >
                   取消
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center gap-1.5"
+                  className="px-6 py-2.5 rounded-xl bg-primary text-white font-medium text-xs shadow-md hover:bg-primary-container active:scale-95 transition flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[18px]">check</span>
                   <span>{editingCourse ? '確認儲存變更' : '新增並發布課程'}</span>
@@ -915,21 +915,21 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
             <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
               <span className="material-symbols-outlined text-[28px]">warning</span>
             </div>
-            <h3 className="font-bold text-lg text-on-surface">確認刪除此開課科目？</h3>
+            <h3 className="font-semibold text-lg text-on-surface">確認刪除此開課科目？</h3>
             <p className="text-xs text-text-muted mt-2 leading-relaxed">
-              您即將刪除 <strong className="text-primary font-bold">{deletingCourse.name}</strong> ({deletingCourse.id})。
+              您即將刪除 <strong className="text-primary font-semibold">{deletingCourse.name}</strong> ({deletingCourse.id})。
               此動作將同時自全校課程清單與學生預選課表中移除該課程，請確認是否執行。
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setDeletingCourse(null)}
-                className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-bold hover:bg-surface-container"
+                className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-medium hover:bg-surface-container"
               >
                 取消保留
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 shadow-sm"
+                className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-medium hover:bg-rose-700 shadow-sm"
               >
                 確認徹底刪除
               </button>

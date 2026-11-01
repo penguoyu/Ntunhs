@@ -41,14 +41,14 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
       {/* Top Banner */}
       <section className="w-full bg-surface-card shadow-xs px-4 sm:px-6 py-4 sm:py-5 mb-6 rounded-2xl border border-border-subtle">
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 text-xs font-bold flex items-center gap-1">
+          <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 text-xs font-medium flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px]">monitoring</span>
             <span>校務選課大數據</span>
           </span>
           <span className="text-text-muted text-xs">•</span>
           <span className="text-xs text-text-muted">選課狀況總覽</span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-primary tracking-tight mt-1">
+        <h2 className="text-xl sm:text-2xl font-semibold text-primary tracking-tight mt-1">
           選課需求與容量監控分析 (Analytics & Capacity Optimization)
         </h2>
         <p className="text-xs text-text-muted mt-0.5">
@@ -59,38 +59,38 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
       {/* 4 Metric Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="p-5 rounded-2xl bg-surface-card border border-border-subtle shadow-xs">
-          <div className="flex items-center justify-between text-text-muted text-xs font-semibold">
+          <div className="flex items-center justify-between text-text-muted text-xs font-medium">
             <span>開課總量</span>
             <span className="material-symbols-outlined text-[20px] text-primary">menu_book</span>
           </div>
-          <div className="text-2xl font-bold text-primary mt-2">{totalCourses} 門</div>
+          <div className="text-2xl font-semibold text-primary mt-2">{totalCourses} 門</div>
           <div className="text-[11px] text-text-muted mt-1">跨 10 系所及通識中心</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface-card border border-border-subtle shadow-xs">
-          <div className="flex items-center justify-between text-text-muted text-xs font-semibold">
+          <div className="flex items-center justify-between text-text-muted text-xs font-medium">
             <span>總核定開課名額</span>
             <span className="material-symbols-outlined text-[20px] text-secondary">chair_alt</span>
           </div>
-          <div className="text-2xl font-bold text-secondary mt-2">{totalCapacity.toLocaleString()} 席</div>
+          <div className="text-2xl font-semibold text-secondary mt-2">{totalCapacity.toLocaleString()} 席</div>
           <div className="text-[11px] text-text-muted mt-1">教室容納上限基準</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface-card border border-border-subtle shadow-xs">
-          <div className="flex items-center justify-between text-text-muted text-xs font-semibold">
+          <div className="flex items-center justify-between text-text-muted text-xs font-medium">
             <span>模擬中選人次</span>
             <span className="material-symbols-outlined text-[20px] text-amber-600">group_add</span>
           </div>
-          <div className="text-2xl font-bold text-amber-600 mt-2">{totalEnrolled.toLocaleString()} 人</div>
+          <div className="text-2xl font-semibold text-amber-600 mt-2">{totalEnrolled.toLocaleString()} 人</div>
           <div className="text-[11px] text-text-muted mt-1">第一階段志願模擬投標</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface-card border border-border-subtle shadow-xs">
-          <div className="flex items-center justify-between text-text-muted text-xs font-semibold">
+          <div className="flex items-center justify-between text-text-muted text-xs font-medium">
             <span>平均滿額率</span>
             <span className="material-symbols-outlined text-[20px] text-emerald-600">speed</span>
           </div>
-          <div className="text-2xl font-bold text-emerald-600 mt-2">{overallRate}%</div>
+          <div className="text-2xl font-semibold text-emerald-600 mt-2">{overallRate}%</div>
           <div className="text-[11px] text-text-muted mt-1">全校容量供需平衡良好</div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
         {/* College Capacity Progress Bars */}
         <div className="bg-surface-card rounded-2xl p-5 shadow-xs border border-border-subtle">
           <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
-            <h3 className="font-bold text-sm text-primary flex items-center gap-1.5">
+            <h3 className="font-semibold text-sm text-primary flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[18px]">account_balance</span>
               <span>各學院開課規模與填補率</span>
             </h3>
@@ -111,11 +111,11 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
             {collegeStats.map(c => (
               <div key={c.college} className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle">
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <div className="font-bold text-on-surface flex items-center gap-2">
+                  <div className="font-semibold text-on-surface flex items-center gap-2">
                     <span>{c.college}</span>
                     <span className="text-text-muted font-normal">({c.count} 門課程)</span>
                   </div>
-                  <div className="font-mono font-bold text-primary">
+                  <div className="font-mono font-semibold text-primary">
                     {c.enrolled} / {c.capacity} 席 ({c.rate}%)
                   </div>
                 </div>
@@ -135,7 +135,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
         {/* Top Demanded Courses */}
         <div className="bg-surface-card rounded-2xl p-5 shadow-xs border border-border-subtle">
           <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
-            <h3 className="font-bold text-sm text-primary flex items-center gap-1.5">
+            <h3 className="font-semibold text-sm text-primary flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[18px] text-tertiary">local_fire_department</span>
               <span>熱門爆滿排行（建議開課組評估加開班次）</span>
             </h3>
@@ -149,16 +149,16 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
                 <div
                   key={c.id}
                   onClick={() => onViewCourseDetail(c)}
-                  className="p-2.5 rounded-xl hover:bg-surface-container-low border border-transparent hover:border-border-subtle flex items-center justify-between text-xs cursor-pointer transition-all"
+                  className="p-2.5 rounded-xl hover:bg-surface-container-low border border-transparent hover:border-border-subtle flex items-center justify-between text-xs cursor-pointer transition"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[11px] shrink-0 ${
+                    <span className={`w-5 h-5 rounded-md flex items-center justify-center font-semibold text-[11px] shrink-0 ${
                       i < 3 ? 'bg-tertiary text-white' : 'bg-surface-container text-text-muted'
                     }`}>
                       {i + 1}
                     </span>
                     <div className="min-w-0 truncate">
-                      <div className="font-bold text-on-surface truncate">{c.name}</div>
+                      <div className="font-semibold text-on-surface truncate">{c.name}</div>
                       <div className="text-[11px] text-text-muted truncate">
                         {c.teacher} • {c.department}
                       </div>
@@ -166,7 +166,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
                   </div>
 
                   <div className="text-right shrink-0 ml-3">
-                    <span className={`px-2 py-0.5 rounded-full font-bold font-mono text-[11px] ${
+                    <span className={`px-2 py-0.5 rounded-full font-semibold font-mono text-[11px] ${
                       fill >= 100
                         ? 'bg-rose-100 text-rose-800'
                         : fill >= 85

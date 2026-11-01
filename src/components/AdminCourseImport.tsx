@@ -175,7 +175,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
     }
 
     onBatchImport(parsedCourses, overwriteExisting);
-    showToast(`成功匯入 ${parsedCourses.length} 門課程！已同步更新至全校系統。`);
+    showToast(`成功匯入 ${parsedCourses.length} 門課程。已同步更新至全校系統。`);
     setJsonText('');
     setParsedCourses(null);
   };
@@ -195,7 +195,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast(`已將全校 ${currentCourses.length} 門課程匯出為 JSON 檔案！`);
+    showToast(`已將全校 ${currentCourses.length} 門課程匯出為 JSON 檔案`);
   };
 
   const handleExportCsv = () => {
@@ -225,7 +225,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
     document.body.appendChild(link);
     link.click();
     link.remove();
-    showToast(`已將全校 ${currentCourses.length} 門課程匯出為 CSV 試算表！`);
+    showToast(`已將全校 ${currentCourses.length} 門課程匯出為 CSV 試算表`);
   };
 
   // Compute diff against current courses
@@ -247,14 +247,14 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
       <section className="w-full bg-surface-card shadow-xs px-4 sm:px-6 py-4 sm:py-5 mb-6 rounded-2xl border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-xs font-bold flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-xs font-medium flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px]">sync_alt</span>
               <span>教務資料介接與串聯</span>
             </span>
             <span className="text-text-muted text-xs">•</span>
             <span className="text-xs text-text-muted">支援 JSON / CSV / 課查系統封裝檔</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-primary tracking-tight mt-1">
+          <h2 className="text-xl sm:text-2xl font-semibold text-primary tracking-tight mt-1">
             匯入課程查詢系統輸出結果 (Batch Course Import & Sync)
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
@@ -266,14 +266,14 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handleExportJson}
-            className="px-3.5 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border-subtle text-xs font-bold text-on-surface flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border-subtle text-xs font-medium text-on-surface flex items-center gap-1.5 transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
             <span>匯出 JSON</span>
           </button>
           <button
             onClick={handleExportCsv}
-            className="px-3.5 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border-subtle text-xs font-bold text-on-surface flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high border border-border-subtle text-xs font-medium text-on-surface flex items-center gap-1.5 transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">table_chart</span>
             <span>匯出 CSV</span>
@@ -287,13 +287,13 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-surface-card rounded-2xl p-5 shadow-xs border border-border-subtle">
             <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
-              <div className="flex items-center gap-2 text-primary font-bold text-sm">
+              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <span className="material-symbols-outlined text-[20px]">upload_file</span>
                 <span>匯入來源選擇與檔案解析</span>
               </div>
               <button
                 onClick={handleLoadSample}
-                className="text-xs font-bold text-secondary hover:underline flex items-center gap-1"
+                className="text-xs font-medium text-secondary hover:underline flex items-center gap-1"
               >
                 <span className="material-symbols-outlined text-[16px]">data_object</span>
                 <span>載入課查系統範例格式</span>
@@ -302,11 +302,11 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
 
             {/* Drag & Drop File Upload Area */}
             <div className="mb-4">
-              <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border-subtle hover:border-primary/50 rounded-2xl cursor-pointer bg-surface-container-low hover:bg-surface-container transition-all text-center">
+              <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border-subtle hover:border-primary/50 rounded-2xl cursor-pointer bg-surface-container-low hover:bg-surface-container transition text-center">
                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
                   <span className="material-symbols-outlined text-[28px]">file_upload</span>
                 </div>
-                <span className="text-sm font-bold text-on-surface">
+                <span className="text-sm font-semibold text-on-surface">
                   點擊選取或拖曳課程輸出檔案至此處 (.json / .txt)
                 </span>
                 <span className="text-xs text-text-muted mt-1">
@@ -324,11 +324,11 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
             {/* Direct JSON Editor Textarea */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-on-surface">
+                <label className="text-xs font-medium text-on-surface">
                   或直接貼上 JSON 輸出字串：
                 </label>
                 {parsedCourses && (
-                  <span className="text-xs font-bold text-secondary flex items-center gap-1">
+                  <span className="text-xs font-medium text-secondary flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">check_circle</span>
                     <span>語法正確，已解析 {parsedCourses.length} 門課程</span>
                   </span>
@@ -355,7 +355,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
         {/* Right 1 Col: Diff Preview & Apply Controls */}
         <div className="space-y-4">
           <div className="bg-surface-card rounded-2xl p-5 shadow-xs border border-border-subtle">
-            <h4 className="font-bold text-sm text-primary mb-3 flex items-center gap-1.5">
+            <h4 className="font-semibold text-sm text-primary mb-3 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[20px]">difference</span>
               <span>匯入差異分析與套用設定</span>
             </h4>
@@ -363,22 +363,22 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
             {diffSummary ? (
               <div className="space-y-3">
                 <div className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle text-xs space-y-2">
-                  <div className="flex justify-between font-bold text-on-surface">
+                  <div className="flex justify-between font-semibold text-on-surface">
                     <span>準備匯入總數：</span>
                     <span className="font-mono text-primary text-sm">{diffSummary.total} 門</span>
                   </div>
                   <div className="flex justify-between text-secondary">
                     <span>• 全新新增課程：</span>
-                    <span className="font-bold font-mono">+{diffSummary.newCount} 門</span>
+                    <span className="font-semibold font-mono">+{diffSummary.newCount} 門</span>
                   </div>
                   <div className="flex justify-between text-amber-600">
                     <span>• 既有同代碼課程：</span>
-                    <span className="font-bold font-mono">{diffSummary.overwriteCount} 門</span>
+                    <span className="font-semibold font-mono">{diffSummary.overwriteCount} 門</span>
                   </div>
                 </div>
 
                 <div className="pt-2">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-medium text-on-surface cursor-pointer">
                     <input
                       type="checkbox"
                       checked={overwriteExisting}
@@ -394,7 +394,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
 
                 <button
                   onClick={handleApplyImport}
-                  className="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm shadow-md hover:bg-primary-container active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4"
+                  className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm shadow-md hover:bg-primary-container active:scale-[0.99] transition flex items-center justify-center gap-2 mt-4"
                 >
                   <span className="material-symbols-outlined text-[20px]">published_with_changes</span>
                   <span>確認匯入並更新課程庫</span>
@@ -413,7 +413,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
 
           {/* Quick Guidance Box */}
           <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10 text-xs text-primary space-y-2">
-            <div className="font-bold flex items-center gap-1">
+            <div className="font-semibold flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px]">info</span>
               <span>輸出格式相容說明</span>
             </div>
@@ -433,7 +433,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
       {parsedCourses && parsedCourses.length > 0 && (
         <div className="mt-6 bg-surface-card rounded-2xl p-5 shadow-xs border border-border-subtle">
           <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-3">
-            <h4 className="font-bold text-sm text-primary flex items-center gap-1.5">
+            <h4 className="font-semibold text-sm text-primary flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[20px]">preview</span>
               <span>即將匯入之課程預覽清單 ({parsedCourses.length} 門)</span>
             </h4>
@@ -445,7 +445,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-surface-container-low text-text-muted font-bold border-b border-border-subtle">
+                <tr className="bg-surface-container-low text-text-muted font-semibold border-b border-border-subtle">
                   <th className="py-2.5 px-3">課程代碼</th>
                   <th className="py-2.5 px-3">課程名稱</th>
                   <th className="py-2.5 px-3">系所 / 學院</th>
@@ -458,8 +458,8 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
               <tbody className="divide-y divide-border-subtle">
                 {parsedCourses.map((c, i) => (
                   <tr key={i} className="hover:bg-surface-container-low">
-                    <td className="py-2 px-3 font-mono font-bold text-primary">{c.id}</td>
-                    <td className="py-2 px-3 font-bold text-on-surface">{c.name}</td>
+                    <td className="py-2 px-3 font-mono font-semibold text-primary">{c.id}</td>
+                    <td className="py-2 px-3 font-semibold text-on-surface">{c.name}</td>
                     <td className="py-2 px-3 text-text-muted">{c.department}</td>
                     <td className="py-2 px-3">{c.teacher}</td>
                     <td className="py-2 px-3">
