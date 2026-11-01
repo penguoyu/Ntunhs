@@ -29,7 +29,7 @@ export const AllocationResultModal: React.FC<AllocationResultModalProps> = ({ re
       >
         <div className="px-5 py-4 border-b border-border-subtle flex items-start justify-between gap-3">
           <div>
-            <h2 id="allocation-title" className="font-bold text-base">
+            <h2 id="allocation-title" className="font-semibold text-base">
               分發結果（模擬）
             </h2>
             <p className="text-xs text-text-muted mt-0.5">
@@ -51,7 +51,7 @@ export const AllocationResultModal: React.FC<AllocationResultModalProps> = ({ re
             const ok = r.outcome === 'accepted';
             return (
               <li key={r.course.id} className="flex items-center gap-3 px-5 py-3">
-                <span className="w-5 text-xs font-bold text-text-muted shrink-0">{r.rank}</span>
+                <span className="w-5 text-xs font-medium text-text-muted shrink-0">{r.rank}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{r.course.name}</p>
                   <p className="text-[11px] text-text-muted">
@@ -60,7 +60,7 @@ export const AllocationResultModal: React.FC<AllocationResultModalProps> = ({ re
                   </p>
                 </div>
                 <span
-                  className={`text-xs font-bold flex items-center gap-1 shrink-0 ${
+                  className={`text-xs font-medium flex items-center gap-1 shrink-0 ${
                     ok ? 'text-secondary' : 'text-conflict-danger'
                   }`}
                 >
@@ -76,7 +76,7 @@ export const AllocationResultModal: React.FC<AllocationResultModalProps> = ({ re
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary-container"
+            className="w-full py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-container"
           >
             知道了
           </button>

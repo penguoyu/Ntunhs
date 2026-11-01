@@ -47,7 +47,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-surface-card w-full max-w-lg rounded-2xl shadow-2xl p-5 border border-border-subtle flex flex-col gap-4 animate-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-          <div className="flex items-center gap-2 text-primary font-bold">
+          <div className="flex items-center gap-2 text-primary font-semibold">
             <span className="material-symbols-outlined text-[20px]">notifications_active</span>
             <span>通知</span>
           </div>
@@ -66,8 +66,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
               className="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle flex flex-col gap-1.5 text-xs"
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-primary">{n.title}</span>
-                <span className="text-[10px] text-text-muted">{n.time}</span>
+                <span className="font-semibold text-primary">{n.title}</span>
+                <span className="text-[11px] text-text-muted">{n.time}</span>
               </div>
               <p className="text-text-secondary leading-relaxed">{n.desc}</p>
               <div className="flex justify-end pt-1">
@@ -76,7 +76,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     onClose();
                     onNavigateTab(n.tabTarget);
                   }}
-                  className="text-xs font-bold text-general-sky hover:underline flex items-center gap-1"
+                  className="text-xs font-medium text-general-sky hover:underline flex items-center gap-1"
                 >
                   <span>{n.actionText}</span>
                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -89,7 +89,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         <div className="pt-2 border-t border-border-subtle flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-xl text-primary font-bold text-xs"
+            className="px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-xl text-primary font-medium text-xs"
           >
             關閉
           </button>

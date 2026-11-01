@@ -329,12 +329,12 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-medium text-xs">
                 <span className="material-symbols-outlined text-[16px]">school</span>
                 <span>{student.department}</span>
               </div>
               <span className="text-border-strong text-xs">•</span>
-              <div className="flex items-center gap-1.5 text-secondary text-xs font-semibold">
+              <div className="flex items-center gap-1.5 text-secondary text-xs font-medium">
                 <span className="material-symbols-outlined text-[16px]">verified_user</span>
                 <span>已套用個人身分智慧規則（自動排除已修過課程與原班衝堂節次）</span>
               </div>
@@ -361,7 +361,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="搜尋課名、授課教師、開課代碼（例如 IM3012）、或關鍵字：醫療資訊、FHIR、Python、智慧護理..."
-                className="w-full h-12 pl-12 pr-12 rounded-xl bg-surface-bg text-on-surface placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary shadow-inner text-sm transition-all"
+                className="w-full h-12 pl-12 pr-12 rounded-xl bg-surface-bg text-on-surface placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary shadow-inner text-sm transition"
               />
               {searchQuery ? (
                 <button
@@ -393,7 +393,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
             <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
               <button
                 onClick={() => setIsAdvancedFilterOpen(!isAdvancedFilterOpen)}
-                className={`flex-1 md:flex-initial h-12 px-5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                className={`flex-1 md:flex-initial h-12 px-5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition cursor-pointer ${
                   isAdvancedFilterOpen
                     ? 'bg-primary text-white ring-2 ring-primary/30 ring-offset-2'
                     : 'bg-surface-container hover:bg-surface-container-high text-primary'
@@ -405,7 +405,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                 </span>
                 <span>{isAdvancedFilterOpen ? '收合進階檢索' : '進階檢索'}</span>
                 {activeFilterCount > 0 && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     isAdvancedFilterOpen ? 'bg-white text-primary' : 'bg-primary text-white'
                   }`}>
                     {activeFilterCount}
@@ -425,20 +425,20 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
           {/* Advanced Multi-Dimensional Filter Panel (Expanded on Desktop & Mobile) */}
           {isAdvancedFilterOpen && (
-            <div className="mt-2 p-5 bg-surface-container-lowest border border-primary/20 rounded-2xl shadow-md transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="mt-2 p-5 bg-surface-container-lowest border border-primary/20 rounded-2xl shadow-md transition animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[20px]">tune</span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-on-surface">進階多維度精準檢索面板</h3>
+                    <h3 className="text-sm font-semibold text-on-surface">進階多維度精準檢索面板</h3>
                     <p className="text-[11px] text-text-muted">支援授課教師、修別、上課星期、學分數與全英語授課交叉檢索</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {activeFilterCount > 0 && (
-                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
                       已啟用 {activeFilterCount} 個篩選條件
                     </span>
                   )}
@@ -456,7 +456,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* 1. 授課教師 */}
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1.5 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px] text-primary">person</span>
                     授課教師姓名
                   </label>
@@ -481,7 +481,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
                 {/* 2. 課程修別 */}
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1.5 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px] text-secondary">category</span>
                     課程修別性質
                   </label>
@@ -501,7 +501,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
                 {/* 3. 授課星期 */}
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1.5 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px] text-general-sky">calendar_month</span>
                     上課星期
                   </label>
@@ -521,7 +521,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
                 {/* 4. 學分數 */}
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1.5 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px] text-tertiary">counter_1</span>
                     學分數
                   </label>
@@ -540,7 +540,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
                 {/* 5. SDGs 永續目標 */}
                 <div className="sm:col-span-2 lg:col-span-4">
-                  <label className="block text-xs font-bold text-on-surface mb-1.5 flex items-center gap-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1.5 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px] text-emerald-600">eco</span>
                     <span>對應 SDGs 聯合國永續發展目標 (北護校務重點指標)</span>
                   </label>
@@ -568,7 +568,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                             key={id}
                             type="button"
                             onClick={() => setAdvancedSDG(isSelected ? '全部' : id.toString())}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 cursor-pointer shrink-0 ${
                               isSelected
                                 ? 'text-white shadow-xs'
                                 : 'bg-surface-card hover:bg-surface-container text-text-secondary border border-border-subtle'
@@ -588,7 +588,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
               {/* Quick toggles row */}
               <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-border-subtle">
                 <div className="flex items-center gap-4 flex-wrap">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs font-medium text-on-surface cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={availableOnly}
@@ -598,7 +598,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                     <span>僅顯示尚有餘額</span>
                   </label>
 
-                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs font-medium text-on-surface cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={prereqOnly}
@@ -608,7 +608,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                     <span>僅顯示先修及格課程</span>
                   </label>
 
-                  <label className="flex items-center gap-2 text-xs font-semibold text-on-surface cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs font-medium text-on-surface cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={advancedEMI}
@@ -628,7 +628,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                   </button>
                   <button
                     onClick={() => setIsAdvancedFilterOpen(false)}
-                    className="px-4 py-1.5 rounded-lg text-xs font-bold bg-primary text-white hover:bg-primary-hover shadow-xs transition-colors cursor-pointer"
+                    className="px-4 py-1.5 rounded-lg text-xs font-medium bg-primary text-white hover:bg-primary-hover shadow-xs transition-colors cursor-pointer"
                   >
                     完成並檢視結果 ({filteredCourses.length})
                   </button>
@@ -639,7 +639,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
           {/* Hot Search Queries Bar */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            <span className="text-text-muted text-xs font-semibold shrink-0 flex items-center gap-1">
+            <span className="text-text-muted text-xs font-medium shrink-0 flex items-center gap-1">
               <span
                 className="material-symbols-outlined text-[15px] text-tertiary-fixed-dim"
                 style={{ fontVariationSettings: "'FILL' 1" }}
@@ -667,7 +667,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                 <button
                   key={filter}
                   onClick={() => setSelectedQuickFilter(filter)}
-                  className={`filter-pill shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs flex items-center gap-1 ${
+                  className={`filter-pill shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition shadow-xs flex items-center gap-1 ${
                     active
                       ? 'bg-primary text-white shadow-sm'
                       : 'bg-surface-card text-text-secondary hover:text-primary hover:bg-surface-container'
@@ -699,11 +699,11 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
           }`}
         >
           <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-            <div className="flex items-center gap-2 text-primary font-bold text-base">
+            <div className="flex items-center gap-2 text-primary font-semibold text-base">
               <span className="material-symbols-outlined text-[20px]">filter_alt</span>
               <span>多維度智慧篩選</span>
             </div>
-            <span className="text-[11px] font-bold text-secondary bg-secondary-fixed/20 px-2 py-0.5 rounded-md">
+            <span className="text-[11px] font-semibold text-secondary bg-secondary-fixed/20 px-2 py-0.5 rounded-md">
               8 條件啟用
             </span>
           </div>
@@ -711,7 +711,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
           {/* Department Tree Selection */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-on-surface">開課學制與系所</label>
+              <label className="text-xs font-medium text-on-surface">開課學制與系所</label>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSelectedCollege(['IM', 'HA', 'SLP', 'NUR', 'LTC', 'NMW', 'DPC', 'EX', 'IEC', 'GE'])}
@@ -731,7 +731,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
             <div className="space-y-2 text-xs">
               {/* College 1: 健康科技學院 */}
               <div className="rounded-xl bg-surface-container-low p-2">
-                <div className="flex items-center justify-between px-1 py-0.5 text-primary font-bold">
+                <div className="flex items-center justify-between px-1 py-0.5 text-primary font-semibold">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">folder_open</span>
                     健康科技學院
@@ -792,7 +792,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
               {/* College 2: 護理學院 */}
               <div className="rounded-xl bg-surface-container-low p-2">
-                <div className="flex items-center justify-between px-1 py-0.5 text-on-surface font-bold">
+                <div className="flex items-center justify-between px-1 py-0.5 text-on-surface font-semibold">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">domain</span>
                     護理學院
@@ -853,7 +853,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
               {/* College 3: 人類發展與健康學院 */}
               <div className="rounded-xl bg-surface-container-low p-2">
-                <div className="flex items-center justify-between px-1 py-0.5 text-on-surface font-bold">
+                <div className="flex items-center justify-between px-1 py-0.5 text-on-surface font-semibold">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">psychology</span>
                     人類發展與健康學院
@@ -914,7 +914,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
               {/* College 4: 通識教育中心 */}
               <div className="rounded-xl bg-surface-container-low p-2">
-                <div className="flex items-center justify-between px-1 py-0.5 text-on-surface font-bold">
+                <div className="flex items-center justify-between px-1 py-0.5 text-on-surface font-semibold">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">school</span>
                     通識教育中心
@@ -946,13 +946,13 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
           {/* Time Slot Matrix */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-on-surface">時段篩選矩陣 (週 / 節)</label>
+              <label className="text-xs font-medium text-on-surface">時段篩選矩陣 (週 / 節)</label>
               <button onClick={clearSlots} className="text-[11px] text-text-muted hover:text-primary">
                 清空節次
               </button>
             </div>
             <div className="bg-surface-bg p-2 rounded-xl border border-border-subtle">
-              <div className="grid grid-cols-6 gap-1 text-center text-[11px] font-bold mb-1 text-text-muted">
+              <div className="grid grid-cols-6 gap-1 text-center text-[11px] font-semibold mb-1 text-text-muted">
                 <span>節</span>
                 <span>一</span>
                 <span>二</span>
@@ -974,11 +974,11 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                         key={day}
                         onClick={() => !isConflict && toggleSlot(key)}
                         disabled={isConflict}
-                        className={`h-6 rounded text-[10px] font-semibold transition-all ${
+                        className={`h-6 rounded text-[11px] font-semibold transition ${
                           isConflict
                             ? 'bg-surface-container-high text-text-muted cursor-not-allowed'
                             : isSelected
-                            ? 'bg-primary text-white font-bold shadow-xs'
+                            ? 'bg-primary text-white font-semibold shadow-xs'
                             : 'bg-surface-card hover:bg-primary-fixed text-text-secondary'
                         }`}
                         title={isConflict ? '原班必修：軟體工程 (不可選)' : `週${['一','二','三','四','五'][day-1]} 第${period}節`}
@@ -989,7 +989,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                   })}
                 </div>
               ))}
-              <div className="flex items-center justify-between text-[10px] text-text-muted mt-2 pt-2 border-t border-border-subtle">
+              <div className="flex items-center justify-between text-[11px] text-text-muted mt-2 pt-2 border-t border-border-subtle">
                 <span className="flex items-center gap-1">
                   <span className="w-2.5 h-2.5 bg-primary rounded-xs"></span> 勾選過濾
                 </span>
@@ -1004,7 +1004,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
           <div className="flex flex-col gap-2 pt-1">
             <div className="p-3 rounded-xl bg-secondary-fixed/15 flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-on-surface">先修科目智能防呆檢核</span>
+                <span className="text-xs font-medium text-on-surface">先修科目智能防呆檢核</span>
                 <span className="text-[11px] text-secondary">僅展示已符合先修及格條件課程</span>
               </div>
               <input
@@ -1017,7 +1017,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
             <div className="p-3 rounded-xl bg-surface-bg flex items-center justify-between border border-border-subtle">
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-on-surface">只看非額滿開課班級</span>
+                <span className="text-xs font-medium text-on-surface">只看非額滿開課班級</span>
                 <span className="text-[11px] text-text-muted">隱藏已達上限且無候補名額</span>
               </div>
               <input
@@ -1030,12 +1030,12 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
           </div>
 
           {/* Micro-degree Pathway Status Box */}
-          <div className="p-3.5 rounded-xl bg-gradient-to-br from-primary-container to-primary text-white flex flex-col gap-1 shadow-sm">
+          <div className="p-3.5 rounded-xl bg-primary-container text-white flex flex-col gap-1 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-on-primary-container font-semibold">已綁定微學程路徑</span>
               <span className="material-symbols-outlined text-[16px] text-secondary-fixed">verified</span>
             </div>
-            <span className="font-bold text-sm tracking-tight">{student.microDegree}</span>
+            <span className="font-semibold text-sm tracking-tight">{student.microDegree}</span>
             <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden my-1">
               <div
                 className="bg-secondary-fixed-dim h-full rounded-full transition-all"
@@ -1053,8 +1053,8 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
           {/* Results Summary Bar */}
           <div className="bg-surface-card p-4 rounded-2xl shadow-sm border border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-base text-on-surface">符合條件課程</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-xs">
+              <span className="font-semibold text-base text-on-surface">符合條件課程</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium text-xs">
                 {filteredCourses.length} 門課
               </span>
               <span className="text-text-muted text-xs hidden md:inline">
@@ -1068,7 +1068,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                 <select
                   value={sortBy}
                   onChange={e => setSortBy(e.target.value)}
-                  className="bg-surface-bg text-on-surface font-semibold text-xs px-2.5 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-primary cursor-pointer"
+                  className="bg-surface-bg text-on-surface font-medium text-xs px-2.5 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-primary cursor-pointer"
                 >
                   <option value="recommend">學程契合度優先 (AI Recommended)</option>
                   <option value="available">剩餘名額多到少</option>
@@ -1110,14 +1110,14 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                     <div className="flex-1 flex flex-col gap-1.5">
                       {/* Tags & Badges */}
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-bold text-xs">
+                        <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-medium text-xs">
                           {course.category} {course.credits.toFixed(1)} 學分
                         </span>
                         <span className="px-2 py-0.5 rounded bg-surface-container font-medium text-xs text-text-muted">
                           {course.id}
                         </span>
                         {course.isEMI && (
-                          <span className="px-2 py-0.5 rounded-full bg-general-sky/15 text-general-sky font-semibold text-xs flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-full bg-general-sky/15 text-general-sky font-medium text-xs flex items-center gap-1">
                             <span className="material-symbols-outlined text-[13px]">translate</span>
                             EMI全英語授課
                           </span>
@@ -1128,8 +1128,8 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                             const dayZh = ['一', '二', '三', '四', '五'][course.day! - 1] || `${course.day}`;
                             return (
                               <span
-                                className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-1 border border-rose-300 dark:border-rose-800"
-                                title={`⚠️ 與預排課程《${conflictingWith.map(c => c.name).join('、')}》時段衝突 (週${dayZh} 第${course.periods?.join(',')}節)`}
+                                className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-medium text-xs flex items-center gap-1 border border-rose-300 dark:border-rose-800"
+                                title={`與預排課程《${conflictingWith.map(c => c.name).join('、')}》時段衝突 (週${dayZh} 第${course.periods?.join(',')}節)`}
                               >
                                 <span className="material-symbols-outlined text-[13px] text-rose-600">warning</span>
                                 時段衝堂 (與《{conflictingWith[0]?.name.slice(0, 5)}...》)
@@ -1137,7 +1137,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                             );
                           }
                           return (
-                            <span className="px-2 py-0.5 rounded-full bg-secondary-fixed/20 text-secondary font-semibold text-xs flex items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-full bg-secondary-fixed/20 text-secondary font-medium text-xs flex items-center gap-1">
                               <span className="material-symbols-outlined text-[14px]">check_circle</span>
                               衝突安全 (無衝堂)
                             </span>
@@ -1153,7 +1153,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                       {/* Course Title */}
                       <h3
                         onClick={() => onViewCourseDetail(course)}
-                        className="font-bold text-lg sm:text-xl text-primary hover:text-primary-container cursor-pointer transition-colors mt-0.5"
+                        className="font-semibold text-lg sm:text-xl text-primary hover:text-primary-container cursor-pointer transition-colors mt-0.5"
                       >
                         {course.name}
                         {course.englishName && (
@@ -1190,7 +1190,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                       {/* Quota Progress */}
                       <div className="flex items-center justify-between sm:justify-start lg:flex-col lg:items-end gap-2 w-full sm:w-auto">
                         <div className="flex items-center gap-1">
-                          <span className="font-bold text-base text-on-surface">{course.enrolled}</span>
+                          <span className="font-semibold text-base text-on-surface">{course.enrolled}</span>
                           <span className="text-text-muted text-xs">/ {course.capacity} 席</span>
                           {/* Heart Favorite Button */}
                           <button
@@ -1221,7 +1221,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                               style={{ width: `${Math.min(100, (course.enrolled / course.capacity) * 100)}%` }}
                             ></div>
                           </div>
-                          <span className="text-[10px] sm:text-[11px] font-semibold mt-0.5 text-secondary">
+                          <span className="text-[11px] sm:text-[11px] font-semibold mt-0.5 text-secondary">
                             {course.enrolled >= course.capacity
                               ? '已額滿 (抽籤)'
                               : course.capacity - course.enrolled <= 3
@@ -1235,7 +1235,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
                       <div className="grid grid-cols-2 sm:flex items-center gap-1.5 w-full sm:w-auto">
                         <button
                           onClick={() => onViewCourseDetail(course)}
-                          className="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          className="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                           title="查看完整課程大綱、SDGs 永續目標與評定標準"
                         >
                           <span className="material-symbols-outlined text-[15px]">menu_book</span>
@@ -1244,7 +1244,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
 
                         <button
                           onClick={() => onToggleCart(course.id)}
-                          className={`h-9 px-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer ${
+                          className={`h-9 px-3.5 rounded-lg text-xs font-medium flex items-center justify-center gap-1 shadow-sm transition active:scale-95 cursor-pointer ${
                             inCart
                               ? 'bg-secondary text-white hover:opacity-90'
                               : 'bg-primary text-white hover:bg-primary-container'
@@ -1279,7 +1279,7 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
               </span>
             </div>
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1 text-primary text-xs font-bold mb-0.5">
+              <div className="flex items-center gap-1 text-primary text-xs font-medium mb-0.5">
                 <span className="material-symbols-outlined text-[16px]">notifications_active</span>
                 <span>選課小秘書 跨域小叮嚀</span>
               </div>
@@ -1300,20 +1300,20 @@ export const CourseSearch: React.FC<CourseSearchProps> = ({
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm text-on-surface truncate">已加入模擬排課</span>
-                <span className="px-2 py-0.2 rounded-full bg-secondary text-white text-xs font-bold">
+                <span className="font-semibold text-sm text-on-surface truncate">已加入模擬排課</span>
+                <span className="px-2 py-0.2 rounded-full bg-secondary text-white text-xs font-medium">
                   {cart.length} 門
                 </span>
               </div>
               <span className="text-xs text-text-muted truncate">
-                累計 <strong className="text-primary font-bold">{totalCredits.toFixed(1)}</strong> 學分 (上限 25.0)
+                累計 <strong className="text-primary font-semibold">{totalCredits.toFixed(1)}</strong> 學分 (上限 25.0)
               </span>
             </div>
           </div>
 
           <button
             onClick={onGoToSimulation}
-            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-primary text-white text-xs sm:text-sm font-bold shadow-md hover:bg-primary-container active:scale-95 transition-all shrink-0"
+            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-primary text-white text-xs sm:text-sm font-medium shadow-md hover:bg-primary-container active:scale-95 transition shrink-0"
           >
             <span>進入模擬工作台</span>
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

@@ -87,7 +87,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
   const handleSaveUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formEmail.trim() || !formUsername.trim()) {
-      showToast('請完整填寫姓名、帳號與 Email！');
+      showToast('請完整填寫姓名、帳號與 Email');
       return;
     }
 
@@ -137,13 +137,13 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
   };
 
   const handleResetPassword = (user: UserAccount) => {
-    showToast(`已寄送密碼重設確認信至 ${user.email}，預設臨時密碼已重置！`);
+    showToast(`已寄送密碼重設確認信至 ${user.email}，預設臨時密碼已重置`);
   };
 
   const confirmDelete = () => {
     if (!deletingUser) return;
     if (currentUser && deletingUser.id === currentUser.id) {
-      showToast('無法刪除目前正在登入使用的管理員帳號！');
+      showToast('無法刪除目前正在登入使用的管理員帳號');
       setDeletingUser(null);
       return;
     }
@@ -158,14 +158,14 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
       <section className="w-full bg-surface-card shadow-xs px-6 py-5 mb-6 rounded-2xl border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 text-xs font-bold flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 text-xs font-medium flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
               <span>身分與權限控管系統 (RBAC)</span>
             </span>
             <span className="text-text-muted text-xs">•</span>
             <span className="text-xs text-text-muted">全校帳號管理</span>
           </div>
-          <h2 className="text-2xl font-bold text-primary tracking-tight mt-1">
+          <h2 className="text-2xl font-semibold text-primary tracking-tight mt-1">
             所有個人帳號管理 (User & Access Control)
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
@@ -175,7 +175,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
 
         <button
           onClick={openAddUser}
-          className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center gap-2 self-start md:self-auto"
+          className="px-5 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm shadow-md hover:bg-primary-container active:scale-95 transition flex items-center gap-2 self-start md:self-auto"
         >
           <span className="material-symbols-outlined text-[20px]">person_add</span>
           <span>手動新增帳號</span>
@@ -190,7 +190,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">全校總使用者</div>
-            <div className="text-2xl font-bold text-primary">{users.length} 位</div>
+            <div className="text-2xl font-semibold text-primary">{users.length} 位</div>
           </div>
         </div>
 
@@ -200,7 +200,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">在校學生帳號</div>
-            <div className="text-2xl font-bold text-secondary">
+            <div className="text-2xl font-semibold text-secondary">
               {users.filter(u => u.role === 'student').length} 位
             </div>
           </div>
@@ -212,7 +212,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">課程管理員</div>
-            <div className="text-2xl font-bold text-amber-700">
+            <div className="text-2xl font-semibold text-amber-700">
               {users.filter(u => u.role === 'admin').length} 位
             </div>
           </div>
@@ -224,7 +224,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           </div>
           <div>
             <div className="text-xs text-text-muted">正常啟用比例</div>
-            <div className="text-2xl font-bold text-emerald-700">
+            <div className="text-2xl font-semibold text-emerald-700">
               {Math.round((users.filter(u => u.status === 'active').length / users.length) * 100)}%
             </div>
           </div>
@@ -250,7 +250,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           <select
             value={roleFilter}
             onChange={e => setRoleFilter(e.target.value as any)}
-            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-semibold"
+            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
           >
             <option value="ALL">全部角色 (All Roles)</option>
             <option value="admin">課程管理者 (Admin)</option>
@@ -260,7 +260,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as any)}
-            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-semibold"
+            className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
           >
             <option value="ALL">全部狀態 (All Status)</option>
             <option value="active">正常啟用 (Active)</option>
@@ -271,7 +271,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           <div className="flex items-center bg-surface-container-low p-1 rounded-xl shrink-0">
             <button
               onClick={() => setViewLayout('cards')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
                 viewLayout === 'cards'
                   ? 'bg-surface-card text-primary shadow-xs'
                   : 'text-text-muted hover:text-on-surface'
@@ -283,7 +283,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
             </button>
             <button
               onClick={() => setViewLayout('table')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
                 viewLayout === 'table'
                   ? 'bg-surface-card text-primary shadow-xs'
                   : 'text-text-muted hover:text-on-surface'
@@ -309,7 +309,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-base shrink-0 shadow-xs ${
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-semibold text-base shrink-0 shadow-xs ${
                       user.role === 'admin'
                         ? 'bg-amber-100 text-amber-900 border border-amber-300'
                         : 'bg-primary/10 text-primary border border-primary/20'
@@ -317,10 +317,10 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                       {user.name.slice(0, 1)}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-bold text-base text-on-surface flex items-center gap-1.5">
+                      <div className="font-semibold text-base text-on-surface flex items-center gap-1.5">
                         <span className="truncate">{user.name}</span>
                         {isCurrent && (
-                          <span className="px-1.5 py-0.2 rounded text-[10px] bg-primary text-white font-bold shrink-0">
+                          <span className="px-1.5 py-0.2 rounded text-[11px] bg-primary text-white font-semibold shrink-0">
                             您
                           </span>
                         )}
@@ -331,7 +331,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                     </div>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${
                     user.role === 'admin'
                       ? 'bg-amber-100 text-amber-900 border border-amber-200'
                       : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
@@ -359,7 +359,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                   <button
                     onClick={() => handleToggleStatus(user)}
                     disabled={isCurrent}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition ${
                       user.status === 'active'
                         ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                         : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
@@ -407,7 +407,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border-subtle bg-surface-container-low text-text-muted font-bold">
+                <tr className="border-b border-border-subtle bg-surface-container-low text-text-muted font-semibold">
                   <th className="py-3 px-4">使用者名稱 / 帳號</th>
                   <th className="py-3 px-4">角色權限</th>
                   <th className="py-3 px-4">所屬系所 / 處室單位</th>
@@ -425,7 +425,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                     <tr key={user.id} className="hover:bg-surface-container-low transition-colors">
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-semibold text-sm ${
                             user.role === 'admin'
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-primary/10 text-primary'
@@ -433,10 +433,10 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                             {user.name.slice(0, 1)}
                           </div>
                           <div>
-                            <div className="font-bold text-sm text-on-surface flex items-center gap-1.5">
+                            <div className="font-semibold text-sm text-on-surface flex items-center gap-1.5">
                               <span>{user.name}</span>
                               {isCurrent && (
-                                <span className="px-1.5 py-0.2 rounded text-[10px] bg-primary text-white font-bold">
+                                <span className="px-1.5 py-0.2 rounded text-[11px] bg-primary text-white font-semibold">
                                   您
                                 </span>
                               )}
@@ -449,7 +449,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
                           user.role === 'admin'
                             ? 'bg-amber-100 text-amber-900 border border-amber-300'
                             : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
@@ -474,7 +474,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                         <button
                           onClick={() => handleToggleStatus(user)}
                           disabled={isCurrent}
-                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold transition-all ${
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold transition ${
                             user.status === 'active'
                               ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                               : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
@@ -537,7 +537,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                 <span className="material-symbols-outlined text-[24px]">
                   {editingUser ? 'manage_accounts' : 'person_add'}
                 </span>
-                <h3 className="font-bold text-lg">
+                <h3 className="font-semibold text-lg">
                   {editingUser ? `編輯帳號：${editingUser.name}` : '建立新系統帳號'}
                 </h3>
               </div>
@@ -554,14 +554,14 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
 
             <form onSubmit={handleSaveUser} className="p-6 overflow-y-auto space-y-4 flex-1">
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
+                <label className="block text-xs font-medium text-on-surface mb-1">
                   帳號權限角色
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setFormRole('student')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-2 px-3 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition ${
                       formRole === 'student'
                         ? 'border-secondary bg-secondary/10 text-secondary'
                         : 'border-border-subtle bg-surface-bg text-text-muted hover:bg-surface-container'
@@ -573,7 +573,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                   <button
                     type="button"
                     onClick={() => setFormRole('admin')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-2 px-3 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition ${
                       formRole === 'admin'
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-border-subtle bg-surface-bg text-text-muted hover:bg-surface-container'
@@ -587,7 +587,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     系統登入帳號
                   </label>
                   <input
@@ -600,7 +600,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     使用者全名
                   </label>
                   <input
@@ -616,7 +616,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     電子郵件 (Email)
                   </label>
                   <input
@@ -629,7 +629,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     {formRole === 'student' ? '學號' : '教職員工號'}
                   </label>
                   <input
@@ -643,7 +643,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
+                <label className="block text-xs font-medium text-on-surface mb-1">
                   所屬系所 / 處室單位
                 </label>
                 <input
@@ -657,7 +657,7 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">聯絡電話</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">聯絡電話</label>
                   <input
                     type="tel"
                     value={formPhone}
@@ -667,11 +667,11 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">帳號啟用狀態</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">帳號啟用狀態</label>
                   <select
                     value={formStatus}
                     onChange={e => setFormStatus(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-bold"
+                    className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
                   >
                     <option value="active">正常啟用 (Active)</option>
                     <option value="suspended">已停用/停權 (Suspended)</option>
@@ -686,13 +686,13 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
                     setIsAddUserModalOpen(false);
                     setEditingUser(null);
                   }}
-                  className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-bold hover:bg-surface-container"
+                  className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-medium hover:bg-surface-container"
                 >
                   取消
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-primary text-white font-bold text-xs shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl bg-primary text-white font-medium text-xs shadow-md hover:bg-primary-container active:scale-95 transition flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[18px]">save</span>
                   <span>{editingUser ? '確認更新帳號' : '建立帳號'}</span>
@@ -710,21 +710,21 @@ export const AdminUserManagement: React.FC<AdminUserManagementProps> = ({
             <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
               <span className="material-symbols-outlined text-[28px]">person_remove</span>
             </div>
-            <h3 className="font-bold text-lg text-on-surface">確認刪除此使用者帳號？</h3>
+            <h3 className="font-semibold text-lg text-on-surface">確認刪除此使用者帳號？</h3>
             <p className="text-xs text-text-muted mt-2 leading-relaxed">
-              即將刪除帳號：<strong className="text-primary font-bold">{deletingUser.name}</strong> ({deletingUser.username})。
+              即將刪除帳號：<strong className="text-primary font-semibold">{deletingUser.name}</strong> ({deletingUser.username})。
               該帳號的選課記錄、排程模擬與個人設定將一併移除，此動作無法復原。
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setDeletingUser(null)}
-                className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-bold hover:bg-surface-container"
+                className="px-4 py-2 rounded-xl border border-border-subtle text-xs font-medium hover:bg-surface-container"
               >
                 取消保留
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 shadow-sm"
+                className="px-5 py-2 rounded-xl bg-rose-600 text-white text-xs font-medium hover:bg-rose-700 shadow-sm"
               >
                 確認刪除帳號
               </button>

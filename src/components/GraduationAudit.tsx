@@ -16,7 +16,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
   const handleDownloadPDF = () => {
     showToast('正在生成「國立臺北護理健康大學_歷年修業學分審查表.pdf」...');
     setTimeout(() => {
-      showToast('學分查核單 PDF 已成功下載至您的裝置！');
+      showToast('學分查核單 PDF 已成功下載至您的裝置');
     }, 1200);
   };
 
@@ -37,8 +37,8 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-bold text-lg sm:text-xl text-white tracking-tight">{student.name}</h2>
-                <span className="text-xs bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-bold">
+                <h2 className="font-semibold text-lg sm:text-xl text-white tracking-tight">{student.name}</h2>
+                <span className="text-xs bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-medium">
                   {student.status}
                 </span>
               </div>
@@ -50,7 +50,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
 
           <button
             onClick={() => showToast(`已重新整理成績資料（${SEMESTER_CODE}）`)}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all shrink-0"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition shrink-0"
             aria-label="更新學分資料"
           >
             <span className="material-symbols-outlined text-[20px]">sync</span>
@@ -61,17 +61,17 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
         <div className="mt-4 pt-3 grid grid-cols-3 gap-2 text-center relative z-10 bg-primary/40 rounded-xl p-3 backdrop-blur-sm border border-white/10">
           <div className="flex flex-col">
             <span className="text-[11px] text-on-primary-container">當前學期</span>
-            <span className="font-bold text-sm sm:text-base text-white mt-0.5">{SEMESTER_CODE}</span>
+            <span className="font-semibold text-sm sm:text-base text-white mt-0.5">{SEMESTER_CODE}</span>
           </div>
           <div className="flex flex-col border-x border-white/15">
             <span className="text-[11px] text-on-primary-container">累積 GPA</span>
-            <span className="font-bold text-sm sm:text-base text-secondary-fixed mt-0.5">
+            <span className="font-semibold text-sm sm:text-base text-secondary-fixed mt-0.5">
               {student.gpa.toFixed(2)}
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-[11px] text-on-primary-container">畢業班排名</span>
-            <span className="font-bold text-sm sm:text-base text-white mt-0.5">{student.rank}</span>
+            <span className="font-semibold text-sm sm:text-base text-white mt-0.5">{student.rank}</span>
           </div>
         </div>
       </div>
@@ -79,11 +79,11 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
       {/* Total Credit Progress Card */}
       <div className="bg-surface-card rounded-2xl p-5 sm:p-6 shadow-sm border border-border-subtle flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-          <div className="flex items-center gap-1.5 text-primary font-bold text-base">
+          <div className="flex items-center gap-1.5 text-primary font-semibold text-base">
             <span className="material-symbols-outlined text-[22px]">donut_large</span>
             <span>總修業學分進度</span>
           </div>
-          <span className="text-xs text-text-muted font-semibold">畢業門檻 128 學分</span>
+          <span className="text-xs text-text-muted font-medium">畢業門檻 128 學分</span>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-6 py-2">
@@ -118,8 +118,8 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="font-bold text-2xl text-primary leading-none">67%</span>
-              <span className="text-[10px] text-text-muted mt-1 font-semibold">總達成</span>
+              <span className="font-semibold text-2xl text-primary leading-none">67%</span>
+              <span className="text-[11px] text-text-muted mt-1 font-semibold">總達成</span>
             </div>
           </div>
 
@@ -130,7 +130,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                 <span className="w-2.5 h-2.5 rounded-full bg-secondary shrink-0"></span>
                 <span className="font-semibold text-text-secondary">已取得實得學分</span>
               </div>
-              <span className="font-bold text-sm text-on-surface">
+              <span className="font-semibold text-sm text-on-surface">
                 86 <span className="text-xs text-text-muted font-normal">分</span>
               </span>
             </div>
@@ -140,7 +140,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                 <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
                 <span className="font-semibold text-text-secondary">本學期擬修中</span>
               </div>
-              <span className="font-bold text-sm text-primary">
+              <span className="font-semibold text-sm text-primary">
                 +18 <span className="text-xs text-text-muted font-normal">分</span>
               </span>
             </div>
@@ -150,7 +150,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                 <span className="w-2.5 h-2.5 rounded-full bg-conflict-danger shrink-0"></span>
                 <span className="font-semibold text-text-secondary">未來尚缺學分</span>
               </div>
-              <span className="font-bold text-sm text-conflict-danger">
+              <span className="font-semibold text-sm text-conflict-danger">
                 24 <span className="text-xs text-text-muted font-normal">分</span>
               </span>
             </div>
@@ -163,14 +163,14 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
             <span>本學期全數通過後</span>
           </div>
-          <span className="text-secondary font-bold text-sm">81.3% (104 / 128)</span>
+          <span className="text-secondary font-semibold text-sm">81.3% (104 / 128)</span>
         </div>
       </div>
 
       {/* 4 Core Pillars Breakdown */}
       <div className="bg-surface-card rounded-2xl p-5 sm:p-6 shadow-sm border border-border-subtle flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-          <div className="flex items-center gap-1.5 text-primary font-bold text-base">
+          <div className="flex items-center gap-1.5 text-primary font-semibold text-base">
             <span className="material-symbols-outlined text-[20px]">bar_chart</span>
             <span>各類別學分</span>
           </div>
@@ -183,13 +183,13 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
-                <span className="font-bold text-sm text-on-surface">校訂共同必修</span>
+                <span className="font-semibold text-sm text-on-surface">校訂共同必修</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded-full">
                   已修畢
                 </span>
-                <span className="font-bold text-sm text-on-surface">18 / 18</span>
+                <span className="font-semibold text-sm text-on-surface">18 / 18</span>
               </div>
             </div>
             <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
@@ -205,13 +205,13 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-general-sky text-[18px]">trending_up</span>
-                <span className="font-bold text-sm text-on-surface">系專業必修</span>
+                <span className="font-semibold text-sm text-on-surface">系專業必修</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-primary bg-primary-fixed px-2 py-0.5 rounded-full">
                   58% 進行中
                 </span>
-                <span className="font-bold text-sm text-on-surface">42 / 72</span>
+                <span className="font-semibold text-sm text-on-surface">42 / 72</span>
               </div>
             </div>
             <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
@@ -219,7 +219,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             </div>
             <div className="flex items-center justify-between text-text-muted">
               <span>本學期修習中：內外護(二)、基本護理實習 (共 8 學分)</span>
-              <span className="text-primary font-bold">尚缺 30</span>
+              <span className="text-primary font-semibold">尚缺 30</span>
             </div>
           </div>
 
@@ -230,13 +230,13 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                 <span className="material-symbols-outlined text-clinical-purple text-[18px]">
                   pending_actions
                 </span>
-                <span className="font-bold text-sm text-on-surface">系專業選修</span>
+                <span className="font-semibold text-sm text-on-surface">系專業選修</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-conflict-danger bg-error-container px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-conflict-danger bg-error-container px-2 py-0.5 rounded-full">
                   尚缺 16 學分
                 </span>
-                <span className="font-bold text-sm text-on-surface">10 / 26</span>
+                <span className="font-semibold text-sm text-on-surface">10 / 26</span>
               </div>
             </div>
             <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
@@ -254,13 +254,13 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                 <span className="material-symbols-outlined text-tertiary-container text-[18px]">
                   menu_book
                 </span>
-                <span className="font-bold text-sm text-on-surface">博雅通識領域</span>
+                <span className="font-semibold text-sm text-on-surface">博雅通識領域</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded-full">
                   尚缺 6 學分
                 </span>
-                <span className="font-bold text-sm text-on-surface">6 / 12</span>
+                <span className="font-semibold text-sm text-on-surface">6 / 12</span>
               </div>
             </div>
             <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
@@ -283,13 +283,13 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-emerald-600 text-[18px]">eco</span>
-                <span className="font-bold text-sm text-on-surface">SDGs 永續課程門檻</span>
+                <span className="font-semibold text-sm text-on-surface">SDGs 永續課程門檻</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
                   已達標
                 </span>
-                <span className="font-bold text-sm text-emerald-800">8 / 4 項</span>
+                <span className="font-semibold text-sm text-emerald-800">8 / 4 項</span>
               </div>
             </div>
             <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
@@ -305,7 +305,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
       {/* Prerequisite Warnings & Guardrail Network */}
       <div className="bg-surface-card rounded-2xl p-5 sm:p-6 shadow-sm border border-border-subtle flex flex-col gap-4 mb-6">
         <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-          <div className="flex items-center gap-1.5 text-conflict-danger font-bold text-base">
+          <div className="flex items-center gap-1.5 text-conflict-danger font-semibold text-base">
             <span className="material-symbols-outlined text-[20px]">account_tree</span>
             <span>先修條件</span>
           </div>
@@ -317,10 +317,10 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                <span className="font-bold text-sm text-on-surface">醫療資訊系統整合與HL7/FHIR</span>
+                <span className="font-semibold text-sm text-on-surface">醫療資訊系統整合與HL7/FHIR</span>
                 <span className="text-text-muted">3 學分</span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold text-[11px] flex items-center gap-1">
+              <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-semibold text-[11px] flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">lock_open</span>
                 可修
               </span>
@@ -336,10 +336,10 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
-                <span className="font-bold text-sm text-on-surface">臨床醫學資訊實踐專案與實習</span>
+                <span className="font-semibold text-sm text-on-surface">臨床醫學資訊實踐專案與實習</span>
                 <span className="text-text-muted">4 學分</span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-bold text-[11px]">
+              <span className="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-semibold text-[11px]">
                 四年級開放
               </span>
             </div>
@@ -359,7 +359,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
       <div className="flex flex-col gap-3">
         <button
           onClick={onFilterMissingCourses}
-          className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-primary-container active:scale-[0.98] transition-all"
+          className="w-full py-3.5 bg-primary text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm hover:bg-primary-container active:scale-[0.98] transition"
         >
           <span className="material-symbols-outlined text-[20px]">filter_alt</span>
           <span>查看可補足缺額的課程</span>
@@ -367,7 +367,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
 
         <button
           onClick={handleDownloadPDF}
-          className="w-full py-3 bg-surface-card hover:bg-surface-container text-primary font-bold text-xs sm:text-sm rounded-xl border border-border-subtle flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition-all"
+          className="w-full py-3 bg-surface-card hover:bg-surface-container text-primary font-medium text-xs sm:text-sm rounded-xl border border-border-subtle flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition"
         >
           <span className="material-symbols-outlined text-[18px]">download</span>
           <span>下載完整歷年成績與學分核算單 (PDF)</span>

@@ -54,7 +54,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       });
     }
 
-    showToast('個人帳號資料已成功儲存更新！');
+    showToast('個人帳號資料已成功儲存更新');
     onClose();
   };
 
@@ -68,7 +68,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       showToast('兩次輸入的新密碼不一致，請重新檢查');
       return;
     }
-    showToast('密碼已成功更新！下次登入請使用新密碼');
+    showToast('密碼已成功更新。下次登入請使用新密碼');
     setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
@@ -81,16 +81,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         onClick={e => e.stopPropagation()}
       >
         {/* Top Header Card */}
-        <div className="p-6 pb-5 bg-gradient-to-r from-primary to-primary-container text-white flex items-start justify-between relative overflow-hidden">
-          <div className="absolute -right-6 -bottom-6 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+        <div className="p-6 pb-5 bg-primary-container text-white flex items-start justify-between relative overflow-hidden">
           <div className="flex items-center gap-4 relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 text-2xl font-bold shadow-md">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 text-2xl font-semibold shadow-md">
               {currentUser.name.slice(0, 1)}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-xl text-white">{currentUser.name}</h3>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-xs ${
+                <h3 className="font-semibold text-xl text-white">{currentUser.name}</h3>
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold shadow-xs ${
                   currentUser.role === 'admin'
                     ? 'bg-amber-400 text-amber-950'
                     : 'bg-emerald-400 text-emerald-950'
@@ -115,7 +114,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <div className="flex border-b border-border-subtle bg-surface-container-low px-6">
           <button
             onClick={() => setActiveSubTab('profile')}
-            className={`py-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 transition-colors mr-6 ${
+            className={`py-3 text-xs sm:text-sm font-medium border-b-2 flex items-center gap-1.5 transition-colors mr-6 ${
               activeSubTab === 'profile'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-text-muted hover:text-on-surface'
@@ -126,7 +125,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </button>
           <button
             onClick={() => setActiveSubTab('security')}
-            className={`py-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 transition-colors mr-6 ${
+            className={`py-3 text-xs sm:text-sm font-medium border-b-2 flex items-center gap-1.5 transition-colors mr-6 ${
               activeSubTab === 'security'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-text-muted hover:text-on-surface'
@@ -137,7 +136,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </button>
           <button
             onClick={() => setActiveSubTab('history')}
-            className={`py-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-1.5 transition-colors ${
+            className={`py-3 text-xs sm:text-sm font-medium border-b-2 flex items-center gap-1.5 transition-colors ${
               activeSubTab === 'history'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-text-muted hover:text-on-surface'
@@ -154,7 +153,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     使用者全名
                   </label>
                   <input
@@ -166,7 +165,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     系統登入帳號
                   </label>
                   <input
@@ -179,7 +178,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
+                <label className="block text-xs font-medium text-on-surface mb-1">
                   所屬系所 / 單位
                 </label>
                 <input
@@ -192,7 +191,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     聯絡 Email
                   </label>
                   <input
@@ -204,7 +203,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     聯絡電話 / 手機
                   </label>
                   <input
@@ -220,7 +219,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className="p-3.5 rounded-2xl bg-surface-container-low border border-border-subtle flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-secondary"></span>
-                  <span className="font-bold text-on-surface">帳號狀態：</span>
+                  <span className="font-semibold text-on-surface">帳號狀態：</span>
                   <span className="text-secondary font-semibold">
                     {currentUser.status === 'active' ? '正常在學 / 在職中' : '帳號受限'}
                   </span>
@@ -238,7 +237,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       onClose();
                       onLogout();
                     }}
-                    className="px-3.5 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-all flex items-center gap-1.5"
+                    className="px-3.5 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-medium transition flex items-center gap-1.5"
                   >
                     <span className="material-symbols-outlined text-[16px]">logout</span>
                     <span>登出此帳號</span>
@@ -250,13 +249,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2.5 rounded-xl border border-border-subtle hover:bg-surface-container text-xs font-bold transition-colors"
+                    className="px-4 py-2.5 rounded-xl border border-border-subtle hover:bg-surface-container text-xs font-medium transition-colors"
                   >
                     取消
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl bg-primary text-white font-medium text-xs shadow-sm hover:bg-primary-container active:scale-95 transition flex items-center gap-1.5"
                   >
                     <span className="material-symbols-outlined text-[16px]">save</span>
                     <span>儲存個人設定</span>
@@ -269,7 +268,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {activeSubTab === 'security' && (
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-on-surface mb-1">
+                <label className="block text-xs font-medium text-on-surface mb-1">
                   目前密碼
                 </label>
                 <input
@@ -282,7 +281,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     新密碼
                   </label>
                   <input
@@ -294,7 +293,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-on-surface mb-1">
+                  <label className="block text-xs font-medium text-on-surface mb-1">
                     確認新密碼
                   </label>
                   <input
@@ -308,14 +307,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
 
               <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 text-xs text-primary">
-                <span className="font-bold">安全提醒：</span>
+                <span className="font-semibold">安全提醒：</span>
                 北護單一簽入系統建議每學期定期更換密碼，保障校務選課與個人隱私安全。
               </div>
 
               <div className="pt-2 flex justify-end">
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-primary text-white font-medium text-xs shadow-sm hover:bg-primary-container active:scale-95 transition flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[16px]">lock_reset</span>
                   <span>變更並更新密碼</span>
@@ -334,11 +333,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <div className="flex items-center gap-2.5">
                     <span className="material-symbols-outlined text-secondary text-[18px]">devices</span>
                     <div>
-                      <div className="font-bold text-on-surface">目前裝置（Web 瀏覽器）</div>
+                      <div className="font-semibold text-on-surface">目前裝置（Web 瀏覽器）</div>
                       <div className="text-text-muted font-mono text-[11px]">IP: 140.131.110.88 (石牌校本部)</div>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold text-[10px]">
+                  <span className="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-semibold text-[11px]">
                     連線中
                   </span>
                 </div>
@@ -346,11 +345,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <div className="flex items-center gap-2.5">
                     <span className="material-symbols-outlined text-text-muted text-[18px]">smartphone</span>
                     <div>
-                      <div className="font-bold text-on-surface">北護行動 App (iOS)</div>
+                      <div className="font-semibold text-on-surface">北護行動 App (iOS)</div>
                       <div className="text-text-muted font-mono text-[11px]">IP: 211.20.14.92 • 2026-10-01 19:40</div>
                     </div>
                   </div>
-                  <span className="text-text-muted text-[10px]">已登出</span>
+                  <span className="text-text-muted text-[11px]">已登出</span>
                 </div>
               </div>
             </div>

@@ -54,14 +54,14 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     if (navigator.share) {
       navigator.share({
         title: `${course.name} - 北護課程通`,
-        text: `推薦 ${course.teacher} 的 ${course.code} ${course.name}，快來看看大綱與評價！`,
+        text: `推薦 ${course.teacher} 的 ${course.code} ${course.name}，快來看看大綱與評價`,
         url: window.location.href,
       }).catch(() => {});
     } else {
       navigator.clipboard?.writeText(
         `【北護課程推薦】${course.name} (${course.code})\n授課: ${course.teacher}\n學分: ${course.credits}\n時段: ${course.timeStr}`
       );
-      showToast('課程分享資訊已複製至剪貼簿！');
+      showToast('課程分享資訊已複製至剪貼簿');
     }
   };
 
@@ -71,10 +71,10 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
         {/* Sticky Modal Top Bar */}
         <div className="px-5 pt-4 pb-3 bg-surface-card border-b border-border-subtle flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-bold text-xs uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-medium text-xs">
               {course.id}
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
               {course.department.includes('護理') ? '護理學院 • 必修' : '資訊管理系 • 專業'}
             </span>
@@ -83,14 +83,14 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
-              className="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-primary active:scale-95 transition-all"
+              className="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-primary active:scale-95 transition"
               aria-label="分享課程"
             >
               <span className="material-symbols-outlined text-[18px]">share</span>
             </button>
             <button
               onClick={() => onToggleFavorite(course.id)}
-              className="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-primary active:scale-95 transition-all"
+              className="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-primary active:scale-95 transition"
               aria-label="收藏"
             >
               <span
@@ -102,7 +102,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-text-muted hover:text-on-surface active:scale-95 transition-all"
+              className="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-text-muted hover:text-on-surface active:scale-95 transition"
               aria-label="關閉"
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
@@ -117,24 +117,24 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">eco</span>
                     SDGs 課程
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-surface-container text-text-secondary">
                     {course.category}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-surface-container text-text-secondary">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-surface-container text-text-secondary">
                     {course.department}
                   </span>
                 </div>
-                <h2 className="font-bold text-xl sm:text-2xl text-primary tracking-tight">
+                <h2 className="font-semibold text-xl sm:text-2xl text-primary tracking-tight">
                   {course.name}
                 </h2>
                 <p className="text-xs text-text-muted mt-0.5">{course.englishName}</p>
               </div>
               <div className="flex flex-col items-end shrink-0">
-                <span className="text-primary font-bold text-2xl leading-none">{course.credits.toFixed(1)}</span>
+                <span className="text-primary font-semibold text-2xl leading-none">{course.credits.toFixed(1)}</span>
                 <span className="text-text-muted text-[11px] mt-0.5 font-semibold">學分 (週{course.credits}h)</span>
               </div>
             </div>
@@ -143,15 +143,15 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             <div className="mt-4 pt-3.5 bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-2.5 border border-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-medium text-xs">
                     {course.teacher.slice(0, 1)}
                   </div>
                   <div>
-                    <span className="font-bold text-xs sm:text-sm text-primary block">{course.teacher}</span>
+                    <span className="font-medium text-xs sm:text-sm text-primary block">{course.teacher}</span>
                     <span className="text-[11px] text-text-muted">{course.teacherTitle || course.department}</span>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-lg bg-surface-card text-secondary font-bold text-xs shadow-xs">
+                <span className="px-2.5 py-1 rounded-lg bg-surface-card text-secondary font-medium text-xs shadow-xs">
                   {course.rating.toFixed(1)} ★（{course.ratingCount} 人評分）
                 </span>
               </div>
@@ -161,7 +161,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   <span className="material-symbols-outlined text-text-muted text-[16px]">domain</span>
                   <span className="truncate">{course.location}</span>
                 </div>
-                <div className="flex items-center gap-1 text-primary font-bold">
+                <div className="flex items-center gap-1 text-primary font-semibold">
                   <span className="material-symbols-outlined text-[16px]">schedule</span>
                   <span>{course.timeStr}</span>
                 </div>
@@ -169,17 +169,16 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 
               {/* SDGs Badges in Hero */}
               <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-border-subtle/60">
-                <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 shrink-0">
+                <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 shrink-0">
                   <span className="material-symbols-outlined text-[15px]">eco</span>
                   SDGs 永續目標：
                 </span>
                 {activeSdgsList.map(item => (
                   <span
                     key={item.id}
-                    className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs flex items-center gap-1"
-                    style={{ backgroundColor: item.color }}
+                    className="px-2 py-0.5 rounded-md text-[11px] font-medium text-text-secondary bg-surface-container-low border border-border-subtle flex items-center gap-1.5"
                   >
-                    <span className="material-symbols-outlined text-[12px]">{item.icon}</span>
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                     <span>{item.code} {item.name}</span>
                   </span>
                 ))}
@@ -204,7 +203,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               </div>
               <div className="my-1.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-bold text-xl sm:text-2xl text-conflict-danger">
+                  <span className="font-semibold text-xl sm:text-2xl text-conflict-danger">
                     {course.capacity - course.enrolled}
                   </span>
                   <span className="text-[11px] text-text-muted">/ {course.capacity} 席</span>
@@ -216,7 +215,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   ></div>
                 </div>
               </div>
-              <span className="text-[10px] text-text-muted">
+              <span className="text-[11px] text-text-muted">
                 {seatsLeft(course) === 0 ? '已額滿' : `本階段登記 ${registeredCount(course)} 人`}
               </span>
             </div>
@@ -226,14 +225,14 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <span className="text-[11px] text-text-muted font-semibold">歷年平均</span>
               <div className="my-1.5">
                 <div className="flex items-baseline gap-0.5">
-                  <span className="font-bold text-xl sm:text-2xl text-primary">{course.averageScore || 82.4}</span>
+                  <span className="font-semibold text-xl sm:text-2xl text-primary">{course.averageScore || 82.4}</span>
                   <span className="text-[11px] text-text-muted">分</span>
                 </div>
-                <p className="text-[11px] text-secondary font-bold mt-0.5">
+                <p className="text-[11px] text-secondary font-semibold mt-0.5">
                   當率 {course.passRate ? (100 - course.passRate).toFixed(1) : 3.2}%
                 </p>
               </div>
-              <span className="text-[10px] text-text-muted">{gradingStyle(course)}</span>
+              <span className="text-[11px] text-text-muted">{gradingStyle(course)}</span>
             </div>
 
             {/* Metric 3: Student Ratings */}
@@ -241,12 +240,12 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <span className="text-[11px] text-text-muted font-semibold">學長姐評價</span>
               <div className="my-1.5">
                 <div className="flex items-baseline gap-1">
-                  <span className="font-bold text-xl sm:text-2xl text-primary">{course.rating.toFixed(1)}</span>
+                  <span className="font-semibold text-xl sm:text-2xl text-primary">{course.rating.toFixed(1)}</span>
                   <span className="text-[11px] text-text-muted">/ 5</span>
                 </div>
-                <div className="text-amber-500 text-[10px] mt-0.5">{starText(course.rating)}</div>
+                <div className="text-amber-500 text-[11px] mt-0.5">{starText(course.rating)}</div>
               </div>
-              <span className="text-[10px] text-text-muted">{course.ratingCount} 人評分</span>
+              <span className="text-[11px] text-text-muted">{course.ratingCount} 人評分</span>
             </div>
           </div>
 
@@ -263,7 +262,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-xs ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition shadow-xs ${
                   activeTab === tab.id
                     ? 'bg-primary text-white shadow-sm'
                     : 'bg-surface-card text-text-secondary hover:bg-surface-container'
@@ -280,11 +279,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                    <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-semibold text-sm">
                       <span className="material-symbols-outlined text-[20px]">eco</span>
                     </span>
                     <div>
-                      <h4 className="font-bold text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
+                      <h4 className="font-medium text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
                         <span>本課程對應的 SDGs 目標</span>
                       </h4>
                       <p className="text-[11px] text-text-muted">
@@ -292,7 +291,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                       </p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                     {activeSdgsList.length} 項
                   </span>
                 </div>
@@ -311,11 +310,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className="font-bold text-xs text-on-surface">
+                          <span className="font-medium text-xs text-on-surface">
                             {item.code} {item.name}
                           </span>
                         </div>
-                        <span className="text-[10px] text-text-muted block font-mono">{item.enName}</span>
+                        <span className="text-[11px] text-text-muted block font-mono">{item.enName}</span>
                         <p className="text-[11px] text-text-secondary mt-1 line-clamp-2 leading-relaxed">
                           {item.id === 3
                             ? '致力於提升全民健康與福祉，培育醫療照護、臨床技能與健康促進專業人才。'
@@ -346,7 +345,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     <span className="material-symbols-outlined text-[20px]">psychology</span>
                   </span>
                   <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-primary">
+                    <h4 className="font-medium text-xs sm:text-sm text-primary">
                       {course.department} 實施之科系所（專業）核心能力指標
                     </h4>
                     <p className="text-[11px] text-text-muted">
@@ -354,7 +353,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
                   小計：100%
                 </span>
               </div>
@@ -364,13 +363,13 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 {competencies.map(c => (
                   <div key={c.code} className="flex items-center gap-3">
                     <div className="w-28 sm:w-36 flex items-center gap-1.5 shrink-0">
-                      <span className="text-emerald-600 font-bold text-xs">✓</span>
-                      <span className="text-text-muted font-bold text-xs font-mono">{c.code}</span>
+                      <span className="text-emerald-600 font-medium text-xs">✓</span>
+                      <span className="text-text-muted font-medium text-xs font-mono">{c.code}</span>
                       <span className="text-text-muted text-xs">—</span>
-                      <span className="font-bold text-on-surface text-xs truncate">{c.name}</span>
+                      <span className="font-medium text-on-surface text-xs truncate">{c.name}</span>
                     </div>
 
-                    <div className="w-10 text-right font-bold text-xs text-primary shrink-0">
+                    <div className="w-10 text-right font-medium text-xs text-primary shrink-0">
                       {c.percentage}%
                     </div>
 
@@ -392,11 +391,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px] text-primary">schedule</span>
                     <div>
-                      <span className="font-bold text-xs text-on-surface block">授課教師課後諮詢時間</span>
+                      <span className="font-medium text-xs text-on-surface block">授課教師課後諮詢時間</span>
                       <span className="text-[11px] text-text-muted">歡迎學生於諮詢時段至研究室研討課業或生涯輔導</span>
                     </div>
                   </div>
-                  <span className="px-3 py-1 rounded-lg bg-surface-card text-xs font-bold text-primary border border-border-subtle">
+                  <span className="px-3 py-1 rounded-lg bg-surface-card text-xs font-medium text-primary border border-border-subtle">
                     {course.officeHours}
                   </span>
                 </div>
@@ -408,7 +407,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           {activeTab === 'syllabus' && (
             <div className="space-y-4 text-xs animate-in fade-in">
               <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle">
-                <div className="flex items-center gap-1.5 mb-1.5 text-primary font-bold text-xs sm:text-sm">
+                <div className="flex items-center gap-1.5 mb-1.5 text-primary font-medium text-xs sm:text-sm">
                   <span className="material-symbols-outlined text-[18px] text-clinical-purple">clinical_notes</span>
                   <span>教學核心目標與 OSCE 規劃</span>
                 </div>
@@ -420,7 +419,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               {/* Weekly Timeline */}
               <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-bold text-xs sm:text-sm text-primary">學期週次進度摘要</h4>
+                  <h4 className="font-medium text-xs sm:text-sm text-primary">學期週次進度摘要</h4>
                   <span className="text-[11px] text-text-muted">共 18 週課程</span>
                 </div>
 
@@ -433,16 +432,16 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   ]).map((w, idx) => (
                     <div key={idx} className="p-3 rounded-xl bg-surface-container-low flex items-start gap-3 border border-border-subtle">
                       <div className="w-10 h-10 rounded-lg bg-surface-container-high text-primary flex flex-col items-center justify-center shrink-0">
-                        <span className="text-[9px] font-bold text-text-muted">W</span>
-                        <span className="font-bold text-xs leading-none">{w.week}</span>
+                        <span className="text-[11px] font-semibold text-text-muted">W</span>
+                        <span className="font-medium text-xs leading-none">{w.week}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-1">
-                          <span className="px-1.5 py-0.2 rounded bg-primary-fixed text-primary text-[10px] font-bold">
+                          <span className="px-1.5 py-0.2 rounded bg-primary-fixed text-primary text-[11px] font-semibold">
                             {w.tag}
                           </span>
                         </div>
-                        <h5 className="font-bold text-xs text-on-surface truncate">{w.title}</h5>
+                        <h5 className="font-medium text-xs text-on-surface truncate">{w.title}</h5>
                         <p className="text-[11px] text-text-secondary mt-0.5 line-clamp-2">{w.desc}</p>
                       </div>
                     </div>
@@ -455,7 +454,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           {/* Tab 2: Grading */}
           {activeTab === 'grading' && (
             <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle space-y-4 text-xs animate-in fade-in">
-              <h4 className="font-bold text-xs sm:text-sm text-primary">成績評量佔比規劃</h4>
+              <h4 className="font-medium text-xs sm:text-sm text-primary">成績評量佔比規劃</h4>
 
               <div className="space-y-3">
                 {[
@@ -467,7 +466,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   <div key={idx}>
                     <div className="flex justify-between font-semibold mb-1">
                       <span className="text-on-surface">{g.item}</span>
-                      <span className="text-primary font-bold">{g.percent}%</span>
+                      <span className="text-primary font-semibold">{g.percent}%</span>
                     </div>
                     <div className="w-full bg-surface-container rounded-full h-2.5 overflow-hidden">
                       <div className={`${g.color} h-full rounded-full`} style={{ width: `${g.percent}%` }}></div>
@@ -487,7 +486,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           {/* Tab 3: Prerequisites */}
           {activeTab === 'prereq' && (
             <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle space-y-3 text-xs animate-in fade-in">
-              <div className="flex items-center gap-1.5 text-primary font-bold text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5 text-primary font-medium text-xs sm:text-sm">
                 <span className="material-symbols-outlined text-[18px] text-general-sky">shield</span>
                 <span>先修科目檢核狀態</span>
               </div>
@@ -498,30 +497,30 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className="space-y-2">
                 <div className="p-3 rounded-xl bg-surface-container-low flex items-center justify-between border border-border-subtle">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-bold">
+                    <div className="w-7 h-7 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-semibold">
                       ✓
                     </div>
                     <div>
-                      <h5 className="font-bold text-xs text-on-surface">解剖生理學 (含實驗)</h5>
+                      <h5 className="font-medium text-xs text-on-surface">解剖生理學 (含實驗)</h5>
                       <span className="text-[11px] text-text-muted">112-1 • 必修 4.0 學分</span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-secondary/10 text-secondary font-bold text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-secondary/10 text-secondary font-semibold text-[11px]">
                     已通過 (86分)
                   </span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-surface-container-low flex items-center justify-between border border-border-subtle">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-bold">
+                    <div className="w-7 h-7 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-semibold">
                       ✓
                     </div>
                     <div>
-                      <h5 className="font-bold text-xs text-on-surface">基本護理學及實習</h5>
+                      <h5 className="font-medium text-xs text-on-surface">基本護理學及實習</h5>
                       <span className="text-[11px] text-text-muted">112-2 • 必修 5.0 學分</span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-secondary/10 text-secondary font-bold text-[11px]">
+                  <span className="px-2 py-0.5 rounded bg-secondary/10 text-secondary font-semibold text-[11px]">
                     已通過 (89分)
                   </span>
                 </div>
@@ -529,7 +528,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 
               <div className="p-3 rounded-xl bg-secondary-container/30 flex items-center gap-2 text-on-secondary-container font-semibold mt-2">
                 <span className="material-symbols-outlined text-[18px] text-secondary">verified</span>
-                <span>先修條件全部吻合，您具備本課程合法加選資格！</span>
+                <span>先修條件全部吻合，您具備本課程合法加選資格</span>
               </div>
             </div>
           )}
@@ -539,26 +538,26 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             <div className="space-y-3 text-xs animate-in fade-in">
               <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle flex items-center gap-5">
                 <div className="text-center flex flex-col items-center">
-                  <span className="font-bold text-3xl text-primary leading-none">{course.rating.toFixed(1)}</span>
+                  <span className="font-semibold text-3xl text-primary leading-none">{course.rating.toFixed(1)}</span>
                   <div className="flex text-amber-500 text-xs my-1">{starText(course.rating)}</div>
-                  <span className="text-[10px] text-text-muted">{course.ratingCount} 人評分</span>
+                  <span className="text-[11px] text-text-muted">{course.ratingCount} 人評分</span>
                 </div>
                 <dl className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
                   <div>
                     <dt className="text-text-muted">本系學長姐修過</dt>
-                    <dd className="font-bold text-on-surface">{seniorsTaken(course)} 人</dd>
+                    <dd className="font-semibold text-on-surface">{seniorsTaken(course)} 人</dd>
                   </div>
                   <div>
                     <dt className="text-text-muted">歷年平均分數</dt>
-                    <dd className="font-bold text-on-surface">{course.averageScore ?? '—'} 分</dd>
+                    <dd className="font-semibold text-on-surface">{course.averageScore ?? '—'} 分</dd>
                   </div>
                   <div>
                     <dt className="text-text-muted">及格率</dt>
-                    <dd className="font-bold text-on-surface">{course.passRate != null ? `${course.passRate}%` : '—'}</dd>
+                    <dd className="font-semibold text-on-surface">{course.passRate != null ? `${course.passRate}%` : '—'}</dd>
                   </div>
                   <div>
                     <dt className="text-text-muted">給分</dt>
-                    <dd className="font-bold text-on-surface">{gradingStyle(course)}</dd>
+                    <dd className="font-semibold text-on-surface">{gradingStyle(course)}</dd>
                   </div>
                 </dl>
               </div>
@@ -568,10 +567,10 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   course.syllabus.reviews.map(rev => (
                     <div key={rev.id} className="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-on-surface">{rev.author}</span>
+                        <span className="font-medium text-xs text-on-surface">{rev.author}</span>
                         <span className="text-amber-500 text-xs">{starText(rev.rating)}</span>
                       </div>
-                      <span className="text-[10px] text-text-muted">{rev.semester} 修習</span>
+                      <span className="text-[11px] text-text-muted">{rev.semester} 修習</span>
                       <p className="text-xs text-text-secondary mt-1 leading-relaxed">{rev.content}</p>
                     </div>
                   ))
@@ -584,7 +583,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 
           {/* Textbook Card */}
           <div className="bg-surface-card rounded-2xl p-4 shadow-sm border border-border-subtle">
-            <h4 className="font-bold text-xs sm:text-sm text-primary mb-2.5">指定教材與參考文獻</h4>
+            <h4 className="font-medium text-xs sm:text-sm text-primary mb-2.5">指定教材與參考文獻</h4>
             <div className="flex items-center gap-3">
               <div className="w-14 h-18 bg-surface-container rounded-lg overflow-hidden shrink-0 shadow-xs border border-border-subtle flex items-center justify-center relative">
                 <img
@@ -600,17 +599,17 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 </span>
               </div>
               <div className="flex-1 min-w-0 text-xs">
-                <h5 className="font-bold text-on-surface line-clamp-1">
+                <h5 className="font-semibold text-on-surface line-clamp-1">
                   {course.syllabus?.textbook?.title || "Brunner & Suddarth's Textbook of Medical-Surgical Nursing"}
                 </h5>
                 <p className="text-[11px] text-text-muted mt-0.5">
                   {course.syllabus?.textbook?.edition || '15th Edition • Wolters Kluwer'}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[11px] font-semibold">
                     圖書館有紙本 4 冊
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-primary text-[10px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-primary text-[11px] font-semibold">
                     電子書在庫
                   </span>
                 </div>
@@ -622,11 +621,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle">
             <div className="flex items-center justify-between pb-3 border-b border-border-subtle mb-3">
               <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
+                <span className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-semibold text-sm shrink-0">
                   <span className="material-symbols-outlined text-[20px]">eco</span>
                 </span>
                 <div>
-                  <h4 className="font-bold text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
+                  <h4 className="font-medium text-xs sm:text-sm text-primary flex items-center gap-1.5 flex-wrap">
                     <span>SDGs 目標</span>
                   </h4>
                   <p className="text-[11px] text-text-muted mt-0.5">
@@ -634,7 +633,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
+              <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
                 已對應 {activeSdgsList.length} 項指標
               </span>
             </div>
@@ -644,10 +643,9 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               {activeSdgsList.map(item => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-xs"
-                  style={{ backgroundColor: item.color }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-card border border-border-subtle text-on-surface font-medium text-xs"
                 >
-                  <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                   <span>{item.code} {item.name}</span>
                 </div>
               ))}
@@ -660,16 +658,16 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 return (
                   <div
                     key={sdg.id}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-all ${
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition ${
                       isChecked
-                        ? 'bg-emerald-50/80 border-emerald-300 font-bold text-emerald-950 shadow-xs'
+                        ? 'bg-emerald-50/80 border-emerald-300 font-medium text-emerald-950'
                         : 'bg-surface-container-lowest/50 border-border-subtle/60 text-text-muted opacity-70'
                     }`}
                   >
                     <span
                       className={`w-4 h-4 rounded flex items-center justify-center text-[12px] shrink-0 ${
                         isChecked
-                          ? 'bg-emerald-600 text-white font-bold'
+                          ? 'bg-emerald-600 text-white font-semibold'
                           : 'border border-border-subtle bg-white text-transparent'
                       }`}
                     >
@@ -689,19 +687,19 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
         <div className="p-4 pb-safe bg-surface-card border-t border-border-subtle flex flex-col gap-2 shrink-0">
           <div className="flex items-center justify-between text-xs flex-wrap gap-1">
             {hasConflict ? (
-              <div className="flex items-center gap-1.5 text-rose-600 font-bold min-w-0">
-                <span className="material-symbols-outlined text-[16px] animate-pulse shrink-0">warning</span>
+              <div className="flex items-center gap-1.5 text-rose-600 font-semibold min-w-0">
+                <span className="material-symbols-outlined text-[16px] shrink-0">warning</span>
                 <span className="truncate">
                   與《{conflictCourses.map(c => c.name).join('、')}》時段衝突（週{['一','二','三','四','五'][course.day! - 1]} 第{course.periods?.join(',')}節）
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-secondary font-bold">
+              <div className="flex items-center gap-1.5 text-secondary font-semibold">
                 <span className="material-symbols-outlined text-[16px]">verified</span>
                 <span>與目前課表、預選清單不衝堂</span>
               </div>
             )}
-            <span className={`text-[11px] font-bold shrink-0 ${hasConflict ? 'text-rose-600' : 'text-text-muted'}`}>
+            <span className={`text-[11px] font-semibold shrink-0 ${hasConflict ? 'text-rose-600' : 'text-text-muted'}`}>
               {hasConflict ? '時段重疊衝突' : '時段空檔正常'}
             </span>
           </div>
@@ -709,7 +707,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           <div className="flex gap-2">
             <button
               onClick={() => onToggleCart(course.id)}
-              className={`flex-1 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] ${
+              className={`flex-1 py-3 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98] ${
                 isInCart ? 'bg-secondary text-white' : 'bg-primary text-white hover:bg-primary-container'
               }`}
             >
