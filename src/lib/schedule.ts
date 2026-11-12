@@ -1,20 +1,33 @@
-import { Course, StudentProfile } from '../types';
+import { Course, CourseSlot, StudentProfile } from '../types';
 
-/** 北護節次時間（依課程資料中的 timeStr 對應） */
+/**
+ * 節次時間。學校資料的節次為 1～14（第 5 節為中午），
+ * 開始時間為示範值，請依學校公告的作息時間表核對。
+ */
 export const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
   1: { start: '08:10', end: '09:00' },
   2: { start: '09:10', end: '10:00' },
   3: { start: '10:10', end: '11:00' },
   4: { start: '11:10', end: '12:00' },
-  5: { start: '13:30', end: '14:20' },
-  6: { start: '14:30', end: '15:20' },
-  7: { start: '15:30', end: '16:20' },
-  8: { start: '16:30', end: '17:20' },
-  9: { start: '17:30', end: '18:20' },
-  10: { start: '18:30', end: '19:20' },
+  5: { start: '12:40', end: '13:30' },
+  6: { start: '13:40', end: '14:30' },
+  7: { start: '14:40', end: '15:30' },
+  8: { start: '15:40', end: '16:30' },
+  9: { start: '16:40', end: '17:30' },
+  10: { start: '17:40', end: '18:30' },
+  11: { start: '18:35', end: '19:25' },
+  12: { start: '19:30', end: '20:20' },
+  13: { start: '20:25', end: '21:15' },
+  14: { start: '21:20', end: '22:10' },
 };
 
-export const DAY_LABELS = ['一', '二', '三', '四', '五'];
+export const DAY_LABELS = ['一', '二', '三', '四', '五', '六', '日'];
+
+/** 一門課一週內的所有上課時段（多數課只有一個） */
+export const slotsOf = (c: Course): CourseSlot[] =>
+  c.day && Array.isArray(c.periods) && c.periods.length
+    ? [{ day: c.day, periods: c.periods, room: c.room }, ...(c.extraSlots ?? [])]
+    : [];
 
 /** 每學期學分上限（示範值，請依北護學則調整） */
 export const CREDIT_LIMIT = 25;
@@ -22,10 +35,7 @@ export const CREDIT_LIMIT = 25;
 /** 兩門課是否時段重疊 */
 export const coursesOverlap = (a: Course, b: Course): boolean =>
   a.id !== b.id &&
-  a.day === b.day &&
-  Array.isArray(a.periods) &&
-  Array.isArray(b.periods) &&
-  a.periods.some(p => b.periods.includes(p));
+  slotsOf(a).some(x => slotsOf(b).some(y => x.day === y.day && x.periods.some(p => y.periods.includes(p))));
 
 /** 找出 target 與 others 之中哪些課衝堂 */
 export const findConflicts = (target: Course, others: Course[]): Course[] =>
@@ -46,10 +56,15 @@ export const conflictingIds = (list: Course[]): Set<string> => {
 };
 
 export const formatCourseTime = (c: Course): string => {
-  if (!c.day || !c.periods?.length) return c.timeStr || '時間未定';
-  const first = Math.min(...c.periods);
-  const last = Math.max(...c.periods);
-  return `週${DAY_LABELS[c.day - 1] ?? c.day} ${first === last ? first : `${first}-${last}`} 節`;
+  const slots = slotsOf(c);
+  if (!slots.length) return c.timeStr || '時間未定';
+  return slots
+    .map(({ day, periods }) => {
+      const first = Math.min(...periods);
+      const last = Math.max(...periods);
+      return `週${DAY_LABELS[day - 1] ?? day} ${first === last ? first : `${first}-${last}`} 節`;
+    })
+    .join('、');
 };
 
 export const seatsLeft = (c: Course): number => Math.max(0, c.capacity - c.enrolled);

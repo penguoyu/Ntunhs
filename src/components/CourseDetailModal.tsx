@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Course, SDG_LIST } from '../types';
-import { gradingStyle, registeredCount, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
+import { Course, SDG_LIST, StudentProfile } from '../types';
+import { RealCourseBody } from './RealCourseBody';
+import { coursesOverlap, formatCourseTime, gradingStyle, registeredCount, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
 
 interface CourseDetailModalProps {
   course: Course;
@@ -8,6 +9,7 @@ interface CourseDetailModalProps {
   isFavorite: boolean;
   scheduleCourses?: Course[];
   cartCourses?: Course[];
+  student?: Pick<StudentProfile, 'passedCourses'>;
   onToggleCart: (courseId: string) => void;
   onToggleFavorite: (courseId: string) => void;
   onClose: () => void;
@@ -20,6 +22,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   isFavorite,
   scheduleCourses,
   cartCourses,
+  student,
   onToggleCart,
   onToggleFavorite,
   onClose,
@@ -27,14 +30,12 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'syllabus' | 'sdgs' | 'competencies' | 'grading' | 'prereq' | 'reviews'>('syllabus');
 
+  // 真實開課資料沒有評價、成績、週次等欄位，改顯示歷年開課紀錄
+  const isReal = course.source === 'school';
+
   const conflictCourses = useMemo(() => {
-    if (!course.day || !course.periods || course.periods.length === 0) return [];
     const combined = [...(scheduleCourses || []), ...(cartCourses || [])];
-    const matching = combined.filter(c =>
-      c.id !== course.id &&
-      c.day === course.day &&
-      c.periods?.some(p => course.periods?.includes(p))
-    );
+    const matching = combined.filter(c => coursesOverlap(course, c));
     return Array.from(new Map(matching.map(c => [c.id, c])).values());
   }, [course, scheduleCourses, cartCourses]);
   const hasConflict = conflictCourses.length > 0;
@@ -72,11 +73,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
         <div className="px-5 pt-4 pb-3 bg-surface-card border-b border-border-subtle flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-medium text-xs">
-              {course.id}
+              {isReal ? course.code : course.id}
             </span>
             <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-              {course.department.includes('護理') ? '護理學院 • 必修' : '資訊管理系 • 專業'}
+              {isReal ? [course.college, course.program].filter(Boolean).join(' • ') : course.department.includes('護理') ? '護理學院 • 必修' : '資訊管理系 • 專業'}
             </span>
           </div>
 
@@ -117,10 +118,12 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">eco</span>
-                    SDGs 課程
-                  </span>
+                  {activeSdgsList.length > 0 && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">eco</span>
+                      SDGs 課程
+                    </span>
+                  )}
                   <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-surface-container text-text-secondary">
                     {course.category}
                   </span>
@@ -148,12 +151,14 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   </div>
                   <div>
                     <span className="font-medium text-xs sm:text-sm text-primary block">{course.teacher}</span>
-                    <span className="text-[11px] text-text-muted">{course.teacherTitle || course.department}</span>
+                    <span className="text-[11px] text-text-muted">{course.teacherTitle || [course.department, course.className].filter(Boolean).join(' ・ ')}</span>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-lg bg-surface-card text-secondary font-medium text-xs shadow-xs">
-                  {course.rating.toFixed(1)} ★（{course.ratingCount} 人評分）
-                </span>
+                {course.ratingCount > 0 && (
+                  <span className="px-2.5 py-1 rounded-lg bg-surface-card text-secondary font-medium text-xs shadow-xs">
+                    {course.rating.toFixed(1)} ★（{course.ratingCount} 人評分{isReal ? '・模擬' : ''}）
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center justify-between text-xs text-text-secondary pt-1 border-t border-border-subtle/60 flex-wrap gap-2">
@@ -163,12 +168,12 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 </div>
                 <div className="flex items-center gap-1 text-primary font-semibold">
                   <span className="material-symbols-outlined text-[16px]">schedule</span>
-                  <span>{course.timeStr}</span>
+                  <span>{isReal ? formatCourseTime(course) : course.timeStr}</span>
                 </div>
               </div>
 
               {/* SDGs Badges in Hero */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-border-subtle/60">
+              <div className={`${activeSdgsList.length ? 'flex' : 'hidden'} items-center gap-1.5 flex-wrap pt-2 border-t border-border-subtle/60`}>
                 <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 shrink-0">
                   <span className="material-symbols-outlined text-[15px]">eco</span>
                   SDGs 永續目標：
@@ -194,6 +199,9 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             </div>
           </div>
 
+          {isReal && <RealCourseBody course={course} student={student} />}
+
+          {!isReal && (<>
           {/* 3 Metric Cards */}
           <div className="grid grid-cols-3 gap-2.5">
             {/* Metric 1: Capacity Strain */}
@@ -681,6 +689,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               })}
             </div>
           </div>
+          </>)}
         </div>
 
         {/* Fixed Modal Bottom Action Bar */}
@@ -690,7 +699,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className="flex items-center gap-1.5 text-rose-600 font-semibold min-w-0">
                 <span className="material-symbols-outlined text-[16px] shrink-0">warning</span>
                 <span className="truncate">
-                  與《{conflictCourses.map(c => c.name).join('、')}》時段衝突（週{['一','二','三','四','五'][course.day! - 1]} 第{course.periods?.join(',')}節）
+                  與《{conflictCourses.map(c => c.name).join('、')}》時段衝突（週{['一','二','三','四','五','六','日'][course.day! - 1]} 第{course.periods?.join(',')}節）
                 </span>
               </div>
             ) : (

@@ -404,9 +404,9 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
                   <span className="material-symbols-outlined text-[16px] text-amber-600">verified</span>
                   <span>先修課程鏈檢驗</span>
                 </div>
-                <div className="text-xl font-semibold text-amber-600 mt-2">全數及格通過</div>
+                <div className="text-xl font-semibold text-amber-600 mt-2">自動檢核中</div>
                 <p className="text-[11px] text-text-muted mt-1 leading-relaxed">
-                  《物件導向程式設計》、《資料庫管理系統》均達及格標準，無選課阻擋。
+                  已及格科目會在選課時自動比對先修條件，未符合的課程會以黃色標示。
                 </p>
               </div>
             </div>

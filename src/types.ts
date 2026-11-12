@@ -73,6 +73,12 @@ export interface CourseReview {
   content: string;
 }
 
+export interface CourseSlot {
+  day: number;
+  periods: number[];
+  room: string;
+}
+
 export interface Course {
   id: string;
   code: string;
@@ -81,15 +87,29 @@ export interface Course {
   credits: number;
   category: CourseCategory;
   department: string;
-  college: '健康科技學院' | '護理學院' | '人類發展與健康學院' | '通識中心';
+  college: '健康科技學院' | '護理學院' | '人類發展與健康學院' | '智慧健康照護跨領域學院' | '通識中心';
   teacher: string;
   teacherTitle?: string;
   officeHours?: string;
   location: string;
   building: string;
   room: string;
-  day: number; // 1 to 5 (Mon to Fri)
+  day: number; // 1 to 7 (Mon to Sun)
   periods: number[]; // e.g. [2, 3, 4]
+  /** 一週上課超過一個時段時，第二個以後的時段 */
+  extraSlots?: CourseSlot[];
+  /** 'school' 表示來自學校匯出的真實開課資料（沒有評價、成績等示範欄位） */
+  source?: 'school';
+  /** 學制（四技／二技） */
+  program?: string;
+  /** 開課班級，例如 資四三A */
+  className?: string;
+  /** 開課年級 */
+  grade?: string;
+  /** 課表備註（修課限制等） */
+  note?: string;
+  /** 名額上限為推估值（學校資料未提供） */
+  capacityEstimated?: boolean;
   timeStr: string;
   enrolled: number;
   capacity: number;
