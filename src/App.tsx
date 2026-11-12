@@ -164,7 +164,11 @@ export default function App() {
     toastTimer.current = window.setTimeout(() => setToastMessage(null), 3200);
   };
 
+  // 從畢業審查跳到選課頁時要預先套用的修別篩選；手動切換分頁時清除
+  const [pendingCategory, setPendingCategory] = useState<'全部' | '通識'>('全部');
+
   const goToTab = (tab: ActiveTab) => {
+    setPendingCategory('全部');
     setCurrentTab(normalizeTab(tab));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -425,6 +429,7 @@ export default function App() {
               cart={cart}
               favorites={favorites}
               compact={deviceMode === 'mobile'}
+              initialCategory={pendingCategory}
               onToggleCart={handleToggleCart}
               onReorderCart={setCart}
               onToggleFavorite={handleToggleFavorite}
@@ -437,9 +442,12 @@ export default function App() {
           {currentTab === 'graduation-audit' && (
             <GraduationAudit
               student={studentProfile}
+              scheduleCourses={courses.filter(c => scheduleIds.includes(c.id))}
+              cartCourses={courses.filter(c => cart.includes(c.id) && !scheduleIds.includes(c.id))}
               onFilterMissingCourses={() => {
+                setPendingCategory('通識');
                 setCurrentTab('search-courses');
-                showToast('已為您過濾通識社會科學與美育領域缺額課程');
+                showToast('已套用「通識」篩選，列出可補足缺額的課程');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               showToast={showToast}
