@@ -50,6 +50,8 @@ interface CourseSelectionProps {
   cart: string[];
   favorites: string[];
   compact?: boolean;
+  /** 進入頁面時預先套用的修別篩選（例如從畢業審查跳來時帶入「通識」） */
+  initialCategory?: '全部' | '必修' | '選修' | '通識';
   onToggleCart: (courseId: string) => void;
   onReorderCart: (ids: string[]) => void;
   onToggleFavorite: (courseId: string) => void;
@@ -119,6 +121,8 @@ interface TimetableProps {
   cartCourses: Course[];
   preview: Course | null;
   maxPeriod: number;
+  /** 剛加入預選的課，短暫閃一下讓使用者看到變化 */
+  flashId?: string | null;
   onSelect: (c: Course) => void;
 }
 
@@ -133,7 +137,7 @@ type BlockEntry = { course: Course; kind: BlockKind };
 /** 同一天時段相連的一組課；超過一門代表衝堂，合併成一格顯示 */
 type BlockGroup = { start: number; end: number; entries: BlockEntry[] };
 
-const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, preview, maxPeriod, onSelect }) => {
+const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, preview, maxPeriod, flashId, onSelect }) => {
   const periods = Array.from({ length: maxPeriod }, (_, i) => i + 1);
   const cartRank = new Map(cartCourses.map((c, i) => [c.id, i + 1]));
 
@@ -218,7 +222,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                     title={entries.map(e => `${e.course.name}｜${formatCourseTime(e.course)}`).join('\n')}
                     className={`absolute rounded-md border px-1.5 py-1 overflow-hidden flex flex-col gap-0.5 bg-red-50 border-conflict-danger text-red-800 ${
                       onlyPreview ? 'border-dashed' : ''
-                    }`}
+                    } ${entries.some(e => e.course.id === flashId) ? 'flash-added' : ''}`}
                     style={pos}
                   >
                     <span className="flex items-center gap-0.5 text-[11px] font-semibold leading-3 shrink-0">
@@ -261,7 +265,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                   title={`${course.name}｜${formatCourseTime(course)}｜${course.location}`}
                   className={`absolute rounded-md border px-1.5 py-1 text-left overflow-hidden flex flex-col transition-shadow hover:shadow-md ${tone} ${
                     kind === 'preview' ? 'opacity-80 pointer-events-none' : ''
-                  }`}
+                  } ${course.id === flashId ? 'flash-added' : ''}`}
                   style={pos}
                 >
                   <span
@@ -316,6 +320,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   cart,
   favorites,
   compact = false,
+  initialCategory = '全部',
   onToggleCart,
   onReorderCart,
   onToggleFavorite,
@@ -326,7 +331,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   // 篩選條件
   const [keyword, setKeyword] = useState('');
   const [department, setDepartment] = useState('全部');
-  const [category, setCategory] = useState<CategoryFilter>('全部');
+  const [category, setCategory] = useState<CategoryFilter>(initialCategory);
   const [days, setDays] = useState<number[]>([]);
   const [timeOfDay, setTimeOfDay] = useState<TimeFilter>('全部');
   const [credits, setCredits] = useState('全部');
@@ -343,6 +348,21 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
   const [stageMore, setStageMore] = useState(false);
+  // 剛加入預選的課：右側面板捲到該列並閃一下
+  const [flashId, setFlashId] = useState<string | null>(null);
+  const prevCartRef = useRef<string[]>(cart);
+  const flashRowRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    const added = cart.find(id => !prevCartRef.current.includes(id));
+    prevCartRef.current = cart;
+    if (!added) return;
+    setFlashId(added);
+    const t = window.setTimeout(() => setFlashId(null), 1600);
+    return () => window.clearTimeout(t);
+  }, [cart]);
+  useEffect(() => {
+    if (flashId) flashRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [flashId]);
   const stagesRef = useRef<HTMLOListElement>(null);
 
   const updateStageFade = () => {
@@ -698,6 +718,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         cartCourses={cartOnly}
         preview={preview}
         maxPeriod={maxPeriod}
+        flashId={flashId}
         onSelect={onViewCourseDetail}
       />
 
@@ -718,12 +739,15 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             {cartOnly.map((c, i) => (
               <li
                 key={c.id}
+                ref={c.id === flashId ? flashRowRef : undefined}
                 draggable
                 onDragStart={() => setDragId(c.id)}
                 onDragOver={e => e.preventDefault()}
                 onDrop={() => dropOn(c.id)}
                 onDragEnd={() => setDragId(null)}
-                className={`flex items-center gap-2 px-3 py-2.5 ${dragId === c.id ? 'opacity-40' : ''}`}
+                className={`flex items-center gap-2 px-3 py-2.5 ${dragId === c.id ? 'opacity-40' : ''} ${
+                  c.id === flashId ? 'flash-added' : ''
+                }`}
               >
                 <GripVertical size={16} className="text-text-muted cursor-grab shrink-0" aria-hidden />
                 <span className="w-5 text-xs font-medium text-secondary shrink-0">{i + 1}</span>
@@ -959,7 +983,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
           <CalendarDays size={18} />
           課表與預選
         </span>
-        <span className="text-xs">
+        <span key={flashId ?? 'idle'} className={`text-xs ${flashId ? 'bump-added' : ''}`}>
           預選 {cartOnly.length} 門・共 {totalCredits} 學分
           {plannedClash.size > 0 && <span className="ml-1.5 text-red-300 font-semibold">有衝堂</span>}
         </span>

@@ -77,3 +77,19 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* 加入預選時的短暫提示：讓右側課表與預選清單的變化看得見 */
+@keyframes flash-added {
+  0%, 60% { box-shadow: 0 0 0 3px rgb(245 158 11 / 0.75); background-color: rgb(254 243 199); }
+  100% { box-shadow: 0 0 0 0 rgb(245 158 11 / 0); }
+}
+.flash-added { animation: flash-added 1.5s ease-out; }
+@keyframes bump-added {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.bump-added { display: inline-block; animation: bump-added 0.5s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .flash-added, .bump-added { animation-duration: 0.01s; }
+}
