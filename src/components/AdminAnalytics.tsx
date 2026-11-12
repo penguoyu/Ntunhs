@@ -22,7 +22,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
     .slice(0, 8);
 
   // Group by college
-  const colleges = ['健康科技學院', '護理學院', '人類發展與健康學院', '通識中心'] as const;
+  const colleges = ['健康科技學院', '護理學院', '人類發展與健康學院', '智慧健康照護跨領域學院', '通識中心'] as const;
   const collegeStats = colleges.map(col => {
     const list = courses.filter(c => c.college === col);
     const colCapacity = list.reduce((s, c) => s + c.capacity, 0);

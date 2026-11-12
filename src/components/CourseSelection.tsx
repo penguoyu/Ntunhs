@@ -16,12 +16,13 @@ import {
   X,
   Check,
 } from 'lucide-react';
-import { Course, StudentProfile } from '../types';
+import { Course, CourseSlot, StudentProfile } from '../types';
 import {
   CREDIT_LIMIT,
   Competition,
   DAY_LABELS,
   PERIOD_TIMES,
+  slotsOf,
   admissionChance,
   checkPrerequisite,
   competitionLevel,
@@ -62,12 +63,14 @@ interface CourseSelectionProps {
 
 type CategoryFilter = '全部' | '必修' | '選修' | '通識';
 type TimeFilter = '全部' | '上午' | '下午' | '晚上';
-type SortKey = 'default' | 'seats' | 'rating';
+const PAGE_SIZE = 40;
+
+type SortKey = 'default' | 'seats' | 'enrolled';
 
 const TIME_RANGES: Record<Exclude<TimeFilter, '全部'>, number[]> = {
   上午: [1, 2, 3, 4],
-  下午: [5, 6, 7, 8],
-  晚上: [9, 10],
+  下午: [5, 6, 7, 8, 9],
+  晚上: [10, 11, 12, 13, 14],
 };
 
 const matchCategory = (c: Course, f: CategoryFilter) => {
@@ -133,7 +136,7 @@ const NAME_LINE_H = 13;
 const shortName = (name: string) => name.replace(/[（(][^）)]*[）)]/g, '').trim() || name;
 
 type BlockKind = 'schedule' | 'cart' | 'preview';
-type BlockEntry = { course: Course; kind: BlockKind };
+type BlockEntry = { course: Course; kind: BlockKind; slot?: CourseSlot };
 /** 同一天時段相連的一組課；超過一門代表衝堂，合併成一格顯示 */
 type BlockGroup = { start: number; end: number; entries: BlockEntry[] };
 
@@ -154,14 +157,15 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
 
     // 依星期分欄；時段重疊的課併成同一組，不再擠成好幾條細欄
     const byDay: Record<number, BlockGroup[]> = {};
-    for (let d = 1; d <= 5; d++) {
+    for (let d = 1; d <= 7; d++) {
+      // 一門課一週可能有多個時段，每個時段各畫一格
       const items = all
-        .filter(b => b.course.day === d && b.course.periods?.length)
-        .sort((a, b) => Math.min(...a.course.periods) - Math.min(...b.course.periods));
+        .flatMap(b => slotsOf(b.course).filter(s => s.day === d).map(slot => ({ ...b, slot })))
+        .sort((a, b) => Math.min(...a.slot.periods) - Math.min(...b.slot.periods));
       const groups: BlockGroup[] = [];
       for (const b of items) {
-        const start = Math.min(...b.course.periods);
-        const end = Math.max(...b.course.periods);
+        const start = Math.min(...b.slot.periods);
+        const end = Math.max(...b.slot.periods);
         const last = groups[groups.length - 1];
         if (last && start <= last.end) {
           last.entries.push(b);
@@ -175,20 +179,24 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
     return byDay;
   }, [scheduleCourses, cartCourses, preview]);
 
+  // 平常只顯示週一到週五；有排到週末的課才多出該欄
+  const shownDays = [1, 2, 3, 4, 5, 6, 7].filter(d => d <= 5 || (blocks[d] ?? []).length > 0);
+  const gridStyle = { gridTemplateColumns: `34px repeat(${shownDays.length}, minmax(0, 1fr))` };
+
   const label = ({ course, kind }: BlockEntry) =>
     `${kind === 'cart' ? `#${cartRank.get(course.id)} ` : ''}${shortName(course.name)}`;
 
   return (
     <div className="rounded-xl border border-border-subtle overflow-hidden bg-surface-card">
-      <div className="grid grid-cols-[34px_repeat(5,minmax(0,1fr))] bg-surface-container-low text-[11px] font-semibold text-text-secondary">
+      <div style={gridStyle} className="grid bg-surface-container-low text-[11px] font-semibold text-text-secondary">
         <div />
-        {DAY_LABELS.map(d => (
+        {shownDays.map(day => DAY_LABELS[day - 1]).map(d => (
           <div key={d} className="py-1.5 text-center border-l border-border-subtle">
             週{d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-[34px_repeat(5,minmax(0,1fr))]">
+      <div style={gridStyle} className="grid">
         <div>
           {periods.map(p => (
             <div
@@ -201,7 +209,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
             </div>
           ))}
         </div>
-        {[1, 2, 3, 4, 5].map(day => (
+        {shownDays.map(day => (
           <div key={day} className="relative border-l border-border-subtle" style={{ height: ROW_H * maxPeriod }}>
             {periods.map(p => (
               <div
@@ -218,7 +226,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                 const onlyPreview = entries.filter(e => e.kind !== 'preview').length < 2;
                 return (
                   <div
-                    key={entries.map(e => e.course.id).join('+')}
+                    key={`${start}-${entries.map(e => e.course.id).join('+')}`}
                     title={entries.map(e => `${e.course.name}｜${formatCourseTime(e.course)}`).join('\n')}
                     className={`absolute rounded-md border px-1.5 py-1 overflow-hidden flex flex-col gap-0.5 bg-red-50 border-conflict-danger text-red-800 ${
                       onlyPreview ? 'border-dashed' : ''
@@ -247,7 +255,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                 );
               }
 
-              const { course, kind } = entries[0];
+              const { course, kind, slot } = entries[0];
               const showRoom = end > start;
               // 依格子高度決定課名最多顯示幾行，超出以 … 收尾
               const nameLines = Math.max(1, Math.floor((height - 6 - (showRoom ? 12 : 0)) / NAME_LINE_H));
@@ -259,7 +267,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                     : 'bg-surface-container border-border-strong border-dashed text-text-secondary';
               return (
                 <button
-                  key={`${kind}-${course.id}`}
+                  key={`${kind}-${course.id}-${start}`}
                   type="button"
                   onClick={() => onSelect(course)}
                   title={`${course.name}｜${formatCourseTime(course)}｜${course.location}`}
@@ -282,7 +290,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
                     {shortName(course.name)}
                   </span>
                   {showRoom && (
-                    <span className="mt-auto text-[11px] leading-3 opacity-75 truncate">{course.room}</span>
+                    <span className="mt-auto text-[11px] leading-3 opacity-75 truncate">{slot?.room || course.room}</span>
                   )}
                 </button>
               );
@@ -330,7 +338,12 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
 }) => {
   // 篩選條件
   const [keyword, setKeyword] = useState('');
-  const [department, setDepartment] = useState('全部');
+  // FR-02：依登入者的學籍自動帶入本系
+  const homeDepartment = useMemo(
+    () => Array.from(new Set(courses.map(c => c.department))).find(d => student.department?.startsWith(d)) ?? '全部',
+    [courses, student.department]
+  );
+  const [department, setDepartment] = useState(homeDepartment);
   const [category, setCategory] = useState<CategoryFilter>(initialCategory);
   const [days, setDays] = useState<number[]>([]);
   const [timeOfDay, setTimeOfDay] = useState<TimeFilter>('全部');
@@ -402,22 +415,24 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
     () => Array.from(new Set(courses.map(c => c.credits))).sort((a, b) => a - b),
     [courses]
   );
+  // 課表列數：平常顯示到第 9 節，有排晚上的課（或正在預覽）才往下延伸
   const maxPeriod = useMemo(
-    () => Math.max(8, ...courses.flatMap(c => c.periods ?? [])),
-    [courses]
+    () => Math.max(9, ...[...plannedCourses, ...(preview ? [preview] : [])].flatMap(c => slotsOf(c).flatMap(s => s.periods))),
+    [plannedCourses, preview]
   );
 
   const filtered = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
     const list = courses.filter(c => {
       if (kw) {
-        const haystack = [c.name, c.englishName, c.code, c.id, c.teacher, ...(c.tags ?? [])].join(' ').toLowerCase();
+        const haystack = [c.name, c.englishName, c.code, c.id, c.teacher, c.room, ...(c.tags ?? [])].join(' ').toLowerCase();
         if (!haystack.includes(kw)) return false;
       }
       if (department !== '全部' && c.department !== department) return false;
       if (!matchCategory(c, category)) return false;
-      if (days.length && !days.includes(c.day)) return false;
-      if (timeOfDay !== '全部' && !c.periods?.some(p => TIME_RANGES[timeOfDay].includes(p))) return false;
+      const slots = slotsOf(c);
+      if (days.length && !slots.some(s => days.includes(s.day))) return false;
+      if (timeOfDay !== '全部' && !slots.some(s => s.periods.some(p => TIME_RANGES[timeOfDay].includes(p)))) return false;
       if (credits !== '全部' && c.credits !== Number(credits)) return false;
       if (onlyAvailable && seatsLeft(c) === 0) return false;
       if (onlyEMI && !c.isEMI) return false;
@@ -427,12 +442,16 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
       return true;
     });
     if (sortKey === 'seats') list.sort((a, b) => seatsLeft(b) - seatsLeft(a));
-    if (sortKey === 'rating') list.sort((a, b) => b.rating - a.rating);
+    if (sortKey === 'enrolled') list.sort((a, b) => b.enrolled - a.enrolled);
     return list;
   }, [
     courses, keyword, department, category, days, timeOfDay, credits, onlyAvailable, onlyEMI,
     onlyFavorites, onlyPrereqMet, onlyNoConflict, sortKey, favorites, student, plannedCourses,
   ]);
+
+  // 課程很多時分批顯示，篩選條件改變就回到第一批
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => setVisibleCount(PAGE_SIZE), [filtered]);
 
   const activeFilterCount =
     (department !== '全部' ? 1 : 0) +
@@ -499,6 +518,9 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             </option>
           ))}
         </select>
+        {homeDepartment !== '全部' && department === homeDepartment && (
+          <p className="mt-1 text-[11px] text-secondary">已依您的學籍帶入本系，可改選其他系所</p>
+        )}
       </div>
 
       <div>
@@ -626,7 +648,9 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             <p className="mt-0.5 text-xs text-text-secondary">
               {c.teacher} ・ {formatCourseTime(c)} ・ {c.room || c.location}
             </p>
-            <p className="text-[11px] text-text-muted truncate">{c.department}</p>
+            <p className="text-[11px] text-text-muted truncate">
+              {[c.department, c.program, c.className && `開課班級 ${c.className}`].filter(Boolean).join(' ・ ')}
+            </p>
 
             {(clashes.length > 0 || !prereq.met || inSchedule) && (
               <div className="mt-2 space-y-1 text-xs">
@@ -950,7 +974,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             >
               <option value="default">預設排序</option>
               <option value="seats">餘額多 → 少</option>
-              <option value="rating">評價高 → 低</option>
+              <option value="enrolled">修課人數多 → 少</option>
             </select>
           </div>
 
@@ -959,7 +983,18 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
               沒有符合條件的課程
             </div>
           ) : (
-            <ul className="space-y-2.5">{filtered.map(courseRow)}</ul>
+            <>
+              <ul className="space-y-2.5">{filtered.slice(0, visibleCount).map(courseRow)}</ul>
+              {filtered.length > visibleCount && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount(n => n + PAGE_SIZE)}
+                  className="mt-3 w-full py-2.5 rounded-xl border border-border-subtle bg-surface-card text-sm font-medium text-primary hover:bg-surface-container-low"
+                >
+                  顯示更多（還有 {filtered.length - visibleCount} 門）
+                </button>
+              )}
+            </>
           )}
         </section>
 
