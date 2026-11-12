@@ -65,7 +65,7 @@ type CategoryFilter = '全部' | '必修' | '選修' | '通識';
 type TimeFilter = '全部' | '上午' | '下午' | '晚上';
 const PAGE_SIZE = 40;
 
-type SortKey = 'default' | 'seats' | 'enrolled';
+type SortKey = 'default' | 'seats' | 'enrolled' | 'rating';
 
 const TIME_RANGES: Record<Exclude<TimeFilter, '全部'>, number[]> = {
   上午: [1, 2, 3, 4],
@@ -443,6 +443,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
     });
     if (sortKey === 'seats') list.sort((a, b) => seatsLeft(b) - seatsLeft(a));
     if (sortKey === 'enrolled') list.sort((a, b) => b.enrolled - a.enrolled);
+    if (sortKey === 'rating') list.sort((a, b) => b.rating - a.rating);
     return list;
   }, [
     courses, keyword, department, category, days, timeOfDay, credits, onlyAvailable, onlyEMI,
@@ -975,6 +976,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
               <option value="default">預設排序</option>
               <option value="seats">餘額多 → 少</option>
               <option value="enrolled">修課人數多 → 少</option>
+              <option value="rating">評價高 → 低（模擬）</option>
             </select>
           </div>
 

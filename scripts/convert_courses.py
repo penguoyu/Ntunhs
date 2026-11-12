@@ -12,6 +12,7 @@
 
 學校資料沒有的欄位：
     名額上限 → 以歷年同名課程單班最高修課人數推估（capacityEstimated）
+    評價星數、平均分數、及格率 → 固定的模擬值（畫面標示「模擬資料」）
     先修條件 → 僅示範：課名為「…(二)」且歷年有「…(一)」時，設為需先修 (一)
 """
 import collections, glob, json, math, os, re, sys, unicodedata
@@ -137,7 +138,10 @@ for c in by_sem[latest].values():
         'enrolled': c['enrolled'], 'capacity': cap, 'capacityEstimated': True,
         'isEMI': bool(re.search(r'EMI|全英', c['note'] + c['name'])),
         'description': c['summary'] or '（學校資料未提供課程摘要）', 'note': c['note'],
-        'rating': 0, 'ratingCount': 0, 'tags': [t for t in [c['className'], program] if t],
+        # 以下四項學校資料沒有，為固定的模擬值（同一門課每次轉檔結果相同），畫面上標示「模擬資料」
+        'rating': round(3.6 + (stable(c['id']) % 13) / 10, 1), 'ratingCount': 8 + stable(c['id'] + 'n') % 60,
+        'averageScore': round(76 + (stable(c['id'] + 's') % 120) / 10, 1),
+        'passRate': round(90 + (stable(c['id'] + 'p') % 95) / 10, 1), 'tags': [t for t in [c['className'], program] if t],
         'accentColor': ACCENT.get(category, 'primary'), 'source': 'school',
     }
     if extra:

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Course, StudentProfile } from '../types';
-import { checkPrerequisite, seatsLeft } from '../lib/schedule';
+import { checkPrerequisite, gradingStyle, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
 
 /** 某一學期的開課紀錄（由 scripts/convert_courses.py 依課名彙整） */
 interface HistoryEntry {
@@ -9,6 +9,30 @@ interface HistoryEntry {
   enrolled: number;
   teachers: string[];
 }
+
+/** 模擬的修課心得：只談課程負擔與上課方式，依課號固定挑選，不是真實學生的評語 */
+const REVIEW_TEMPLATES = [
+  '每週進度固定，跟著上課做筆記就不會太吃力，期末前記得把前面的內容複習一遍。',
+  '分組報告佔的比重不小，建議開學就找好組員，早點分工。',
+  '作業量中等，大多可以在課堂上完成一半，剩下的回家補完。',
+  '內容偏實作，上課要帶筆電，缺一兩堂課會比較難跟上。',
+  '期中、期末各考一次，範圍都有先講，認真準備分數不會太差。',
+  '課程內容和後面年級的課有銜接，建議按照排定的學期修。',
+  '需要課前預習，上課會抽問，但討論的氣氛不錯。',
+  '報告和出席佔比較高，適合不喜歡純筆試的同學。',
+];
+const REVIEW_AUTHORS = ['同系學長', '同系學姊', '外系修課同學', '去年修課同學'];
+const hash = (s: string) => [...s].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0);
+const demoReviews = (course: Course) =>
+  [0, 1].map(i => {
+    const h = hash(course.id + i);
+    return {
+      author: REVIEW_AUTHORS[(h >>> 4) % REVIEW_AUTHORS.length],
+      semester: i === 0 ? '114-1' : '113-1',
+      rating: Math.max(3, Math.min(5, Math.round(course.rating) - i + (h % 2))),
+      content: REVIEW_TEMPLATES[(h + i * 3) % REVIEW_TEMPLATES.length],
+    };
+  });
 
 const semesterLabel = (code: string) => `${code.slice(0, 3)}-${code.slice(3)}`;
 
@@ -92,6 +116,57 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
               </p>
             );
           })}
+        </div>
+      )}
+
+      {course.ratingCount > 0 && (
+        <div className={`${card} text-xs`}>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium text-xs sm:text-sm text-primary">學長姐修課參考</h4>
+            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold">
+              模擬資料，非真實評價
+            </span>
+          </div>
+          <div className="flex items-center gap-5">
+            <div className="text-center flex flex-col items-center shrink-0">
+              <span className="font-semibold text-3xl text-primary leading-none">{course.rating.toFixed(1)}</span>
+              <div className="text-amber-500 text-xs my-1">{starText(course.rating)}</div>
+              <span className="text-[11px] text-text-muted">{course.ratingCount} 人評分</span>
+            </div>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1">
+              <div>
+                <dt className="text-[11px] text-text-muted">歷年平均分數</dt>
+                <dd className="font-semibold text-on-surface">{course.averageScore ?? '—'} 分</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] text-text-muted">當率</dt>
+                <dd className="font-semibold text-on-surface">
+                  {course.passRate != null ? `${(100 - course.passRate).toFixed(1)}%` : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[11px] text-text-muted">本系學長姐修過</dt>
+                <dd className="font-semibold text-on-surface">{seniorsTaken(course)} 人</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] text-text-muted">給分</dt>
+                <dd className="font-semibold text-on-surface">{gradingStyle(course)}</dd>
+              </div>
+            </dl>
+          </div>
+          <ul className="mt-3 space-y-2">
+            {demoReviews(course).map((rev, i) => (
+              <li key={i} className="p-3 rounded-xl bg-surface-container-low border border-border-subtle">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-on-surface">
+                    {rev.author} <span className="text-text-muted font-normal">・ {rev.semester}</span>
+                  </span>
+                  <span className="text-amber-500">{starText(rev.rating)}</span>
+                </div>
+                <p className="text-text-secondary leading-relaxed">{rev.content}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

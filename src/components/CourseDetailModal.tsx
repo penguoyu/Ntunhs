@@ -156,7 +156,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 </div>
                 {course.ratingCount > 0 && (
                   <span className="px-2.5 py-1 rounded-lg bg-surface-card text-secondary font-medium text-xs shadow-xs">
-                    {course.rating.toFixed(1)} ★（{course.ratingCount} 人評分）
+                    {course.rating.toFixed(1)} ★（{course.ratingCount} 人評分{isReal ? '・模擬' : ''}）
                   </span>
                 )}
               </div>
