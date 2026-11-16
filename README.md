@@ -189,6 +189,12 @@ npm run build
 npm run preview
 ```
 
+### GitHub Pages 線上展示
+- 網址：https://penguoyu.github.io/Ntunhs/
+- `.github/workflows/deploy-pages.yml` 會在每次更新 `main` 時自動打包並發布，約 1～2 分鐘後網站更新。
+- 第一次需要在 GitHub 的 **Settings → Pages → Build and deployment → Source** 選 **GitHub Actions**。
+- `vite.config.ts` 的 `base: './'` 讓網站在子路徑下也能正確載入。
+
 ### Docker 容器化部署
 專案已內建最佳化 Dockerfile，支援標準容器化環境：
 ```bash

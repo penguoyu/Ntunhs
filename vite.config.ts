@@ -5,6 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // 用相對路徑，網站放在 GitHub Pages 的子路徑（/Ntunhs/）也能正常載入
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
