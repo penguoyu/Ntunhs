@@ -1,22 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #00355f;
-  --color-primary-container: #0f4c81;
-  --color-primary-fixed: #d2e4ff;
-  --color-primary-fixed-dim: #a0c9ff;
+  /* ── 配色 A「北護綠」(預設)：深森林綠為主色，金色作為預選／強調色 ──
+     依據：北護官網未公開校色色碼；學校委託設計公司的文宣稿說明「使用 logo 色系
+     與綠色校園相輝映」，故以綠色系推定。正式採用前請以校徽原檔比對。 */
+  --color-primary: #1d5b43;
+  --color-primary-hover: #164a36;
+  --color-primary-container: #2c7a5a;
+  --color-primary-fixed: #d3ece0;
+  --color-primary-fixed-dim: #9fd3ba;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #8ebdf9;
-  --color-on-primary-fixed: #001c37;
-  
-  --color-secondary: #006b5f;
-  --color-secondary-container: #6df5e1;
-  --color-secondary-fixed: #71f8e4;
-  --color-secondary-fixed-dim: #4fdbc8;
+  --color-on-primary-container: #b5e6cf;
+  --color-on-primary-fixed: #002114;
+
+  /* 預選（虛線）、次要強調：金色，與綠色主色、紅色衝堂都能分開 */
+  --color-secondary: #8a5d00;
+  --color-secondary-container: #ffe2a8;
+  --color-secondary-fixed: #ffe7b8;
+  --color-secondary-fixed-dim: #e9bf62;
   --color-on-secondary: #ffffff;
-  --color-on-secondary-container: #006f64;
-  --color-on-secondary-fixed: #00201c;
-  --color-on-secondary-fixed-variant: #005048;
+  --color-on-secondary-container: #6b4700;
+  --color-on-secondary-fixed: #2b1c00;
+  --color-on-secondary-fixed-variant: #5e3f00;
 
   --color-tertiary: #4b2d00;
   --color-tertiary-container: #6a4100;
@@ -31,26 +36,96 @@
   --color-general-sky: #0284C7;
   --color-conflict-danger: #EF4444;
 
-  --color-surface: #faf8ff;
-  --color-surface-bg: #F8FAFC;
+  --color-surface: #f7faf8;
+  --color-surface-bg: #f5f8f6;
   --color-surface-card: #FFFFFF;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f2f3ff;
-  --color-surface-container: #eaedff;
-  --color-surface-container-high: #e2e7ff;
-  --color-surface-container-highest: #dae2fd;
-  
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748B;
-  --color-border-subtle: #E2E8F0;
-  --color-border-strong: #CBD5E1;
+  --color-surface-container-low: #f0f5f2;
+  --color-surface-container: #e6efea;
+  --color-surface-container-high: #dce8e1;
+  --color-surface-container-highest: #d1e1d8;
+
+  --color-text-secondary: #46544d;
+  --color-text-muted: #66736c;
+  --color-border-subtle: #e1e8e4;
+  --color-border-strong: #c8d4cd;
   --color-error: #ba1a1a;
   --color-error-container: #ffdad6;
   --color-on-error: #ffffff;
   --color-on-error-container: #93000a;
+  --color-inverse-surface: #1f2d27;
+  --color-inverse-on-surface: #e9f3ee;
+  --color-on-surface: #13201a;
+
+  /* Logo 與圖表用 */
+  --color-logo-accent: #e9bf62;
+}
+
+/* ── 配色 B「青綠」：網址加 ?palette=b 切換，給組員比較用 ──
+   較明亮的青綠主色，預選改為靛藍虛線 */
+:root[data-palette="b"] {
+  --color-primary: #0b6a6a;
+  --color-primary-hover: #085656;
+  --color-primary-container: #128282;
+  --color-primary-fixed: #cdeeec;
+  --color-primary-fixed-dim: #8fd6d2;
+  --color-on-primary-container: #b3ecea;
+  --color-on-primary-fixed: #002020;
+
+  --color-secondary: #4a4fb5;
+  --color-secondary-container: #dfe0ff;
+  --color-secondary-fixed: #e3e4ff;
+  --color-secondary-fixed-dim: #a9adf2;
+  --color-on-secondary-container: #2d318a;
+  --color-on-secondary-fixed: #10124a;
+  --color-on-secondary-fixed-variant: #33378f;
+
+  --color-surface: #f6fafa;
+  --color-surface-bg: #f4f8f8;
+  --color-surface-container-low: #eef6f5;
+  --color-surface-container: #e3efee;
+  --color-surface-container-high: #d8e8e7;
+  --color-surface-container-highest: #cde1e0;
+  --color-text-secondary: #44555a;
+  --color-text-muted: #64767a;
+  --color-border-subtle: #dfe9e9;
+  --color-border-strong: #c5d5d5;
+  --color-inverse-surface: #1d2d2e;
+  --color-inverse-on-surface: #e8f4f4;
+  --color-on-surface: #122021;
+  --color-logo-accent: #a9adf2;
+}
+
+/* ── 原本的深藍配色：網址加 ?palette=original，方便對照 ── */
+:root[data-palette="original"] {
+  --color-primary: #00355f;
+  --color-primary-hover: #002a4c;
+  --color-primary-container: #0f4c81;
+  --color-primary-fixed: #d2e4ff;
+  --color-primary-fixed-dim: #a0c9ff;
+  --color-on-primary-container: #8ebdf9;
+  --color-on-primary-fixed: #001c37;
+  --color-secondary: #006b5f;
+  --color-secondary-container: #6df5e1;
+  --color-secondary-fixed: #71f8e4;
+  --color-secondary-fixed-dim: #4fdbc8;
+  --color-on-secondary-container: #006f64;
+  --color-on-secondary-fixed: #00201c;
+  --color-on-secondary-fixed-variant: #005048;
+  --color-surface: #faf8ff;
+  --color-surface-bg: #F8FAFC;
+  --color-surface-container-low: #f2f3ff;
+  --color-surface-container: #eaedff;
+  --color-surface-container-high: #e2e7ff;
+  --color-surface-container-highest: #dae2fd;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+  --color-border-subtle: #E2E8F0;
+  --color-border-strong: #CBD5E1;
   --color-inverse-surface: #283044;
   --color-inverse-on-surface: #eef0ff;
   --color-on-surface: #131b2e;
+  --color-logo-accent: #7cc4f5;
 }
 
 @layer base {

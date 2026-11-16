@@ -114,13 +114,13 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
           {/* 圓環：外圈為已取得 + 本學期修習中，內層為已取得 */}
           <div className="relative w-32 h-32 shrink-0 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-hidden>
-              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#E2E8F0" strokeWidth="10" />
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--color-border-subtle)" strokeWidth="10" />
               <circle
                 cx="50"
                 cy="50"
                 r="40"
                 fill="transparent"
-                stroke="#0f4c81"
+                stroke="var(--color-primary-container)"
                 strokeWidth="10"
                 strokeDasharray={RING}
                 strokeDashoffset={RING * (1 - Math.min(1, (audit.earned + audit.inProgress) / audit.total))}
@@ -131,7 +131,7 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                 cy="50"
                 r="40"
                 fill="transparent"
-                stroke="#006b5f"
+                stroke="var(--color-secondary)"
                 strokeWidth="10"
                 strokeDasharray={RING}
                 strokeDashoffset={RING * (1 - Math.min(1, audit.earned / audit.total))}

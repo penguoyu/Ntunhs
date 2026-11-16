@@ -24,7 +24,7 @@ export const Logo: React.FC<LogoProps> = ({ className = 'h-9 w-auto', size = 36 
       </defs>
 
       {/* Rounded App Icon Base */}
-      <rect width="100" height="100" rx="22" fill="#00355f" />
+      <rect width="100" height="100" rx="22" fill="var(--color-primary)" />
 
       {/* Graduation Cap (White) */}
       <g filter={`url(#${shadowId})`}>
@@ -39,13 +39,13 @@ export const Logo: React.FC<LogoProps> = ({ className = 'h-9 w-auto', size = 36 
           strokeLinejoin="round"
         />
         {/* Tassel */}
-        <path d="M 78 35.5 L 80 57" stroke="#7cc4f5" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="80" cy="60" r="3.5" fill="#7cc4f5" />
+        <path d="M 78 35.5 L 80 57" stroke="var(--color-logo-accent)" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="80" cy="60" r="3.5" fill="var(--color-logo-accent)" />
 
         {/* Medical Cross (Light Turquoise / Cyan) */}
         <path
           d="M 46 51 H 54 V 56 H 59 V 64 H 54 V 69 H 46 V 64 H 41 V 56 H 46 Z"
-          fill="#7cc4f5"
+          fill="var(--color-logo-accent)"
         />
       </g>
     </svg>

@@ -7,4 +7,8 @@ import '@fontsource/inter/latin-600.css';
 import 'material-symbols/outlined.css';
 import './index.css';
 
+// 配色比較用：網址加 ?palette=b（青綠）或 ?palette=original（原本深藍），預設為北護綠
+const palette = new URLSearchParams(window.location.search).get('palette');
+if (palette) document.documentElement.dataset.palette = palette;
+
 createRoot(document.getElementById('root')!).render(<App />);
