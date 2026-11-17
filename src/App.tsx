@@ -11,6 +11,7 @@ import { GraduationAudit } from './components/GraduationAudit';
 import { CourseDetailModal } from './components/CourseDetailModal';
 import { NotificationModal } from './components/NotificationModal';
 import { LoginModal } from './components/LoginModal';
+import { clearToken } from './lib/mockOAuth';
 import { UserProfileModal } from './components/UserProfileModal';
 import { StudentAccountCenter } from './components/StudentAccountCenter';
 import { AdminCourseManagement } from './components/AdminCourseManagement';
@@ -184,6 +185,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    clearToken();
     setCurrentUser(null);
     // 訪客每次都從空白課表開始
     setPlans(prev => {
