@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { UserAccount } from '../types';
 import { DEMO_PASSWORD_HASH, sha256Hex } from '../data/users';
+import { MockSsoLogin } from './MockSsoLogin';
+import { clearToken, decodeJwt, loadToken } from '../lib/mockOAuth';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -23,7 +25,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onLogout,
   showToast,
 }) => {
-  const [tab, setTab] = useState<'quick' | 'password' | 'register'>('quick');
+  const [tab, setTab] = useState<'sso' | 'quick' | 'password' | 'register'>('sso');
   
   // Password login form
   const [usernameInput, setUsernameInput] = useState('');
@@ -39,6 +41,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const regRole = 'student' as const;
 
   if (!isOpen) return null;
+
+  // 目前帳號若是透過模擬 SSO 登入，顯示權杖到期時間
+  const ssoExp = (() => {
+    const t = loadToken();
+    if (!t || !currentUser) return null;
+    try {
+      const { payload } = decodeJwt(t);
+      return payload.sub === currentUser.id ? payload.exp : null;
+    } catch {
+      return null;
+    }
+  })();
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +83,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
     setPasswordInput('');
 
+    clearToken();
     onLogin(matched);
     showToast(`歡迎回來，${matched.name} (${matched.role === 'admin' ? '課程管理員' : '學生'})`);
     onClose();
@@ -79,6 +94,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       showToast('此帳號已停用，無法登入');
       return;
     }
+    clearToken();
     onLogin(user);
     showToast(`已切換身分為：${user.name} (${user.role === 'admin' ? '課程管理員' : '學生'})`);
     onClose();
@@ -122,6 +138,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     };
 
     onRegister(newUser);
+    clearToken();
     onLogin(newUser);
     showToast(`註冊成功。歡迎加入北護課程系統，${newUser.name}`);
     onClose();
@@ -130,7 +147,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-lg bg-surface-card rounded-3xl shadow-2xl border border-border-subtle overflow-hidden flex flex-col max-h-[90vh]"
+        className={`relative w-full ${tab === 'sso' ? 'max-w-2xl' : 'max-w-lg'} bg-surface-card rounded-3xl shadow-2xl border border-border-subtle overflow-hidden flex flex-col max-h-[90vh]`}
         onClick={e => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -156,6 +173,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {/* Tab Selection */}
         <div className="flex border-b border-border-subtle bg-surface-container-low px-4 pt-2">
+          <button
+            onClick={() => setTab('sso')}
+            className={`flex-1 py-2.5 text-xs sm:text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+              tab === 'sso'
+                ? 'border-primary text-primary bg-surface-card rounded-t-xl shadow-xs'
+                : 'border-transparent text-text-muted hover:text-on-surface'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">shield_person</span>
+            <span>SSO 登入</span>
+          </button>
           <button
             onClick={() => setTab('quick')}
             className={`flex-1 py-2.5 text-xs sm:text-sm font-medium border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
@@ -203,6 +231,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               }`}>
                 {currentUser.role === 'admin' ? '管理者' : '學生'}
               </span>
+              {ssoExp && (
+                <span className="text-[11px] text-text-muted">
+                  · SSO 權杖到期 {new Date(ssoExp * 1000).toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </div>
             {onLogout && (
               <button
@@ -222,6 +255,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+          {tab === 'sso' && (
+            <MockSsoLogin users={users} onLogin={onLogin} onClose={onClose} showToast={showToast} />
+          )}
+
           {tab === 'quick' && (
             <div className="space-y-4">
               <div className="bg-primary/5 border border-primary/15 rounded-xl p-3 text-xs text-primary">
