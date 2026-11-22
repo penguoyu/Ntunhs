@@ -925,10 +925,10 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         </div>
       </div>
 
-      <div className={wide ? 'xl:grid xl:grid-cols-[220px_minmax(0,1fr)_440px] lg:grid lg:grid-cols-[minmax(0,1fr)_400px] gap-5' : ''}>
-        {/* 左：篩選（xl 以上常駐） */}
+      <div className={wide ? 'lg:grid lg:grid-cols-[200px_minmax(0,1fr)_340px] xl:grid-cols-[220px_minmax(0,1fr)_440px] gap-4 xl:gap-5' : ''}>
+        {/* 左：篩選（lg 以上常駐，三欄式） */}
         {wide && (
-          <aside className="hidden xl:block">
+          <aside className="hidden lg:block">
             <div className="sticky top-24 rounded-xl border border-border-subtle bg-surface-card p-4 max-h-[calc(100vh-7rem)] overflow-y-auto">
               {filterPanel}
             </div>
@@ -951,7 +951,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             <button
               type="button"
               onClick={() => setFiltersOpen(true)}
-              className={`${wide ? 'xl:hidden' : ''} px-3 rounded-xl border border-border-subtle bg-surface-card text-sm flex items-center gap-1.5`}
+              className={`${wide ? 'lg:hidden' : ''} px-3 rounded-xl border border-border-subtle bg-surface-card text-sm flex items-center gap-1.5`}
             >
               <SlidersHorizontal size={15} />
               篩選{activeFilterCount > 0 && <span className="text-primary font-semibold">({activeFilterCount})</span>}
