@@ -90,6 +90,15 @@
   100% { transform: scale(1); }
 }
 .bump-added { display: inline-block; animation: bump-added 0.5s ease-out; }
+/* 教室地圖：路線虛線流動、目標教室標記呼吸 */
+@keyframes route-dash { to { stroke-dashoffset: -18; } }
+.route-dash { animation: route-dash 0.9s linear infinite; }
+@keyframes pin-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.35; }
+}
+.pin-pulse { animation: pin-pulse 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .flash-added, .bump-added { animation-duration: 0.01s; }
+  .route-dash, .pin-pulse { animation: none; }
 }

@@ -189,3 +189,11 @@ export interface StudentProfile {
   email?: string;
   phone?: string;
 }
+
+/** FR-07 額滿候補：學生在某門額滿課程的候補登記（模擬） */
+export interface WaitlistEntry {
+  courseId: string;
+  /** 排在您前面的人數；0 表示您是候補第 1 位 */
+  ahead: number;
+  joinedAt: string;
+}

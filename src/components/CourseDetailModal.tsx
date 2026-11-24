@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Course, SDG_LIST, StudentProfile } from '../types';
+import { Course, SDG_LIST, StudentProfile, WaitlistEntry } from '../types';
 import { RealCourseBody } from './RealCourseBody';
 import { coursesOverlap, formatCourseTime, gradingStyle, registeredCount, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
 
@@ -12,6 +12,11 @@ interface CourseDetailModalProps {
   student?: Pick<StudentProfile, 'passedCourses'>;
   onToggleCart: (courseId: string) => void;
   onToggleFavorite: (courseId: string) => void;
+  /** 這門課的候補登記（沒有候補時為 undefined） */
+  waitlistEntry?: WaitlistEntry;
+  /** 額滿時改為「加入候補」；未提供時（如管理者）不顯示候補 */
+  onToggleWaitlist?: (courseId: string) => void;
+  onOpenMap?: (course: Course) => void;
   onClose: () => void;
   showToast: (msg: string) => void;
 }
@@ -25,9 +30,13 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   student,
   onToggleCart,
   onToggleFavorite,
+  waitlistEntry,
+  onToggleWaitlist,
+  onOpenMap,
   onClose,
   showToast,
 }) => {
+  const showWaitlist = !!onToggleWaitlist && !isInCart && (seatsLeft(course) === 0 || !!waitlistEntry);
   const [activeTab, setActiveTab] = useState<'syllabus' | 'sdgs' | 'competencies' | 'grading' | 'prereq' | 'reviews'>('syllabus');
 
   // 真實開課資料沒有評價、成績、週次等欄位，改顯示歷年開課紀錄
@@ -162,10 +171,23 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               </div>
 
               <div className="flex items-center justify-between text-xs text-text-secondary pt-1 border-t border-border-subtle/60 flex-wrap gap-2">
-                <div className="flex items-center gap-1.5 truncate">
-                  <span className="material-symbols-outlined text-text-muted text-[16px]">domain</span>
-                  <span className="truncate">{course.location}</span>
-                </div>
+                {onOpenMap ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenMap(course)}
+                    className="flex items-center gap-1.5 truncate text-primary font-medium hover:underline"
+                    title="查看教室位置與步行時間"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">location_on</span>
+                    <span className="truncate">{course.location}</span>
+                    <span className="text-[11px] text-text-muted font-normal">查看位置</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="material-symbols-outlined text-text-muted text-[16px]">domain</span>
+                    <span className="truncate">{course.location}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1 text-primary font-semibold">
                   <span className="material-symbols-outlined text-[16px]">schedule</span>
                   <span>{isReal ? formatCourseTime(course) : course.timeStr}</span>
@@ -714,6 +736,21 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           </div>
 
           <div className="flex gap-2">
+            {showWaitlist ? (
+            <button
+              onClick={() => onToggleWaitlist!(course.id)}
+              className={`flex-1 py-3 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98] ${
+                waitlistEntry ? 'bg-amber-50 text-amber-800 border border-amber-300' : 'bg-amber-600 text-white hover:bg-amber-700'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">{waitlistEntry ? 'hourglass_top' : 'group_add'}</span>
+              <span>
+                {waitlistEntry
+                  ? `候補中・第 ${waitlistEntry.ahead + 1} 位（點擊取消候補）`
+                  : '已額滿，加入候補（名額釋出時自動遞補）'}
+              </span>
+            </button>
+            ) : (
             <button
               onClick={() => onToggleCart(course.id)}
               className={`flex-1 py-3 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98] ${
@@ -725,6 +762,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               </span>
               <span>{isInCart ? '已在模擬課表中 (點擊移出)' : '加入選課模擬車'}</span>
             </button>
+            )}
           </div>
         </div>
       </div>
