@@ -51,12 +51,6 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onSelectTab(isAdmin ? 'admin-courses' : 'search-courses')}
           >
             <Logo size={40} />
-            <div className="flex flex-col">
-              <span className="font-semibold text-xl text-primary tracking-tight">北護課程通</span>
-              <span className="text-[11px] text-text-muted font-semibold">
-                NTUNHS Course Master
-              </span>
-            </div>
             <div className="h-6 w-px bg-surface-container-high mx-2 hidden 2xl:block"></div>
             <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-lg text-primary text-xs font-medium shrink-0">
               <span className="material-symbols-outlined text-general-sky text-[18px]">calendar_month</span>
@@ -315,7 +309,6 @@ export const Header: React.FC<HeaderProps> = ({
             <Logo size={30} />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-base text-primary truncate">北護課程通</span>
                 <span className={`shrink-0 whitespace-nowrap text-[11px] px-1.5 py-0.2 rounded-full font-semibold ${
                   isAdmin
                     ? 'bg-amber-100 text-amber-900'
