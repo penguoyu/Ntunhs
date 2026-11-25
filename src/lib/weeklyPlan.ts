@@ -141,9 +141,6 @@ const spread = (weeks: number[], topics: string[]) => {
   return out;
 };
 
-/** 這門課一般週次的上課方式，例如「主題講授、案例討論與課堂練習」 */
-export const teachingStyleOf = (course: Course) => KIND_TEXT[kindOf(course)].desc;
-
 /** 是否從課程簡介抓到單元（false 表示用通用主題） */
 export const hasExtractedTopics = (course: Course) => extractTopics(course.description || '').length >= 3;
 
@@ -172,3 +169,90 @@ export const weeklyPlanOf = (course: Course): WeekProgress[] => {
   ];
   return rows;
 };
+
+/* ------------------------------------------------------------------ */
+/* 週次表（仿學校教學大綱「週次／上課日期」表格，模擬）                    */
+/* ------------------------------------------------------------------ */
+
+/** 115-1 第 1 週的星期一（學校行事曆 115/09/07 開學） */
+export const SEMESTER_WEEK1_MONDAY = new Date(2026, 8, 7);
+
+const ACTIVITIES: Record<Kind, string[]> = {
+  lecture: ['講授與課堂討論', '講授＋隨堂練習', '案例分析與小組討論', '講授＋課後作業'],
+  lab: ['示範操作與分組實作', '分組實作＋實驗紀錄', '操作練習與結果討論', '實作＋繳交實驗報告'],
+  practicum: ['機構實習＋每日反思', '個案照護與指導討論', '機構實習＋讀書報告', '個案討論會'],
+  sport: ['暖身、分解動作教學', '分組練習', '技巧練習與分組對抗', '體能訓練＋分組練習'],
+  project: ['指導討論與進度報告', '資料收集與整理', '小組討論＋進度報告', '撰寫報告與修正'],
+  service: ['行前訓練與說明', '機構服務', '機構服務＋服務紀錄', '團體反思討論'],
+};
+
+export interface WeekRow {
+  week: number;
+  /** 例如 115/09/08(二) */
+  date: string;
+  progress: string;
+  content: string;
+  tag: string;
+  hours: number;
+  /** 例如 W2:1~2 */
+  periods: string;
+  note: string;
+}
+
+const CN_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+const DAY_CN = ['一', '二', '三', '四', '五', '六', '日'];
+const nth = (i: number) => CN_NUM[i] ?? String(i + 1);
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const rocDate = (d: Date) => `${d.getFullYear() - 1911}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+
+/** 把「3-4」這種週次範圍展開成每一週 */
+const weeksOf = (w: string) => {
+  const [a, b] = w.split('-').map(Number);
+  return Array.from({ length: (b || a) - a + 1 }, (_, i) => a + i);
+};
+
+/** 一門課 18 週的週次表（日期、進度、內容、時數／節次、備註） */
+export const weeklyRowsOf = (course: Course): WeekRow[] => {
+  const kind = kindOf(course);
+  const acts = ACTIVITIES[kind];
+  const slots = [
+    ...(course.day && course.periods?.length ? [{ day: course.day, periods: course.periods }] : []),
+    ...(course.extraSlots ?? []),
+  ];
+  const hours = slots.reduce((sum, s) => sum + s.periods.length, 0);
+  const periods = slots
+    .map(s => {
+      const ps = [...s.periods].sort((x, y) => x - y);
+      return `W${s.day}:${ps[0]}~${ps[ps.length - 1]}`;
+    })
+    .join('、');
+  const firstDay = slots[0]?.day ?? 1;
+
+  const rows: WeekRow[] = [];
+  let topicIndex = 0;
+  for (const plan of weeklyPlanOf(course)) {
+    const ws = weeksOf(plan.week);
+    const isTopic = plan.desc === '';
+    ws.forEach((week, i) => {
+      const date = new Date(SEMESTER_WEEK1_MONDAY);
+      date.setDate(date.getDate() + (week - 1) * 7 + (firstDay - 1));
+      const part = ws.length > 1 ? `（${nth(i)}）` : '';
+      const activity = acts[(topicIndex + i) % acts.length];
+      rows.push({
+        week,
+        date: `${rocDate(date)}(${DAY_CN[firstDay - 1]})`,
+        progress: `${plan.title}${part}`,
+        content: isTopic ? activity : plan.desc,
+        tag: plan.tag,
+        hours,
+        periods,
+        note: week <= 2 ? '加退選期間' : plan.tag === '期中' ? '期中考週' : plan.tag === '期末' ? '期末考週' : '',
+      });
+    });
+    if (isTopic) topicIndex += ws.length;
+  }
+  return rows;
+};
+
+export const weekLabel = (n: number) => (n <= 10 ? nth(n - 1) : n < 20 ? `十${nth(n - 11)}` : String(n));

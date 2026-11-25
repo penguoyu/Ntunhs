@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Course, SDG_LIST, StudentProfile } from '../types';
 import { checkPrerequisite, gradingStyle, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
-import { TOTAL_WEEKS, hasExtractedTopics, teachingStyleOf, weeklyPlanOf } from '../lib/weeklyPlan';
+import { TOTAL_WEEKS, weeklyRowsOf } from '../lib/weeklyPlan';
 
 /** 某一學期的開課紀錄（由 scripts/convert_courses.py 依課名彙整） */
 interface HistoryEntry {
@@ -40,10 +40,12 @@ const semesterLabel = (code: string) => `${code.slice(0, 3)}-${code.slice(3)}`;
 interface RealCourseBodyProps {
   course: Course;
   student?: Pick<StudentProfile, 'passedCourses'>;
+  /** 打開每週上課進度表 */
+  onOpenWeekly?: () => void;
 }
 
 /** 真實開課資料的課程詳情：只顯示學校資料裡有的內容，加上歷年開課紀錄 */
-export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student }) => {
+export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student, onOpenWeekly }) => {
   // 歷年資料檔較大，打開課程詳情時才載入
   const [history, setHistory] = useState<HistoryEntry[] | null>(null);
   useEffect(() => {
@@ -64,17 +66,9 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
   const maxEnrolled = Math.max(1, ...(history ?? []).map(h => h.enrolled));
   const prereq = student ? checkPrerequisite(course, student) : null;
   const left = seatsLeft(course);
-  const weeks = weeklyPlanOf(course);
-  const fromDescription = hasExtractedTopics(course);
-  const [showAllWeeks, setShowAllWeeks] = useState(false);
-  useEffect(() => setShowAllWeeks(false), [course.id]);
-  const shownWeeks = showAllWeeks ? weeks : weeks.slice(0, 6);
-  const weekTagStyle = (tag: string) =>
-    tag === '期中' || tag === '期末'
-      ? 'bg-amber-100 text-amber-800'
-      : tag === '課程介紹' || tag === '複習'
-        ? 'bg-surface-container-high text-text-secondary'
-        : 'bg-primary-fixed text-primary';
+  const weekRows = weeklyRowsOf(course);
+  const firstWeek = weekRows[0];
+  const firstTopic = weekRows[1]?.progress;
 
   const card = 'bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle';
   const metric = 'bg-surface-card rounded-xl p-3.5 flex flex-col justify-between shadow-xs border border-border-subtle';
@@ -115,42 +109,21 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
         <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">{course.description}</p>
       </div>
 
-      <div className={card}>
-        <div className="flex items-center justify-between gap-2 mb-1">
+      <div className={`${card} flex items-center justify-between gap-3`}>
+        <div className="min-w-0">
           <h4 className="font-medium text-xs sm:text-sm text-primary">每週上課進度</h4>
-          <span className="text-[11px] text-text-muted shrink-0">共 {TOTAL_WEEKS} 週・模擬</span>
+          <p className="text-[11px] text-text-muted mt-0.5 truncate">
+            共 {TOTAL_WEEKS} 週・第 1 週 {firstWeek?.date}・{firstTopic ? `第 2 週起：${firstTopic}` : ''}（模擬）
+          </p>
         </div>
-        <p className="text-[11px] text-text-muted mb-3 leading-relaxed">
-          {fromDescription
-            ? '依課程簡介列出的單元自動排定（模擬），實際進度以老師的教學大綱為準。'
-            : '課程簡介沒有列出單元，先以同類課程的通用進度示意（模擬），實際進度以老師的教學大綱為準。'}
-          <span className="block mt-0.5 text-text-secondary">一般週次上課方式：{teachingStyleOf(course)}</span>
-        </p>
-        <ol className="divide-y divide-border-subtle rounded-xl border border-border-subtle overflow-hidden">
-          {shownWeeks.map(w => (
-            <li key={w.week} className="px-3 py-2.5 bg-surface-container-low flex items-start gap-3">
-              <span className="w-[68px] shrink-0 text-[11px] font-semibold text-primary font-mono pt-0.5 whitespace-nowrap">
-                第 {w.week} 週
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-1.5">
-                  <span className={`px-1.5 py-0.5 rounded text-[11px] font-semibold shrink-0 ${weekTagStyle(w.tag)}`}>{w.tag}</span>
-                  <span className="font-medium text-xs text-on-surface pt-0.5">{w.title}</span>
-                </div>
-                {w.desc && <p className="text-[11px] text-text-muted mt-1">{w.desc}</p>}
-              </div>
-            </li>
-          ))}
-        </ol>
-        {weeks.length > 6 && (
-          <button
-            type="button"
-            onClick={() => setShowAllWeeks(v => !v)}
-            className="mt-3 w-full py-2 rounded-xl border border-border-subtle text-xs font-semibold text-primary hover:bg-primary/5"
-          >
-            {showAllWeeks ? '收合' : `展開全部 ${TOTAL_WEEKS} 週進度`}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onOpenWeekly}
+          className="shrink-0 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-primary-container"
+        >
+          <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+          查看每週進度
+        </button>
       </div>
 
       {(course.note || course.requires?.length) && (
