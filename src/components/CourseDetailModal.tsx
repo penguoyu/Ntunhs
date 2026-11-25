@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Course, SDG_LIST, StudentProfile, WaitlistEntry } from '../types';
 import { RealCourseBody } from './RealCourseBody';
+import { WeeklyPlanModal } from './WeeklyPlanModal';
 import { coursesOverlap, formatCourseTime, gradingStyle, registeredCount, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
 
 interface CourseDetailModalProps {
@@ -43,6 +44,8 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 }) => {
   const showWaitlist = !isInSchedule && !!onToggleWaitlist && !isInCart && (seatsLeft(course) === 0 || !!waitlistEntry);
   const [activeTab, setActiveTab] = useState<'syllabus' | 'sdgs' | 'competencies' | 'grading' | 'prereq' | 'reviews'>('syllabus');
+  const [showWeekly, setShowWeekly] = useState(false);
+  useEffect(() => setShowWeekly(false), [course.id]);
 
   // 真實開課資料沒有評價、成績、週次等欄位，改顯示歷年開課紀錄
   const isReal = course.source === 'school';
@@ -193,10 +196,23 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     <span className="truncate">{course.location}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1 text-primary font-semibold">
-                  <span className="material-symbols-outlined text-[16px]">schedule</span>
-                  <span>{isReal ? formatCourseTime(course) : course.timeStr}</span>
-                </div>
+                {isReal ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowWeekly(true)}
+                    className="flex items-center gap-1 text-primary font-semibold hover:underline shrink-0"
+                    title="查看每週上課進度"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">schedule</span>
+                    <span>{formatCourseTime(course)}</span>
+                    <span className="text-[11px] text-text-muted font-normal">每週進度</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1 text-primary font-semibold">
+                    <span className="material-symbols-outlined text-[16px]">schedule</span>
+                    <span>{course.timeStr}</span>
+                  </div>
+                )}
               </div>
 
               {/* SDGs Badges in Hero */}
@@ -226,7 +242,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             </div>
           </div>
 
-          {isReal && <RealCourseBody course={course} student={student} />}
+          {isReal && <RealCourseBody course={course} student={student} onOpenWeekly={() => setShowWeekly(true)} />}
 
           {!isReal && (<>
           {/* 3 Metric Cards */}
@@ -790,6 +806,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           </div>
         </div>
       </div>
+      {showWeekly && <WeeklyPlanModal course={course} onClose={() => setShowWeekly(false)} />}
     </div>
   );
 };

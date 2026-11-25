@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Course, SDG_LIST, StudentProfile } from '../types';
 import { checkPrerequisite, gradingStyle, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
+import { TOTAL_WEEKS, weeklyRowsOf } from '../lib/weeklyPlan';
 
 /** 某一學期的開課紀錄（由 scripts/convert_courses.py 依課名彙整） */
 interface HistoryEntry {
@@ -39,10 +40,12 @@ const semesterLabel = (code: string) => `${code.slice(0, 3)}-${code.slice(3)}`;
 interface RealCourseBodyProps {
   course: Course;
   student?: Pick<StudentProfile, 'passedCourses'>;
+  /** 打開每週上課進度表 */
+  onOpenWeekly?: () => void;
 }
 
 /** 真實開課資料的課程詳情：只顯示學校資料裡有的內容，加上歷年開課紀錄 */
-export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student }) => {
+export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student, onOpenWeekly }) => {
   // 歷年資料檔較大，打開課程詳情時才載入
   const [history, setHistory] = useState<HistoryEntry[] | null>(null);
   useEffect(() => {
@@ -63,6 +66,9 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
   const maxEnrolled = Math.max(1, ...(history ?? []).map(h => h.enrolled));
   const prereq = student ? checkPrerequisite(course, student) : null;
   const left = seatsLeft(course);
+  const weekRows = weeklyRowsOf(course);
+  const firstWeek = weekRows[0];
+  const firstTopic = weekRows[1]?.progress;
 
   const card = 'bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle';
   const metric = 'bg-surface-card rounded-xl p-3.5 flex flex-col justify-between shadow-xs border border-border-subtle';
@@ -101,6 +107,23 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
       <div className={card}>
         <h4 className="font-medium text-xs sm:text-sm text-primary mb-1.5">課程簡介</h4>
         <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">{course.description}</p>
+      </div>
+
+      <div className={`${card} flex items-center justify-between gap-3`}>
+        <div className="min-w-0">
+          <h4 className="font-medium text-xs sm:text-sm text-primary">每週上課進度</h4>
+          <p className="text-[11px] text-text-muted mt-0.5 truncate">
+            共 {TOTAL_WEEKS} 週・第 1 週 {firstWeek?.date}・{firstTopic ? `第 2 週起：${firstTopic}` : ''}（模擬）
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenWeekly}
+          className="shrink-0 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-primary-container"
+        >
+          <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+          查看每週進度
+        </button>
       </div>
 
       {(course.note || course.requires?.length) && (
