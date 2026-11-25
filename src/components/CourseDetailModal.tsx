@@ -6,6 +6,9 @@ import { coursesOverlap, formatCourseTime, gradingStyle, registeredCount, seatsL
 interface CourseDetailModalProps {
   course: Course;
   isInCart: boolean;
+  /** 已選上（在課表中）：底部改成「已在課表中」與退選 */
+  isInSchedule?: boolean;
+  onDropCourse?: (courseId: string) => void;
   isFavorite: boolean;
   scheduleCourses?: Course[];
   cartCourses?: Course[];
@@ -24,6 +27,8 @@ interface CourseDetailModalProps {
 export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   course,
   isInCart,
+  isInSchedule = false,
+  onDropCourse,
   isFavorite,
   scheduleCourses,
   cartCourses,
@@ -36,7 +41,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   onClose,
   showToast,
 }) => {
-  const showWaitlist = !!onToggleWaitlist && !isInCart && (seatsLeft(course) === 0 || !!waitlistEntry);
+  const showWaitlist = !isInSchedule && !!onToggleWaitlist && !isInCart && (seatsLeft(course) === 0 || !!waitlistEntry);
   const [activeTab, setActiveTab] = useState<'syllabus' | 'sdgs' | 'competencies' | 'grading' | 'prereq' | 'reviews'>('syllabus');
 
   // 真實開課資料沒有評價、成績、週次等欄位，改顯示歷年開課紀錄
@@ -198,7 +203,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className={`${activeSdgsList.length ? 'flex' : 'hidden'} items-center gap-1.5 flex-wrap pt-2 border-t border-border-subtle/60`}>
                 <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 shrink-0">
                   <span className="material-symbols-outlined text-[15px]">eco</span>
-                  SDGs 永續目標：
+                  SDGs 永續目標{course.sdgsAuto ? '（依課名自動對應・模擬）' : ''}：
                 </span>
                 {activeSdgsList.map(item => (
                   <span
@@ -736,7 +741,26 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
           </div>
 
           <div className="flex gap-2">
-            {showWaitlist ? (
+            {isInSchedule ? (
+            <>
+              <div className="flex-1 py-3 rounded-xl bg-secondary/10 text-secondary border border-secondary/30 font-medium text-xs sm:text-sm flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">event_available</span>
+                <span>已選上，在您的課表中</span>
+              </div>
+              {onDropCourse && (
+                <button
+                  onClick={() => {
+                    onDropCourse(course.id);
+                    onClose();
+                  }}
+                  className="px-4 py-3 rounded-xl border border-border-subtle text-text-secondary hover:text-conflict-danger hover:border-red-200 hover:bg-red-50 font-medium text-xs sm:text-sm flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">remove_circle</span>
+                  退選
+                </button>
+              )}
+            </>
+            ) : showWaitlist ? (
             <button
               onClick={() => onToggleWaitlist!(course.id)}
               className={`flex-1 py-3 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98] ${

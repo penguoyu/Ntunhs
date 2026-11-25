@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Course } from '../types';
 import { SAMPLE_CSV, coursesToCsv, csvToCourseObjects } from '../lib/courseCsv';
+import { formatCourseTime } from '../lib/schedule';
 
 interface AdminCourseImportProps {
   currentCourses: Course[];
@@ -135,37 +136,40 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
           return;
         }
 
+        // 保留原有欄位（多時段 extraSlots、先修 requires、備註、學制班級、真實來源標記等），只補上缺少的必要欄位
+        const day = Number(item.day);
+        const periods = Array.isArray(item.periods) ? item.periods.map(Number).filter((n: number) => n >= 1 && n <= 14) : [];
+        const hasTime = day >= 1 && day <= 7 && periods.length > 0;
+        const room = item.room || '未排';
         validCourses.push({
+          ...item,
           id: String(item.id),
-          code: String(item.code || `1132-${1000 + i}`),
+          code: String(item.code || item.id),
           name: String(item.name),
           englishName: String(item.englishName || ''),
-          credits: Number(item.credits) || 2,
+          credits: Number(item.credits) || 0,
           category: item.category || '專業選修',
           college: item.college || '健康科技學院',
-          department: item.department || '資訊管理系 (IM)',
+          department: item.department || '未指定系所',
           teacher: String(item.teacher),
-          teacherTitle: item.teacherTitle || '專任教師',
-          location: item.location || item.room || '未排',
+          location: item.location || room,
           building: item.building || (item.room ? `${String(item.room)[0]} 棟` : ''),
-          room: item.room || '未排',
-          day: Number(item.day) || 1,
-          periods: Array.isArray(item.periods) ? item.periods : [2, 3],
-          timeStr: item.timeStr || (item.day ? '' : '週一 第 2-3 節'),
+          room,
+          // 沒有時間欄位就標成「時間未定」，不再自動塞入週一 2-3 節
+          day: hasTime ? day : 0,
+          periods: hasTime ? periods : [],
+          timeStr: item.timeStr || (hasTime ? formatCourseTime({ day, periods, extraSlots: item.extraSlots } as Course) : '時間未定'),
+          extraSlots: Array.isArray(item.extraSlots) ? item.extraSlots : undefined,
+          requires: Array.isArray(item.requires) ? item.requires : undefined,
           enrolled: Number(item.enrolled) || 0,
           capacity: Number(item.capacity) || 40,
           isEMI: Boolean(item.isEMI),
           isCrossDisciplinary: Boolean(item.isCrossDisciplinary),
-          prerequisite: item.prerequisite || '無先修限制',
-          prerequisitePassed: true,
-          description: item.description || '北護課程查詢系統輸出之課程內容。',
-          rating: Number(item.rating) || 4.8,
-          ratingCount: Number(item.ratingCount) || 10,
-          passRate: Number(item.passRate) || 95.0,
-          averageScore: Number(item.averageScore) || 85.0,
+          description: item.description || '',
+          rating: Number(item.rating) || 0,
+          ratingCount: Number(item.ratingCount) || 0,
           tags: Array.isArray(item.tags) ? item.tags : ['匯入課程'],
           accentColor: item.accentColor || 'primary',
-          syllabus: item.syllabus,
         });
       }
 
@@ -493,7 +497,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
                         {c.credits} 學分 • {c.category}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-text-muted">{c.timeStr} • {c.location}</td>
+                    <td className="py-2 px-3 text-text-muted">{formatCourseTime(c)} • {c.location}</td>
                     <td className="py-2 px-3 font-mono">{c.capacity} 席</td>
                   </tr>
                 ))}

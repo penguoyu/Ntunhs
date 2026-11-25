@@ -37,11 +37,34 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
     .filter(c => c.requires?.length)
     .map(course => ({ course, check: checkPrerequisite(course, student) }));
 
+  /** 產生可列印的學分核算單，用瀏覽器「另存為 PDF」下載 */
   const handleDownloadPDF = () => {
-    showToast('正在生成「國立臺北護理健康大學_歷年修業學分審查表.pdf」...');
-    setTimeout(() => {
-      showToast('學分查核單 PDF 已成功下載至您的裝置');
-    }, 1200);
+    const w = window.open('', '_blank');
+    if (!w) {
+      showToast('瀏覽器擋住了新視窗，請允許彈出視窗後再試一次');
+      return;
+    }
+    const esc = (t: string) => t.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[ch]!);
+    const rows = CATEGORY_META.map(meta => {
+      const cat = audit.categories[meta.key];
+      return `<tr><td>${meta.label}</td><td>${cat.required}</td><td>${cat.earned}</td><td>${cat.inProgress}</td><td>${cat.missing}</td></tr>`;
+    }).join('');
+    const courses = scheduleCourses
+      .map(c => `<tr><td>${esc(c.code)}</td><td>${esc(c.name)}</td><td>${c.credits}</td><td>${esc(c.category)}</td></tr>`)
+      .join('');
+    w.document.write(`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>學分核算單_${esc(student.studentId)}</title>
+<style>body{font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;margin:32px;color:#131b2e}h1{font-size:20px;margin:0 0 4px}p{margin:2px 0;font-size:13px;color:#475569}
+table{border-collapse:collapse;width:100%;margin-top:14px;font-size:13px}th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left}th{background:#eef2ff}
+.note{margin-top:18px;font-size:11px;color:#64748b}@media print{button{display:none}}</style></head><body>
+<h1>國立臺北護理健康大學　學分核算單（模擬）</h1>
+<p>${esc(student.name)}　${esc(student.studentId)}　${esc(student.department)}</p>
+<p>畢業門檻 ${audit.total} 學分，已取得 ${audit.earned}，本學期修習中 ${audit.inProgress}，全數通過後仍缺 ${audit.remaining} 學分</p>
+<table><thead><tr><th>類別</th><th>應修</th><th>已取得</th><th>本學期修習中</th><th>通過後仍缺</th></tr></thead><tbody>${rows}</tbody></table>
+<table><thead><tr><th>課號</th><th>本學期課程</th><th>學分</th><th>類別</th></tr></thead><tbody>${courses || '<tr><td colspan=4>無</td></tr>'}</tbody></table>
+<p class="note">SDGs：已涵蓋 ${audit.sdgCount} 項（畢業需 ${audit.sdgRequired} 項）。本表為選課系統模擬資料，正式成績以教務處為準。產生時間：${new Date().toLocaleString('zh-TW')}</p>
+<button onclick="print()">列印／另存為 PDF</button>
+<script>setTimeout(()=>print(),300)</script></body></html>`);
+    w.document.close();
   };
 
   return (
@@ -254,10 +277,17 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
                     {audit.generalMissing.map(m => (
                       <span
                         key={m.area}
-                        className="text-[11px] bg-surface-container-high text-on-surface-variant px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                        title={m.taking.length ? `本學期修習中：${m.taking.map(c => c.name).join('、')}` : undefined}
+                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 ${
+                          m.remaining === 0 ? 'bg-emerald-50 text-emerald-800' : 'bg-surface-container-high text-on-surface-variant'
+                        }`}
                       >
-                        <span className="material-symbols-outlined text-[14px] text-conflict-danger">priority_high</span>
-                        缺 {m.area} {m.credits} 學分
+                        <span className={`material-symbols-outlined text-[14px] ${m.remaining === 0 ? 'text-emerald-600' : 'text-conflict-danger'}`}>
+                          {m.remaining === 0 ? 'check' : 'priority_high'}
+                        </span>
+                        {m.remaining === 0
+                          ? `${m.area} 修習中可補足`
+                          : `缺 ${m.area} ${m.remaining} 學分${m.inProgress ? `（修習中 ${m.inProgress}）` : ''}`}
                       </span>
                     ))}
                   </div>
@@ -293,7 +323,9 @@ export const GraduationAudit: React.FC<GraduationAuditProps> = ({
               ></div>
             </div>
             <span className="text-text-muted text-xs">
-              已修課程涵蓋 {audit.sdgCount} 項 SDGs 目標（畢業需 {audit.sdgRequired} 項）。
+              已修課程涵蓋 {audit.sdgEarned} 項
+              {audit.sdgNew.length > 0 && `，本學期課表再新增 ${audit.sdgNew.map(id => `SDG ${id}`).join('、')}`}
+              ，合計 {audit.sdgCount} 項 SDGs 目標（畢業需 {audit.sdgRequired} 項；本學期課程的 SDGs 依課名自動對應，模擬）。
             </span>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { changePassword } from '../data/users';
 import React, { useState } from 'react';
 import { UserAccount, StudentProfile, Course } from '../types';
 import { SEMESTER_CODE } from '../data/semester';
@@ -67,7 +68,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
     showToast('個人帳號與學籍資料已成功儲存更新');
   };
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword) {
       showToast('請輸入新密碼');
@@ -77,7 +78,14 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
       showToast('兩次輸入的新密碼不一致，請重新檢查');
       return;
     }
-    showToast('密碼已成功更新。系統已同步更新金鑰');
+    if (!currentUser) return;
+    const result = await changePassword(currentUser, oldPassword, newPassword);
+    if (!result.ok) {
+      showToast(result.message);
+      return;
+    }
+    onUpdateUser({ ...currentUser, passwordHash: result.passwordHash });
+    showToast('密碼已更新，下次登入請使用新密碼');
     setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
@@ -307,7 +315,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
                 <label className="block text-xs font-medium text-on-surface mb-1">學籍身分狀態</label>
                 <div className="px-3.5 py-2.5 rounded-xl border border-border-subtle bg-surface-container-low text-xs font-medium text-secondary flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                  <span>在學中（四技三年級 • 具備正式選課抽籤權限）</span>
+                  <span>{student.status || '在學'}（{[student.grade, student.classGroup].filter(Boolean).join(' ') || '年級未設定'}）</span>
                 </div>
               </div>
             </div>
@@ -412,14 +420,15 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
             </div>
 
             {/* Micro-Degree Card */}
+            {student.microDegree && student.microDegreeTarget > 0 ? (
             <div className="p-5 rounded-2xl bg-primary/5 border border-primary/15">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="px-2 py-0.5 rounded-full bg-primary text-white text-[11px] font-semibold">
                     已核定修讀微學程
                   </span>
-                  <h4 className="font-semibold text-base text-primary mt-1">醫療資訊與智慧照護微學程</h4>
-                  <p className="text-xs text-text-muted">跨系整合學程：資管系 + 護理學院合辦</p>
+                  <h4 className="font-semibold text-base text-primary mt-1">{student.microDegree}</h4>
+                  <p className="text-xs text-text-muted">示範資料：學程名稱與學分依各學生設定</p>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-text-muted">學分修讀進度</div>
@@ -431,11 +440,11 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
               <div className="w-full h-2 rounded-full bg-border-subtle mt-3 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-primary"
-                  style={{ width: `${(student.microDegreeCredits / student.microDegreeTarget) * 100}%` }}
+                  style={{ width: `${Math.min(100, (student.microDegreeCredits / student.microDegreeTarget) * 100)}%` }}
                 ></div>
               </div>
               <div className="flex justify-between items-center text-[11px] text-text-muted mt-2">
-                <span>尚餘 7 學分可取得證書</span>
+                <span>{student.microDegreeCredits >= student.microDegreeTarget ? '已達學分門檻，可申請證書' : `尚餘 ${student.microDegreeTarget - student.microDegreeCredits} 學分可取得證書`}</span>
                 <button
                   onClick={() => onNavigateTab('search-courses')}
                   className="text-primary font-semibold hover:underline"
@@ -444,6 +453,11 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
                 </button>
               </div>
             </div>
+            ) : (
+              <div className="p-5 rounded-2xl bg-surface-container-low border border-border-subtle text-xs text-text-muted">
+                尚未申請修讀微學程。可到「課程查詢」搜尋有興趣的跨領域課程。
+              </div>
+            )}
 
             <div className="flex justify-end">
               <button
@@ -463,14 +477,14 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-base text-primary mb-1">我的已選與模擬選課清單</h3>
-                <p className="text-xs text-text-muted">目前學期正式排定與預選課工作台志願佇列</p>
+                <p className="text-xs text-text-muted">本學期正式課表與預選清單</p>
               </div>
               <button
                 onClick={() => onNavigateTab('simulation-cart')}
                 className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-medium shadow-xs hover:bg-primary-container flex items-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[16px]">tune</span>
-                <span>前往預選課工作台</span>
+                <span>前往預選清單</span>
               </button>
             </div>
 
@@ -485,7 +499,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
                   onClick={() => onNavigateTab('my-schedule')}
                   className="text-xs text-primary font-medium hover:underline"
                 >
-                  檢視週課表格子圖 →
+                  檢視本學期課表 →
                 </button>
               </div>
 
@@ -519,7 +533,7 @@ export const StudentAccountCenter: React.FC<StudentAccountCenterProps> = ({
             <div className="pt-2">
               <span className="text-xs font-medium text-on-surface flex items-center gap-1 mb-2">
                 <span className="material-symbols-outlined text-[16px] text-amber-600">auto_awesome</span>
-                <span>預選課工作台志願佇列 ({cartCourses.length} 門)</span>
+                <span>預選清單 ({cartCourses.length} 門)</span>
               </span>
 
               <div className="space-y-2">

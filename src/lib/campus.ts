@@ -1,5 +1,5 @@
 import { Course, CourseSlot } from '../types';
-import { PERIOD_TIMES, slotsOf } from './schedule';
+import { PERIOD_TIMES, slotRuns, slotsOf } from './schedule';
 
 /**
  * 校本部地圖資料（FR-08）。
@@ -112,20 +112,39 @@ export interface RoomInfo {
   floor: number;
 }
 
-const firstRoom = (room?: string) => (room ?? '').split(/[,，、\s]+/)[0].trim().toUpperCase();
+const splitRooms = (room?: string) =>
+  (room ?? '')
+    .split(/[,，、\s]+/)
+    .map(r => r.trim().toUpperCase())
+    .filter(Boolean);
+const firstRoom = (room?: string) => splitRooms(room)[0] ?? '';
 
-/** 教室代碼（如 F408、G303、B216）→ 建築與樓層；未排教室或不在校本部時回傳 null */
-export const parseRoom = (room?: string): RoomInfo | null => {
-  // 一門課有兩間教室時（如 F410,F602）取第一間
-  const first = firstRoom(room);
-  const m = /^([A-Z])(B?)(\d)(\d{2,})$/.exec(first);
+/** 單一教室代碼 → 建築與樓層 */
+const parseOne = (code: string): RoomInfo | null => {
+  // F408、G303、F1034（10 樓）、IB01（地下室）
+  const m = /^([A-Z])(B)?(\d{2,})$/.exec(code);
   if (!m) return null;
   const building = BUILDING_MAP.get(m[1]);
   if (!building) return null;
-  // IB01 這類地下室編號視為 B1（樓層 0）
-  const floor = m[2] ? 0 : Math.max(1, Number(m[3]));
-  return { room: first, building, floor };
+  const digits = m[3];
+  const floor = m[2] ? 0 : Math.max(1, Number(digits.length >= 4 ? digits.slice(0, 2) : digits[0]));
+  return { room: code, building, floor };
 };
+
+/** 教室代碼（如 F408、G303、B216）→ 建築與樓層；有兩間教室（如 F410,F602）時取第一間 */
+export const parseRoom = (room?: string): RoomInfo | null => {
+  for (const code of splitRooms(room)) {
+    const info = parseOne(code);
+    if (info) return info;
+  }
+  return null;
+};
+
+/** 一個時段排了多間教室時，全部列出 */
+export const parseRooms = (room?: string): RoomInfo[] =>
+  splitRooms(room)
+    .map(parseOne)
+    .filter((r): r is RoomInfo => !!r);
 
 /** 不在校本部的教室，回傳所在校區說明 */
 export const offCampusOf = (room?: string): string | null => OFF_CAMPUS[firstRoom(room)[0] ?? ''] ?? null;
@@ -252,7 +271,7 @@ export const levelOf = (gap: number, route: WalkRoute | null): TransitionLevel =
 
 /** 找出一組課程中所有「下課後要立刻換教室」的銜接 */
 export const transitionsOf = (courses: Course[]): Transition[] => {
-  const items = courses.flatMap(course => slotsOf(course).map(slot => ({ course, slot })));
+  const items = courses.flatMap(course => slotsOf(course).flatMap(slotRuns).map(slot => ({ course, slot })));
   const result: Transition[] = [];
   for (let day = 1; day <= 7; day++) {
     const today = items
@@ -267,9 +286,15 @@ export const transitionsOf = (courses: Course[]): Transition[] => {
       if (first <= last) continue; // 衝堂另外處理
       const gap = gapMinutes(last, first);
       if (gap > CONSECUTIVE_GAP_LIMIT) continue;
-      const from = parseRoom(prev.slot.room || prev.course.room);
-      const to = parseRoom(next.slot.room || next.course.room);
-      const route = from && to ? walkRoute(from, to) : null;
+      // 兩間教室的課（如 F414,I303）取步行最短的組合
+      const froms = parseRooms(prev.slot.room || prev.course.room);
+      const tos = parseRooms(next.slot.room || next.course.room);
+      let route: WalkRoute | null = null;
+      for (const f of froms)
+        for (const t of tos) {
+          const r = walkRoute(f, t);
+          if (!route || r.minutes < route.minutes) route = r;
+        }
       result.push({ day, prev, next, gap, route, level: levelOf(gap, route) });
     }
   }
@@ -285,3 +310,14 @@ export const transitionsAround = (target: Course, planned: Course[]): Transition
 };
 
 export const floorLabel = (floor: number) => (floor <= 0 ? 'B1' : `${floor}F`);
+
+/**
+ * 「在 Google 地圖導航」連結（不需 API 金鑰）：手機會直接開 Google 地圖 App。
+ * 校內大樓以「學校名＋樓名」搜尋；城區部等校外地點直接導航到該校區。
+ */
+export const googleMapsUrl = (place: string) =>
+  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`國立臺北護理健康大學 ${place}`)}`;
+
+export const OFF_CAMPUS_MAP_QUERY: Record<string, string> = {
+  C: '城區部',
+};

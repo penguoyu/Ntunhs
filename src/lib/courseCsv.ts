@@ -1,4 +1,4 @@
-import { Course } from '../types';
+import { Course, CourseSlot } from '../types';
 import { DAY_LABELS } from './schedule';
 
 /** 解析 CSV 文字（支援 UTF-8 BOM、雙引號欄位、欄位內換行與逗號） */
@@ -66,6 +66,11 @@ const HEADER_ALIASES: Record<string, string> = {
   capacity: 'capacity', 容量上限: 'capacity', 人數上限: 'capacity', 名額: 'capacity',
   isemi: 'isEMI', emi: 'isEMI', 全英語授課: 'isEMI',
   description: 'description', 課程簡介: 'description',
+  extraslots: 'extraSlots', 其他時段: 'extraSlots',
+  note: 'note', 備註: 'note', 課表備註: 'note',
+  program: 'program', 學制: 'program',
+  classname: 'className', 開課班級: 'className', 班級: 'className',
+  grade: 'grade', 年級: 'grade',
 };
 
 const parseDay = (v: string): number | undefined => {
@@ -77,7 +82,7 @@ const parseDay = (v: string): number | undefined => {
   return idx >= 0 ? idx + 1 : undefined;
 };
 
-const parsePeriods = (v: string): number[] | undefined => {
+export const parsePeriods = (v: string): number[] | undefined => {
   const t = v.replace(/[第節\s]/g, '');
   if (!t) return undefined;
   const range = /^(\d+)[-~～至到](\d+)$/.exec(t);
@@ -98,6 +103,20 @@ const parseTimeStr = (v: string) => {
   const b = m[3] ? Number(m[3]) : a;
   return { day, periods: Array.from({ length: b - a + 1 }, (_, i) => a + i) };
 };
+
+/** 「四 1-2 F301；五 3-4 F302」→ 多個時段 */
+export const parseExtraSlots = (v: string): CourseSlot[] =>
+  v
+    .split(/[；;]/)
+    .map(part => part.trim())
+    .filter(Boolean)
+    .map(part => {
+      const [d, p, ...room] = part.split(/\s+/);
+      const day = parseDay(d ?? '');
+      const periods = parsePeriods(p ?? '');
+      return day && periods ? { day, periods, room: room.join(' ') } : null;
+    })
+    .filter((x): x is CourseSlot => !!x);
 
 const truthy = (v: string) => /^(1|true|是|y|yes|v|✓)$/i.test(v.trim());
 
@@ -138,6 +157,11 @@ export const csvToCourseObjects = (text: string): { items: Record<string, unknow
     }
     if (roomText) item.location = roomText;
     if (raw.isEMI !== undefined) item.isEMI = truthy(raw.isEMI);
+    if (raw.extraSlots) {
+      const extra = parseExtraSlots(raw.extraSlots);
+      if (extra.length) item.extraSlots = extra;
+      else delete item.extraSlots;
+    } else delete item.extraSlots;
     for (const n of ['credits', 'enrolled', 'capacity'] as const) {
       if (raw[n] !== undefined && raw[n] !== '') item[n] = Number(raw[n]);
     }
@@ -149,7 +173,7 @@ export const csvToCourseObjects = (text: string): { items: Record<string, unknow
   return { items, unknownHeaders };
 };
 
-const periodsText = (periods?: number[]) => {
+export const periodsText = (periods?: number[]) => {
   if (!periods?.length) return '';
   const ps = [...periods].sort((a, b) => a - b);
   const contiguous = ps.every((p, i) => i === 0 || p === ps[i - 1] + 1);
@@ -158,7 +182,7 @@ const periodsText = (periods?: number[]) => {
 
 /** 匯出 CSV（欄位與匯入相容，可直接再匯入） */
 export const coursesToCsv = (courses: Course[]): string => {
-  const headers = ['課程代碼', '課號', '課程名稱', '英文名稱', '學分', '類別', '學院', '系所', '授課教師', '星期', '節次', '時間時段', '上課教室', '已選人數', '容量上限', '全英語授課'];
+  const headers = ['課程代碼', '課號', '課程名稱', '英文名稱', '學分', '類別', '學院', '系所', '學制', '開課班級', '年級', '授課教師', '星期', '節次', '上課教室', '其他時段', '時間時段', '已選人數', '容量上限', '全英語授課', '備註'];
   const rows = courses.map(c => [
     c.id,
     c.code,
@@ -168,14 +192,19 @@ export const coursesToCsv = (courses: Course[]): string => {
     c.category,
     c.college,
     c.department,
+    c.program,
+    c.className,
+    c.grade,
     c.teacher,
     c.day ? DAY_LABELS[c.day - 1] : '',
     periodsText(c.periods),
-    c.timeStr,
     c.room || c.location,
+    extraSlotsToText(c.extraSlots),
+    c.timeStr,
     c.enrolled,
     c.capacity,
     c.isEMI ? '是' : '',
+    c.note,
   ]);
   return '﻿' + [headers, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
 };
@@ -186,3 +215,7 @@ export const SAMPLE_CSV = [
   'NUR9002,"長期照護實務（含社區見習）",李美華,2,專業選修,護理系,四,6-7,F408,40,40',
   'GE9003,健康生活與永續,陳大同,2,博雅通識,通識教育中心,五,3-4,B216,60,31',
 ].join('\n');
+
+/** 多時段 → 「四 1-2 F301；五 3-4 F302」，與 parseExtraSlots 互為反向 */
+export const extraSlotsToText = (slots?: CourseSlot[]) =>
+  (slots ?? []).map(x => `${DAY_LABELS[x.day - 1]} ${periodsText(x.periods)} ${x.room}`.trim()).join('；');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ActiveTab, Course, UserAccount, StudentProfile, WaitlistEntry } from './types';
+import { ActiveTab, Course, UserAccount, StudentProfile, WaitlistEntry, AppNotification } from './types';
 import { COURSES_DATA } from './data/courses';
 import { StudentPlan, GUEST_PLAN_KEY, emptyPlan, defaultPlanFor } from './data/studentPlans';
 import { INITIAL_USERS, DEFAULT_STUDENT_USER } from './data/users';
@@ -28,7 +28,7 @@ import { backfillBlock, blockText, initialAhead } from './lib/waitlist';
  * 資料版本：修改 src/data 內的預設資料後請一併更新，
  * 瀏覽器中舊的 localStorage 快取就會被清掉，改用新的預設資料。
  */
-const DATA_VERSION = '2026-11-24-waitlist-map';
+const DATA_VERSION = '2026-11-25-review-fixes';
 const DATA_KEYS = [
   'ntunhs_courses_catalog',
   'ntunhs_cart',
@@ -133,6 +133,15 @@ export default function App() {
   const waitlist: WaitlistEntry[] = plan.waitlist ?? [];
   const setWaitlist = (v: Updater<WaitlistEntry[]>) =>
     updatePlan('waitlist', prev => (typeof v === 'function' ? v(prev ?? []) : v));
+  const notifications: AppNotification[] = plan.notifications ?? [];
+  const unreadCount = notifications.filter(n => !n.read).length;
+  /** 新增一則通知（每位學生各自保存，最多留 20 則） */
+  const notify = (n: Omit<AppNotification, 'id' | 'at' | 'read'>) =>
+    updatePlan('notifications', prev =>
+      [{ ...n, id: `n${Date.now()}${Math.random().toString(36).slice(2, 6)}`, at: new Date().toISOString() }, ...(prev ?? [])].slice(0, 20)
+    );
+  const markAllNotificationsRead = () =>
+    updatePlan('notifications', prev => (prev ?? []).map(n => (n.read ? n : { ...n, read: true })));
 
   // Modal inspection states
   const [inspectingCourse, setInspectingCourse] = useState<Course | null>(null);
@@ -209,6 +218,8 @@ export default function App() {
   };
 
   const handleQuickSwitchRole = () => {
+    // 換身分時清掉前一個身分的 SSO 權杖，避免帶著舊權限
+    clearToken();
     if (!currentUser || currentUser.role === 'admin') {
       const studentUser =
         users.find(u => u.role === 'student' && u.status === 'active') ||
@@ -318,7 +329,17 @@ export default function App() {
   const handleDropCourse = (courseId: string) => {
     const target = courses.find(c => c.id === courseId);
     setScheduleIds(scheduleIds.filter(id => id !== courseId));
-    showToast(`已退選《${target?.name ?? courseId}》`);
+    if (!target) return;
+    const wasFull = seatsLeft(target) === 0;
+    // 退選釋出名額：已選人數 -1；原本額滿的課則立刻由候補第 1 位同學遞補，人數不變（模擬）
+    if (wasFull) {
+      showToast(`已退選《${target.name}》，釋出的名額已由候補第 1 位同學自動遞補`);
+      notify({ kind: 'info', title: '退選完成', desc: `《${target.name}》已從課表移除，釋出的名額由候補第 1 位同學遞補。`, tab: 'search-courses', actionText: '查看課表' });
+      return;
+    }
+    setCourses(prev => prev.map(c => (c.id === courseId ? { ...c, enrolled: Math.max(0, c.enrolled - 1) } : c)));
+    showToast(`已退選《${target.name}》，名額已釋出（已選人數 ${target.enrolled - 1}/${target.capacity}）`);
+    notify({ kind: 'info', title: '退選完成', desc: `《${target.name}》已從課表移除，目前已選人數 ${target.enrolled - 1}/${target.capacity}。`, tab: 'search-courses', actionText: '查看課表' });
   };
 
   /** FR-07：額滿課程加入／取消候補 */
@@ -337,6 +358,7 @@ export default function App() {
     const ahead = initialAhead(courseId, studentProfile.studentId || planKey);
     setWaitlist([...waitlist, { courseId, ahead, joinedAt: new Date().toISOString() }]);
     showToast(`已加入《${target.name}》候補，目前為候補第 ${ahead + 1} 位`);
+    notify({ kind: 'info', title: '已登記候補', desc: `《${target.name}》目前額滿，您是候補第 ${ahead + 1} 位。有人退選時會依順位自動遞補。`, tab: 'search-courses', actionText: '查看候補' });
   };
 
   /** 模擬有同學退選釋出 1 個名額：候補第 1 位自動遞補 */
@@ -346,6 +368,7 @@ export default function App() {
     if (!entry || !target) return;
     if (entry.ahead > 0) {
       setWaitlist(waitlist.map(w => (w.courseId === courseId ? { ...w, ahead: w.ahead - 1 } : w)));
+      notify({ kind: 'info', title: '候補順位更新', desc: `《${target.name}》候補順位由第 ${entry.ahead + 1} 位升至第 ${entry.ahead} 位。`, tab: 'search-courses', actionText: '查看候補' });
       showToast(
         entry.ahead - 1 === 0
           ? `《${target.name}》釋出 1 個名額，已由前一位同學遞補。您現在是候補第 1 位！`
@@ -359,11 +382,13 @@ export default function App() {
     setWaitlist(waitlist.filter(w => w.courseId !== courseId));
     if (block) {
       setBackfillResult({ course: target, accepted: false, reason: blockText(block) });
+      notify({ kind: 'warning', title: '候補遞補未成功', desc: `輪到您遞補《${target.name}》，但無法加入課表（${blockText(block)}），名額已讓給下一位。`, tab: 'search-courses', actionText: '查看課表' });
       return;
     }
     setScheduleIds([...scheduleIds, courseId]);
     setCart(cart.filter(id => id !== courseId));
     setBackfillResult({ course: target, accepted: true });
+    notify({ kind: 'success', title: '候補遞補成功', desc: `《${target.name}》已自動加入您的課表（${target.timeStr}）。`, tab: 'search-courses', actionText: '查看課表' });
   };
 
   /** 模擬送出登記：依志願序電腦分發，未分發的課保留在預選清單 */
@@ -381,6 +406,16 @@ export default function App() {
     setCart(cart.filter(id => !newIds.has(id)));
     setCourses(prev => prev.map(c => (newIds.has(c.id) ? { ...c, enrolled: c.enrolled + 1 } : c)));
     setAllocationResults(results);
+    if (results.length) {
+      const ok = results.filter(r => r.outcome === 'accepted').length;
+      notify({
+        kind: ok === results.length ? 'success' : 'warning',
+        title: '模擬分發結果',
+        desc: `登記 ${results.length} 門，分發成功 ${ok} 門${ok < results.length ? `，${results.length - ok} 門未分發，已保留在預選清單` : ''}。`,
+        tab: 'search-courses',
+        actionText: '查看課表',
+      });
+    }
   };
 
   // Derived objects for student timetable
@@ -412,7 +447,7 @@ export default function App() {
             setDeviceMode(deviceMode === 'desktop' ? 'mobile' : 'desktop');
             showToast(deviceMode === 'desktop' ? '已切換為手機視圖預覽模式' : '已切換為桌面工作台模式');
           }}
-          unreadCount={2}
+          unreadCount={unreadCount}
           onOpenNotifications={() => setIsNotificationOpen(true)}
           onOpenLogin={() => setIsLoginModalOpen(true)}
           onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
@@ -516,6 +551,7 @@ export default function App() {
 
           {currentTab === 'user-profile' && (
             <StudentAccountCenter
+              key={currentUser?.id ?? 'guest'}
               currentUser={currentUser}
               student={studentProfile}
               scheduleCourses={scheduleCourses}
@@ -525,6 +561,7 @@ export default function App() {
               onOpenLogin={() => setIsLoginModalOpen(true)}
               onNavigateTab={goToTab}
               onSwitchToAdmin={() => {
+                clearToken();
                 const adminUser = users.find(u => u.role === 'admin') || INITIAL_USERS.find(u => u.role === 'admin')!;
                 setCurrentUser(adminUser);
                 setCurrentTab('admin-courses');
@@ -575,7 +612,7 @@ export default function App() {
               <button onClick={() => showToast('已下載選課法規與選修修課須知 (PDF)')} className="hover:text-primary transition-colors">
                 選課法規與須知
               </button>
-              <button onClick={() => showToast('醫療資訊與智慧照護微學程：認列門檻 15 學分')} className="hover:text-primary transition-colors">
+              <button onClick={() => showToast(studentProfile.microDegree ? `${studentProfile.microDegree}：認列門檻 ${studentProfile.microDegreeTarget} 學分` : '微學程依各學程規定認列學分，請洽開課系所')} className="hover:text-primary transition-colors">
                 跨領域學程指南
               </button>
               <button onClick={() => showToast('課務諮詢專線：(02)2822-7101 分機 2210')} className="hover:text-primary transition-colors">
@@ -600,6 +637,8 @@ export default function App() {
           <CourseDetailModal
             course={inspectingCourse}
             isInCart={cart.includes(inspectingCourse.id)}
+            isInSchedule={scheduleIds.includes(inspectingCourse.id)}
+            onDropCourse={currentUser?.role === 'student' ? handleDropCourse : undefined}
             isFavorite={favorites.includes(inspectingCourse.id)}
             scheduleCourses={scheduleCourses}
             cartCourses={cartCourses}
@@ -617,8 +656,12 @@ export default function App() {
         {/* Notifications Modal */}
         <NotificationModal
           isOpen={isNotificationOpen}
-          onClose={() => setIsNotificationOpen(false)}
-          onNavigateTab={tab => goToTab(tab as ActiveTab)}
+          notifications={notifications}
+          onClose={() => {
+            setIsNotificationOpen(false);
+            markAllNotificationsRead();
+          }}
+          onNavigateTab={goToTab}
         />
 
         {/* Login Modal */}
@@ -636,6 +679,7 @@ export default function App() {
         {/* User Profile Modal */}
         {currentUser && (
           <UserProfileModal
+            key={currentUser.id}
             isOpen={isUserProfileModalOpen}
             onClose={() => setIsUserProfileModalOpen(false)}
             currentUser={currentUser}
