@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ActiveTab, Course, UserAccount, StudentProfile } from './types';
+import { ActiveTab, Course, UserAccount, StudentProfile, WaitlistEntry } from './types';
 import { COURSES_DATA } from './data/courses';
 import { StudentPlan, GUEST_PLAN_KEY, emptyPlan, defaultPlanFor } from './data/studentPlans';
 import { INITIAL_USERS, DEFAULT_STUDENT_USER } from './data/users';
@@ -19,13 +19,16 @@ import { AdminCourseImport } from './components/AdminCourseImport';
 import { AdminUserManagement } from './components/AdminUserManagement';
 import { AdminAnalytics } from './components/AdminAnalytics';
 import { AllocationResultModal } from './components/AllocationResultModal';
-import { AllocationResult, allocate, findConflicts } from './lib/schedule';
+import { AllocationResult, allocate, findConflicts, seatsLeft } from './lib/schedule';
+import { CampusMapModal } from './components/CampusMapModal';
+import { BackfillResult, BackfillResultModal } from './components/BackfillResultModal';
+import { backfillBlock, blockText, initialAhead } from './lib/waitlist';
 
 /**
  * 資料版本：修改 src/data 內的預設資料後請一併更新，
  * 瀏覽器中舊的 localStorage 快取就會被清掉，改用新的預設資料。
  */
-const DATA_VERSION = '2026-11-12-real-1151b';
+const DATA_VERSION = '2026-11-24-waitlist-map';
 const DATA_KEYS = [
   'ntunhs_courses_catalog',
   'ntunhs_cart',
@@ -127,6 +130,9 @@ export default function App() {
   const setCart = (v: Updater<string[]>) => updatePlan('cart', v);
   const setScheduleIds = (v: Updater<string[]>) => updatePlan('scheduleIds', v);
   const setFavorites = (v: Updater<string[]>) => updatePlan('favorites', v);
+  const waitlist: WaitlistEntry[] = plan.waitlist ?? [];
+  const setWaitlist = (v: Updater<WaitlistEntry[]>) =>
+    updatePlan('waitlist', prev => (typeof v === 'function' ? v(prev ?? []) : v));
 
   // Modal inspection states
   const [inspectingCourse, setInspectingCourse] = useState<Course | null>(null);
@@ -135,6 +141,8 @@ export default function App() {
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [allocationResults, setAllocationResults] = useState<AllocationResult[] | null>(null);
+  const [mapCourse, setMapCourse] = useState<Course | null>(null);
+  const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
 
   // Persistence to local storage
   useEffect(() => {
@@ -313,6 +321,51 @@ export default function App() {
     showToast(`已退選《${target?.name ?? courseId}》`);
   };
 
+  /** FR-07：額滿課程加入／取消候補 */
+  const handleToggleWaitlist = (courseId: string) => {
+    const target = courses.find(c => c.id === courseId);
+    if (!target) return;
+    if (waitlist.some(w => w.courseId === courseId)) {
+      setWaitlist(waitlist.filter(w => w.courseId !== courseId));
+      showToast(`已取消《${target.name}》的候補`);
+      return;
+    }
+    if (seatsLeft(target) > 0) {
+      showToast('這門課還有名額，請直接預選');
+      return;
+    }
+    const ahead = initialAhead(courseId, studentProfile.studentId || planKey);
+    setWaitlist([...waitlist, { courseId, ahead, joinedAt: new Date().toISOString() }]);
+    showToast(`已加入《${target.name}》候補，目前為候補第 ${ahead + 1} 位`);
+  };
+
+  /** 模擬有同學退選釋出 1 個名額：候補第 1 位自動遞補 */
+  const handleSimulateRelease = (courseId: string) => {
+    const entry = waitlist.find(w => w.courseId === courseId);
+    const target = courses.find(c => c.id === courseId);
+    if (!entry || !target) return;
+    if (entry.ahead > 0) {
+      setWaitlist(waitlist.map(w => (w.courseId === courseId ? { ...w, ahead: w.ahead - 1 } : w)));
+      showToast(
+        entry.ahead - 1 === 0
+          ? `《${target.name}》釋出 1 個名額，已由前一位同學遞補。您現在是候補第 1 位！`
+          : `《${target.name}》釋出 1 個名額，已由候補第 1 位遞補。您前進到第 ${entry.ahead} 位`
+      );
+      return;
+    }
+    // 輪到自己：檢查衝堂、學分上限與先修後自動放進課表
+    const schedule = courses.filter(c => scheduleIds.includes(c.id));
+    const block = backfillBlock(target, schedule, studentProfile);
+    setWaitlist(waitlist.filter(w => w.courseId !== courseId));
+    if (block) {
+      setBackfillResult({ course: target, accepted: false, reason: blockText(block) });
+      return;
+    }
+    setScheduleIds([...scheduleIds, courseId]);
+    setCart(cart.filter(id => id !== courseId));
+    setBackfillResult({ course: target, accepted: true });
+  };
+
   /** 模擬送出登記：依志願序電腦分發，未分發的課保留在預選清單 */
   const handleSubmitCart = () => {
     const byId = new Map(courses.map(c => [c.id, c]));
@@ -439,6 +492,10 @@ export default function App() {
               onDropCourse={handleDropCourse}
               onSubmitCart={handleSubmitCart}
               onViewCourseDetail={course => setInspectingCourse(course)}
+              waitlist={waitlist}
+              onToggleWaitlist={handleToggleWaitlist}
+              onSimulateRelease={handleSimulateRelease}
+              onOpenMap={course => setMapCourse(course)}
             />
           )}
 
@@ -549,6 +606,9 @@ export default function App() {
             student={studentProfile}
             onToggleCart={handleToggleCart}
             onToggleFavorite={handleToggleFavorite}
+            waitlistEntry={waitlist.find(w => w.courseId === inspectingCourse.id)}
+            onToggleWaitlist={currentUser?.role === 'student' ? handleToggleWaitlist : undefined}
+            onOpenMap={course => setMapCourse(course)}
             onClose={() => setInspectingCourse(null)}
             showToast={showToast}
           />
@@ -591,9 +651,19 @@ export default function App() {
           <AllocationResultModal results={allocationResults} onClose={() => setAllocationResults(null)} />
         )}
 
+        {mapCourse && (
+          <CampusMapModal
+            course={mapCourse}
+            plannedCourses={courses.filter(c => scheduleIds.includes(c.id) || cart.includes(c.id))}
+            onClose={() => setMapCourse(null)}
+          />
+        )}
+
+        {backfillResult && <BackfillResultModal result={backfillResult} onClose={() => setBackfillResult(null)} />}
+
         {/* Global Toast Notification */}
         {toastMessage && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-inverse-surface text-inverse-on-surface px-5 py-2.5 rounded-full shadow-2xl font-medium text-xs sm:text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2 border border-white/10">
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[70] bg-inverse-surface text-inverse-on-surface px-5 py-2.5 rounded-full shadow-2xl font-medium text-xs sm:text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2 border border-white/10">
             <span className="material-symbols-outlined text-[18px] text-secondary-fixed">check_circle</span>
             <span>{toastMessage}</span>
           </div>

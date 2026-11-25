@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Course } from '../types';
+import { SAMPLE_CSV, coursesToCsv, csvToCourseObjects } from '../lib/courseCsv';
 
 interface AdminCourseImportProps {
   currentCourses: Course[];
@@ -88,16 +89,32 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
     2
   );
 
+  const [detectedFormat, setDetectedFormat] = useState<'JSON' | 'CSV' | null>(null);
+  const [csvWarning, setCsvWarning] = useState<string | null>(null);
+
+  /** 自動判斷貼上／上傳的內容是 JSON 還是 CSV */
   const handleParseJson = (text: string) => {
     setJsonText(text);
     setParseError(null);
+    setCsvWarning(null);
     if (!text.trim()) {
       setParsedCourses(null);
+      setDetectedFormat(null);
       return;
     }
 
+    const isJson = /^[\[{]/.test(text.trim().replace(/^\uFEFF/, ''));
+    setDetectedFormat(isJson ? 'JSON' : 'CSV');
+
     try {
-      const data = JSON.parse(text);
+      let data: any;
+      if (isJson) {
+        data = JSON.parse(text.trim().replace(/^\uFEFF/, ''));
+      } else {
+        const { items, unknownHeaders } = csvToCourseObjects(text);
+        data = items;
+        if (unknownHeaders.length) setCsvWarning(`以下欄位無法對應，已略過：${unknownHeaders.join('、')}`);
+      }
       if (!Array.isArray(data)) {
         setParseError('格式錯誤：JSON 頂層必須為課程物件陣列 (Array of Course Objects)');
         setParsedCourses(null);
@@ -109,7 +126,11 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
       for (let i = 0; i < data.length; i++) {
         const item = data[i];
         if (!item.id || !item.name || !item.teacher) {
-          setParseError(`第 ${i + 1} 筆課程缺少關鍵欄位 (id, name, 或 teacher)`);
+          setParseError(
+            isJson
+              ? `第 ${i + 1} 筆課程缺少關鍵欄位 (id, name, 或 teacher)`
+              : `CSV 第 ${i + 2} 列缺少課程代碼、課程名稱或授課教師`
+          );
           setParsedCourses(null);
           return;
         }
@@ -125,12 +146,12 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
           department: item.department || '資訊管理系 (IM)',
           teacher: String(item.teacher),
           teacherTitle: item.teacherTitle || '專任教師',
-          location: item.location || '學思樓 F401',
-          building: item.building || '學思樓',
-          room: item.room || 'F401',
+          location: item.location || item.room || '未排',
+          building: item.building || (item.room ? `${String(item.room)[0]} 棟` : ''),
+          room: item.room || '未排',
           day: Number(item.day) || 1,
           periods: Array.isArray(item.periods) ? item.periods : [2, 3],
-          timeStr: item.timeStr || '週一 第 2-3 節',
+          timeStr: item.timeStr || (item.day ? '' : '週一 第 2-3 節'),
           enrolled: Number(item.enrolled) || 0,
           capacity: Number(item.capacity) || 40,
           isEMI: Boolean(item.isEMI),
@@ -150,7 +171,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
 
       setParsedCourses(validCourses);
     } catch (err: any) {
-      setParseError(`JSON 解析失敗：${err.message}`);
+      setParseError(`${isJson ? 'JSON' : 'CSV'} 解析失敗：${err.message}`);
       setParsedCourses(null);
     }
   };
@@ -180,6 +201,11 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
     setParsedCourses(null);
   };
 
+  const handleLoadCsvSample = () => {
+    handleParseJson(SAMPLE_CSV);
+    showToast('已填入 CSV 範例資料（第一列為欄位名稱）');
+  };
+
   const handleLoadSample = () => {
     handleParseJson(sampleImportJson);
     showToast('已填入「課程查詢系統標準輸出格式」範例資料');
@@ -199,24 +225,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
   };
 
   const handleExportCsv = () => {
-    const headers = ['課程代碼', '課號', '課程名稱', '英文名稱', '學分', '類別', '學院', '系所', '授課教師', '時間時段', '上課教室', '已選人數', '容量上限'];
-    const rows = currentCourses.map(c => [
-      c.id,
-      c.code,
-      `"${c.name.replace(/"/g, '""')}"`,
-      `"${(c.englishName || '').replace(/"/g, '""')}"`,
-      c.credits,
-      c.category,
-      c.college,
-      `"${c.department}"`,
-      c.teacher,
-      `"${c.timeStr}"`,
-      `"${c.location}"`,
-      c.enrolled,
-      c.capacity,
-    ]);
-
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csvContent = coursesToCsv(currentCourses);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -252,7 +261,7 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
               <span>教務資料介接與串聯</span>
             </span>
             <span className="text-text-muted text-xs">•</span>
-            <span className="text-xs text-text-muted">支援 JSON / CSV / 課查系統封裝檔</span>
+            <span className="text-xs text-text-muted">支援 CSV / JSON</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-semibold text-primary tracking-tight mt-1">
             匯入課程查詢系統輸出結果 (Batch Course Import & Sync)
@@ -291,13 +300,22 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
                 <span className="material-symbols-outlined text-[20px]">upload_file</span>
                 <span>匯入來源選擇與檔案解析</span>
               </div>
-              <button
-                onClick={handleLoadSample}
-                className="text-xs font-medium text-secondary hover:underline flex items-center gap-1"
-              >
-                <span className="material-symbols-outlined text-[16px]">data_object</span>
-                <span>載入課查系統範例格式</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleLoadCsvSample}
+                  className="text-xs font-medium text-secondary hover:underline flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">table_chart</span>
+                  <span>載入 CSV 範例</span>
+                </button>
+                <button
+                  onClick={handleLoadSample}
+                  className="text-xs font-medium text-secondary hover:underline flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">data_object</span>
+                  <span>載入 JSON 範例</span>
+                </button>
+              </div>
             </div>
 
             {/* Drag & Drop File Upload Area */}
@@ -307,14 +325,14 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
                   <span className="material-symbols-outlined text-[28px]">file_upload</span>
                 </div>
                 <span className="text-sm font-semibold text-on-surface">
-                  點擊選取或拖曳課程輸出檔案至此處 (.json / .txt)
+                  點擊選取課程輸出檔案 (.csv / .json)
                 </span>
                 <span className="text-xs text-text-muted mt-1">
-                  支援北護課程查詢系統輸出之完整 JSON 結構
+                  CSV 第一列為欄位名稱（課程代碼、課程名稱、授課教師為必填）；JSON 為課程物件陣列
                 </span>
                 <input
                   type="file"
-                  accept=".json,.txt"
+                  accept=".csv,.json,.txt"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -325,12 +343,12 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-medium text-on-surface">
-                  或直接貼上 JSON 輸出字串：
+                  或直接貼上 CSV 或 JSON 內容（自動判斷格式）：
                 </label>
                 {parsedCourses && (
                   <span className="text-xs font-medium text-secondary flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                    <span>語法正確，已解析 {parsedCourses.length} 門課程</span>
+                    <span>{detectedFormat} 格式正確，已解析 {parsedCourses.length} 門課程</span>
                   </span>
                 )}
               </div>
@@ -338,10 +356,17 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
                 rows={10}
                 value={jsonText}
                 onChange={e => handleParseJson(e.target.value)}
-                placeholder="貼上課程查詢系統導出之 JSON 陣列，例如: [ { &quot;id&quot;: &quot;IM3012&quot;, &quot;name&quot;: &quot;...&quot; } ]"
+                placeholder="CSV 範例：課程代碼,課程名稱,授課教師,星期,節次,上課教室（第一列為欄位名稱）；或貼上 JSON 課程陣列"
                 className="w-full p-3.5 rounded-xl border border-border-subtle bg-surface-bg text-xs font-mono text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
               ></textarea>
             </div>
+
+            {csvWarning && !parseError && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mt-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">info</span>
+                <span>{csvWarning}</span>
+              </div>
+            )}
 
             {parseError && (
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 mt-2 flex items-center gap-2">
@@ -421,7 +446,8 @@ export const AdminCourseImport: React.FC<AdminCourseImportProps> = ({
               本系統之「匯入課程查詢系統輸出結果」能自動相容解析：
             </p>
             <ul className="list-disc pl-4 space-y-1 text-[11px] text-on-surface-variant">
-              <li>北護課程大綱與開課查詢系統匯出格式</li>
+              <li>CSV（Excel「另存為 CSV UTF-8」）：欄位可用 課程代碼、課程名稱、授課教師、學分、類別、系所、星期、節次、上課教室、容量上限、已選人數</li>
+              <li>本頁「匯出 CSV」的檔案可直接再匯入</li>
               <li>具備 id、name、teacher、periods 之標準 REST API 資料</li>
               <li>匯入後學生端「課程查詢」與「預選課模擬」將立即可見</li>
             </ul>

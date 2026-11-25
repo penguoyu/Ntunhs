@@ -15,8 +15,15 @@ import {
   TriangleAlert,
   X,
   Check,
+  MapPin,
+  Hourglass,
+  UserPlus,
+  Footprints,
+  History,
 } from 'lucide-react';
-import { Course, CourseSlot, StudentProfile } from '../types';
+import { Course, CourseSlot, StudentProfile, WaitlistEntry } from '../types';
+import { transitionsOf } from '../lib/campus';
+import { RecentSearchPanel, SearchSnapshot, useRecentSearches } from './RecentSearches';
 import {
   CREDIT_LIMIT,
   Competition,
@@ -59,6 +66,13 @@ interface CourseSelectionProps {
   onDropCourse: (courseId: string) => void;
   onSubmitCart: () => void;
   onViewCourseDetail: (course: Course) => void;
+  /** FR-07 候補登記 */
+  waitlist?: WaitlistEntry[];
+  onToggleWaitlist?: (courseId: string) => void;
+  /** 模擬有人退選釋出名額（示範用） */
+  onSimulateRelease?: (courseId: string) => void;
+  /** FR-08 打開教室位置地圖 */
+  onOpenMap?: (course: Course) => void;
 }
 
 type CategoryFilter = '全部' | '必修' | '選修' | '通識';
@@ -335,6 +349,10 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   onDropCourse,
   onSubmitCart,
   onViewCourseDetail,
+  waitlist = [],
+  onToggleWaitlist,
+  onSimulateRelease,
+  onOpenMap,
 }) => {
   // 篩選條件
   const [keyword, setKeyword] = useState('');
@@ -354,6 +372,52 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   const [onlyEMI, setOnlyEMI] = useState(false);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('default');
+
+  // 最近搜尋紀錄（每位使用者各自一份，存在本機）
+  const recent = useRecentSearches(`ntunhs_recent_searches:${student.studentId || 'guest'}`);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const snapshot: SearchSnapshot = useMemo(
+    () => ({
+      keyword, department, category, days, timeOfDay, credits,
+      onlyAvailable, onlyNoConflict, onlyPrereqMet, onlyEMI, onlyFavorites,
+    }),
+    [keyword, department, category, days, timeOfDay, credits, onlyAvailable, onlyNoConflict, onlyPrereqMet, onlyEMI, onlyFavorites]
+  );
+  const isDefaultSearch =
+    !keyword.trim() && department === homeDepartment && category === initialCategory && !days.length &&
+    timeOfDay === '全部' && credits === '全部' &&
+    ![onlyAvailable, onlyNoConflict, onlyPrereqMet, onlyEMI, onlyFavorites].some(Boolean);
+  // 停止輸入／調整篩選 1.5 秒後自動記下這組條件；按 Enter 會立刻記錄
+  const { record } = recent;
+  useEffect(() => {
+    if (isDefaultSearch) return;
+    const t = window.setTimeout(() => record(snapshot), 1500);
+    return () => window.clearTimeout(t);
+  }, [snapshot, isDefaultSearch, record]);
+  useEffect(() => {
+    if (!historyOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!searchBoxRef.current?.contains(e.target as Node)) setHistoryOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [historyOpen]);
+  const restoreSearch = (s: SearchSnapshot) => {
+    setKeyword(s.keyword);
+    setDepartment(s.department);
+    setCategory(s.category as CategoryFilter);
+    setDays(s.days);
+    setTimeOfDay(s.timeOfDay as TimeFilter);
+    setCredits(s.credits);
+    setOnlyAvailable(s.onlyAvailable);
+    setOnlyNoConflict(s.onlyNoConflict);
+    setOnlyPrereqMet(s.onlyPrereqMet);
+    setOnlyEMI(s.onlyEMI);
+    setOnlyFavorites(s.onlyFavorites);
+    setHistoryOpen(false);
+    record(s);
+  };
 
   // 介面狀態
   const [preview, setPreview] = useState<Course | null>(null);
@@ -481,6 +545,12 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   const cartCredits = cartOnly.reduce((s, c) => s + c.credits, 0);
   const totalCredits = scheduleCredits + cartCredits;
   const plannedClash = conflictingIds(plannedCourses);
+  // FR-08：下課後要換教室的銜接，列出步行時間不夠或很趕的
+  const transitions = useMemo(() => transitionsOf(plannedCourses), [plannedCourses]);
+  const rushTransitions = transitions.filter(t => t.level !== 'ok');
+  const waitCourses = waitlist
+    .map(w => ({ entry: w, course: courseMap.get(w.courseId) }))
+    .filter((x): x is { entry: WaitlistEntry; course: Course } => !!x.course);
 
   const moveCart = (id: string, delta: number) => {
     const idx = cart.indexOf(id);
@@ -609,6 +679,8 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
     const left = seatsLeft(c);
     const competition = COMPETITION_STYLE[competitionLevel(c)];
     const isFav = favorites.includes(c.id);
+    const wait = waitlist.find(w => w.courseId === c.id);
+    const canWait = !!onToggleWaitlist && !inSchedule && !inCart && (left === 0 || !!wait);
 
     return (
       <li
@@ -646,8 +718,21 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             >
               {c.name}
             </button>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              {c.teacher} ・ {formatCourseTime(c)} ・ {c.room || c.location}
+            <p className="mt-0.5 text-xs text-text-secondary flex flex-wrap items-center gap-x-1">
+              <span>{c.teacher} ・ {formatCourseTime(c)} ・</span>
+              {onOpenMap && c.room && c.room !== '未排' ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenMap(c)}
+                  title="查看教室位置與步行時間"
+                  className="inline-flex items-center gap-0.5 text-primary font-medium hover:underline"
+                >
+                  <MapPin size={12} />
+                  {c.room}
+                </button>
+              ) : (
+                <span>{c.room || c.location}</span>
+              )}
             </p>
             <p className="text-[11px] text-text-muted truncate">
               {[c.department, c.program, c.className && `開課班級 ${c.className}`].filter(Boolean).join(' ・ ')}
@@ -706,7 +791,29 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
               >
                 <Star size={15} fill={isFav ? 'currentColor' : 'none'} />
               </button>
-              {!inSchedule && (
+              {canWait && (
+                <button
+                  type="button"
+                  onClick={() => onToggleWaitlist!(c.id)}
+                  title={wait ? '點擊取消候補' : '額滿課程可登記候補，有人退選時依順位自動遞補'}
+                  className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1 ${
+                    wait
+                      ? 'bg-amber-50 text-amber-800 border border-amber-300'
+                      : 'bg-amber-600 text-white hover:bg-amber-700'
+                  }`}
+                >
+                  {wait ? (
+                    <>
+                      <Hourglass size={14} /> 候補第 {wait.ahead + 1} 位
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus size={14} /> 候補
+                    </>
+                  )}
+                </button>
+              )}
+              {!inSchedule && !canWait && (
                 <button
                   type="button"
                   onClick={() => onToggleCart(c.id)}
@@ -746,6 +853,48 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         flashId={flashId}
         onSelect={onViewCourseDetail}
       />
+
+      {transitions.length > 0 && (
+        <div
+          className={`rounded-xl border px-4 py-3 ${
+            rushTransitions.length ? 'border-amber-200 bg-amber-50/70' : 'border-border-subtle bg-surface-card'
+          }`}
+        >
+          <p className="text-sm font-semibold flex items-center gap-1.5">
+            <Footprints size={15} className={rushTransitions.length ? 'text-amber-700' : 'text-secondary'} />
+            換教室步行檢查
+            <span className="ml-auto text-[11px] font-normal text-text-muted">
+              {transitions.length} 處連堂換教室
+            </span>
+          </p>
+          {rushTransitions.length === 0 ? (
+            <p className="mt-1 text-xs text-text-secondary">每次換教室的步行時間都來得及。</p>
+          ) : (
+            <ul className="mt-2 space-y-1.5">
+              {rushTransitions.map((t, i) => (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => onOpenMap?.(t.next.course)}
+                    className="w-full text-left text-xs rounded-lg bg-surface-card border border-amber-200 px-2.5 py-2 hover:border-amber-400"
+                  >
+                    <span className={`font-semibold ${t.level === 'late' ? 'text-conflict-danger' : 'text-amber-800'}`}>
+                      週{DAY_LABELS[t.day - 1]} {t.prev.slot.room || t.prev.course.room} → {t.next.slot.room || t.next.course.room}
+                    </span>
+                    <span className="text-text-secondary">
+                      {' '}・ 步行約 {t.route?.minutes} 分，下課 {t.gap} 分
+                      {t.level === 'late' ? '，會遲到' : '，很趕'}
+                    </span>
+                    <span className="block text-[11px] text-text-muted truncate">
+                      {shortName(t.prev.course.name)} → {shortName(t.next.course.name)} ・ 點擊看路線
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="rounded-xl border border-border-subtle bg-surface-card">
         <div className="px-4 py-3 border-b border-border-subtle flex items-center justify-between gap-2">
@@ -844,6 +993,61 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         </div>
       </div>
 
+      {waitCourses.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-surface-card">
+          <div className="px-4 py-3 border-b border-amber-100 flex items-center justify-between gap-2">
+            <h3 className="font-semibold text-sm flex items-center gap-1.5">
+              <Hourglass size={15} className="text-amber-700" /> 候補清單
+            </h3>
+            <span className="text-[11px] text-text-muted">名額釋出時依順位自動遞補</span>
+          </div>
+          <ul className="divide-y divide-border-subtle">
+            {waitCourses.map(({ entry, course: c }) => {
+              const clash = findConflicts(c, scheduleCourses);
+              return (
+                <li key={c.id} className="px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="shrink-0 px-2 py-1 rounded-md bg-amber-100 text-amber-800 text-[11px] font-semibold">
+                      第 {entry.ahead + 1} 位
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => onViewCourseDetail(c)}
+                        className="block text-left text-sm font-semibold truncate max-w-full hover:underline"
+                      >
+                        {c.name}
+                      </button>
+                      <p className="text-[11px] text-text-muted">
+                        {formatCourseTime(c)} ・ {c.credits} 學分 ・ 已選 {c.enrolled}/{c.capacity}
+                        {clash.length > 0 && <span className="text-conflict-danger font-semibold"> ・ 與課表衝堂，輪到時會被跳過</span>}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onToggleWaitlist?.(c.id)}
+                      aria-label="取消候補"
+                      className="w-7 h-7 rounded flex items-center justify-center text-text-muted hover:text-conflict-danger hover:bg-red-50 shrink-0"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                  {onSimulateRelease && (
+                    <button
+                      type="button"
+                      onClick={() => onSimulateRelease(c.id)}
+                      className="mt-2 w-full py-1.5 rounded-lg border border-dashed border-amber-300 text-[11px] font-medium text-amber-800 hover:bg-amber-50"
+                    >
+                      示範：模擬有同學退選，釋出 1 個名額
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
       <details className="rounded-xl border border-border-subtle bg-surface-card group">
         <summary className="px-4 py-3 cursor-pointer text-sm font-semibold flex items-center justify-between list-none">
           已選上課程（{scheduleCourses.length} 門，{scheduleCredits} 學分）
@@ -938,15 +1142,51 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         {/* 中：搜尋 + 列表 */}
         <section className="min-w-0">
           <div className="flex gap-2 mb-3">
-            <div className="relative flex-1">
+            <div ref={searchBoxRef} className="relative flex-1">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 type="search"
                 value={keyword}
-                onChange={e => setKeyword(e.target.value)}
+                onChange={e => {
+                  setKeyword(e.target.value);
+                  // 開始輸入就收起紀錄，避免擋住搜尋結果
+                  setHistoryOpen(false);
+                }}
+                onFocus={() => !keyword && recent.items.length > 0 && setHistoryOpen(true)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    if (!isDefaultSearch) record(snapshot);
+                    setHistoryOpen(false);
+                  }
+                  if (e.key === 'Escape') setHistoryOpen(false);
+                }}
                 placeholder="搜尋課名、課號、教師或關鍵字"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border-subtle bg-surface-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full pl-9 pr-11 py-2.5 rounded-xl border border-border-subtle bg-surface-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(o => !o)}
+                aria-label="最近搜尋紀錄"
+                aria-expanded={historyOpen}
+                title="最近搜尋紀錄"
+                className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center ${
+                  historyOpen ? 'bg-primary-fixed text-primary' : 'text-text-muted hover:bg-surface-container-low hover:text-primary'
+                }`}
+              >
+                <History size={16} />
+                {recent.items.length > 0 && !historyOpen && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-secondary" aria-hidden />
+                )}
+              </button>
+              {historyOpen && (
+                <RecentSearchPanel
+                  items={recent.items}
+                  onRestore={restoreSearch}
+                  onRemove={recent.remove}
+                  onClear={recent.clear}
+                  onClose={() => setHistoryOpen(false)}
+                />
+              )}
             </div>
             <button
               type="button"
@@ -1022,6 +1262,7 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
         </span>
         <span key={flashId ?? 'idle'} className={`text-xs ${flashId ? 'bump-added' : ''}`}>
           預選 {cartOnly.length} 門・共 {totalCredits} 學分
+          {waitCourses.length > 0 && `・候補 ${waitCourses.length}`}
           {plannedClash.size > 0 && <span className="ml-1.5 text-red-300 font-semibold">有衝堂</span>}
         </span>
       </button>
