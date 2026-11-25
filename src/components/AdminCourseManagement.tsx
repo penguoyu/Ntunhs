@@ -1,5 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Course, CourseCategory } from '../types';
+import { CAMPUS_BUILDINGS, OFF_CAMPUS } from '../lib/campus';
+import { formatCourseTime } from '../lib/schedule';
+import { extraSlotsToText, parseExtraSlots, parsePeriods, periodsText } from '../lib/courseCsv';
+
+const PAGE_SIZE = 60;
+const COLLEGES: Course['college'][] = ['健康科技學院', '護理學院', '人類發展與健康學院', '智慧健康照護跨領域學院', '通識中心'];
+const DAY_OPTIONS = ['一', '二', '三', '四', '五', '六', '日'];
+const BUILDING_OPTIONS = [
+  ...CAMPUS_BUILDINGS.filter(b => b.code).map(b => ({ value: `${b.code} 棟`, label: `${b.code} 棟 ${b.name}` })),
+  ...Object.entries(OFF_CAMPUS).map(([code, name]) => ({ value: `${code} 棟`, label: `${code} 棟 ${name}` })),
+];
 import { SEMESTER_LABEL } from '../data/semester';
 
 interface AdminCourseManagementProps {
@@ -41,10 +52,12 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
   const [formDepartment, setFormDepartment] = useState('資訊管理系 (IM)');
   const [formTeacher, setFormTeacher] = useState('');
   const [formTeacherTitle, setFormTeacherTitle] = useState('專任助理教授');
-  const [formBuilding, setFormBuilding] = useState('資訊科技大樓');
-  const [formRoom, setFormRoom] = useState('I502');
+  const [formBuilding, setFormBuilding] = useState('G 棟');
+  const [formRoom, setFormRoom] = useState('G303');
   const [formDay, setFormDay] = useState(1);
-  const [formPeriods, setFormPeriods] = useState<number[]>([2, 3, 4]);
+  const [formPeriodsText, setFormPeriodsText] = useState('2-4');
+  const [formExtraSlots, setFormExtraSlots] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [formCapacity, setFormCapacity] = useState(45);
   const [formEnrolled, setFormEnrolled] = useState(0);
   const [formIsEMI, setFormIsEMI] = useState(false);
@@ -83,6 +96,10 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
     });
   }, [courses, searchQuery, selectedCollege, selectedCategory, sortBy]);
 
+  // 771 門課分批顯示，篩選條件一變就回到第一批
+  useEffect(() => setVisibleCount(PAGE_SIZE), [searchQuery, selectedCollege, selectedCategory, sortBy]);
+  const visibleCourses = filteredCourses.slice(0, visibleCount);
+
   const openAddModal = () => {
     setFormId(`IM${Math.floor(3000 + Math.random() * 900)}`);
     setFormCode(`1132-${Math.floor(1000 + Math.random() * 900)}`);
@@ -94,10 +111,11 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
     setFormDepartment('資訊管理系 (IM)');
     setFormTeacher('');
     setFormTeacherTitle('副教授');
-    setFormBuilding('資訊科技大樓');
-    setFormRoom('I302');
+    setFormBuilding('G 棟');
+    setFormRoom('G303');
     setFormDay(1);
-    setFormPeriods([2, 3, 4]);
+    setFormPeriodsText('2-4');
+    setFormExtraSlots('');
     setFormCapacity(45);
     setFormEnrolled(0);
     setFormIsEMI(false);
@@ -123,7 +141,8 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
     setFormBuilding(course.building);
     setFormRoom(course.room);
     setFormDay(course.day);
-    setFormPeriods(course.periods);
+    setFormPeriodsText(periodsText(course.periods));
+    setFormExtraSlots(extraSlotsToText(course.extraSlots));
     setFormCapacity(course.capacity);
     setFormEnrolled(course.enrolled);
     setFormIsEMI(!!course.isEMI);
@@ -140,9 +159,18 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
       return;
     }
 
-    const dayNames = ['', '週一', '週二', '週三', '週四', '週五'];
-    const timeStr = `${dayNames[formDay]} 第 ${formPeriods.join('-')} 節`;
-    const location = `${formBuilding} ${formRoom}`;
+    const periods = parsePeriods(formPeriodsText);
+    if (!periods) {
+      showToast('節次格式不正確，請輸入如「2-4」或「3,4,6,7」');
+      return;
+    }
+    const extraSlots = parseExtraSlots(formExtraSlots);
+    if (formExtraSlots.trim() && extraSlots.length === 0) {
+      showToast('其他時段格式不正確，請輸入如「四 1-2 F301；五 3-4 F302」');
+      return;
+    }
+    const timeStr = formatCourseTime({ day: formDay, periods, extraSlots } as Course);
+    const location = [formBuilding, formRoom].filter(Boolean).join(' ');
     const tagsArray = formTags.split(',').map(s => s.trim()).filter(Boolean);
 
     if (editingCourse) {
@@ -161,7 +189,8 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
         room: formRoom,
         location,
         day: formDay,
-        periods: formPeriods,
+        periods,
+        extraSlots: extraSlots.length ? extraSlots : undefined,
         timeStr,
         capacity: formCapacity,
         enrolled: formEnrolled,
@@ -191,7 +220,8 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
         room: formRoom,
         location,
         day: formDay,
-        periods: formPeriods,
+        periods,
+        extraSlots: extraSlots.length ? extraSlots : undefined,
         timeStr,
         enrolled: formEnrolled,
         capacity: formCapacity,
@@ -325,10 +355,9 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
             className="px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs font-medium"
           >
             <option value="ALL">全部學院 (All Colleges)</option>
-            <option value="健康科技學院">健康科技學院</option>
-            <option value="護理學院">護理學院</option>
-            <option value="人類發展與健康學院">人類發展與健康學院</option>
-            <option value="通識中心">通識教育中心</option>
+            {COLLEGES.map(c => (
+              <option key={c} value={c}>{c === '通識中心' ? '通識教育中心' : c}</option>
+            ))}
           </select>
 
           <select
@@ -389,7 +418,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
       {/* Courses Master View (Cards for mobile / Table for desktop) */}
       {viewLayout === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredCourses.map(course => {
+          {visibleCourses.map(course => {
             const fillPercent = Math.min(100, Math.round((course.enrolled / course.capacity) * 100));
             return (
               <div
@@ -499,7 +528,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
-                {filteredCourses.map(course => {
+                {visibleCourses.map(course => {
                   const fillPercent = Math.min(100, Math.round((course.enrolled / course.capacity) * 100));
                   return (
                     <tr key={course.id} className="hover:bg-surface-container-low transition-colors group">
@@ -599,6 +628,20 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {filteredCourses.length > visibleCount && (
+        <div className="flex flex-col items-center gap-1 mt-4">
+          <button
+            onClick={() => setVisibleCount(n => n + PAGE_SIZE)}
+            className="px-5 py-2.5 rounded-xl border border-border-subtle bg-surface-card text-xs font-semibold text-primary hover:bg-primary/5"
+          >
+            再載入 {Math.min(PAGE_SIZE, filteredCourses.length - visibleCount)} 門
+          </button>
+          <span className="text-[11px] text-text-muted">
+            已顯示 {visibleCount} / {filteredCourses.length} 門
+          </span>
         </div>
       )}
 
@@ -702,10 +745,9 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                     onChange={e => setFormCollege(e.target.value as any)}
                     className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs"
                   >
-                    <option value="健康科技學院">健康科技學院</option>
-                    <option value="護理學院">護理學院</option>
-                    <option value="人類發展與健康學院">人類發展與健康學院</option>
-                    <option value="通識中心">通識教育中心</option>
+                    {COLLEGES.map(c => (
+                      <option key={c} value={c}>{c === '通識中心' ? '通識教育中心' : c}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -773,7 +815,7 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-on-surface mb-1">上課校舍大樓</label>
                   <select
@@ -781,14 +823,13 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                     onChange={e => setFormBuilding(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs"
                   >
-                    <option value="資訊科技大樓">資訊科技大樓</option>
-                    <option value="學思樓">學思樓</option>
-                    <option value="親仁樓">親仁樓</option>
-                    <option value="科技大樓">科技大樓</option>
-                    <option value="圖書館">圖書館</option>
-                    <option value="體育館">體育館</option>
-                    <option value="樂育樓">樂育樓</option>
-                    <option value="癒花園">癒花園</option>
+                    <option value="">未定／校外</option>
+                    {BUILDING_OPTIONS.map(b => (
+                      <option key={b.value} value={b.value}>{b.label}</option>
+                    ))}
+                    {formBuilding && !BUILDING_OPTIONS.some(b => b.value === formBuilding) && (
+                      <option value={formBuilding}>{formBuilding}</option>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -802,18 +843,26 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-on-surface mb-1">星期 (1-5)</label>
+                  <label className="block text-xs font-medium text-on-surface mb-1">星期</label>
                   <select
                     value={formDay}
                     onChange={e => setFormDay(parseInt(e.target.value))}
                     className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-xs"
                   >
-                    <option value={1}>週一 (Mon)</option>
-                    <option value={2}>週二 (Tue)</option>
-                    <option value={3}>週三 (Wed)</option>
-                    <option value={4}>週四 (Thu)</option>
-                    <option value={5}>週五 (Fri)</option>
+                    {DAY_OPTIONS.map((d, i) => (
+                      <option key={d} value={i + 1}>週{d}</option>
+                    ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-on-surface mb-1">節次</label>
+                  <input
+                    type="text"
+                    value={formPeriodsText}
+                    onChange={e => setFormPeriodsText(e.target.value)}
+                    placeholder="2-4 或 3,4,6,7"
+                    className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-sm font-mono"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-on-surface mb-1">修課名額上限</label>
@@ -826,6 +875,17 @@ export const AdminCourseManagement: React.FC<AdminCourseManagementProps> = ({
                     className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-sm font-mono"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-on-surface mb-1">其他時段（一週上多次課時填寫，可留空）</label>
+                <input
+                  type="text"
+                  value={formExtraSlots}
+                  onChange={e => setFormExtraSlots(e.target.value)}
+                  placeholder="四 1-2 F301；五 3-4 F302"
+                  className="w-full px-3 py-2 rounded-xl border border-border-subtle bg-surface-bg text-sm font-mono"
+                />
               </div>
 
               <div className="flex items-center gap-6 pt-1">

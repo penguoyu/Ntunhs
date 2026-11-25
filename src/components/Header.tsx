@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   semester,
   deviceMode,
   onToggleDeviceMode,
-  unreadCount = 2,
+  unreadCount = 0,
   onOpenNotifications,
   onOpenLogin,
   onOpenUserProfile,

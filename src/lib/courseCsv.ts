@@ -82,7 +82,7 @@ const parseDay = (v: string): number | undefined => {
   return idx >= 0 ? idx + 1 : undefined;
 };
 
-const parsePeriods = (v: string): number[] | undefined => {
+export const parsePeriods = (v: string): number[] | undefined => {
   const t = v.replace(/[第節\s]/g, '');
   if (!t) return undefined;
   const range = /^(\d+)[-~～至到](\d+)$/.exec(t);
@@ -105,7 +105,7 @@ const parseTimeStr = (v: string) => {
 };
 
 /** 「四 1-2 F301；五 3-4 F302」→ 多個時段 */
-const parseExtraSlots = (v: string): CourseSlot[] =>
+export const parseExtraSlots = (v: string): CourseSlot[] =>
   v
     .split(/[；;]/)
     .map(part => part.trim())
@@ -173,7 +173,7 @@ export const csvToCourseObjects = (text: string): { items: Record<string, unknow
   return { items, unknownHeaders };
 };
 
-const periodsText = (periods?: number[]) => {
+export const periodsText = (periods?: number[]) => {
   if (!periods?.length) return '';
   const ps = [...periods].sort((a, b) => a - b);
   const contiguous = ps.every((p, i) => i === 0 || p === ps[i - 1] + 1);
@@ -199,7 +199,7 @@ export const coursesToCsv = (courses: Course[]): string => {
     c.day ? DAY_LABELS[c.day - 1] : '',
     periodsText(c.periods),
     c.room || c.location,
-    (c.extraSlots ?? []).map(x => `${DAY_LABELS[x.day - 1]} ${periodsText(x.periods)} ${x.room}`.trim()).join('；'),
+    extraSlotsToText(c.extraSlots),
     c.timeStr,
     c.enrolled,
     c.capacity,
@@ -215,3 +215,7 @@ export const SAMPLE_CSV = [
   'NUR9002,"長期照護實務（含社區見習）",李美華,2,專業選修,護理系,四,6-7,F408,40,40',
   'GE9003,健康生活與永續,陳大同,2,博雅通識,通識教育中心,五,3-4,B216,60,31',
 ].join('\n');
+
+/** 多時段 → 「四 1-2 F301；五 3-4 F302」，與 parseExtraSlots 互為反向 */
+export const extraSlotsToText = (slots?: CourseSlot[]) =>
+  (slots ?? []).map(x => `${DAY_LABELS[x.day - 1]} ${periodsText(x.periods)} ${x.room}`.trim()).join('；');

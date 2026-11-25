@@ -1,4 +1,4 @@
-import { StudentProfile, UserAccount, WaitlistEntry } from '../types';
+import { AppNotification, StudentProfile, UserAccount, WaitlistEntry } from '../types';
 import { CURRENT_STUDENT } from './courses';
 import demoPlans from './generated/demo-plans.json';
 
@@ -17,6 +17,8 @@ export interface StudentPlan {
   favorites: string[];
   /** 額滿課程的候補登記（舊資料沒有這個欄位） */
   waitlist?: WaitlistEntry[];
+  /** 通知中心（舊資料沒有這個欄位） */
+  notifications?: AppNotification[];
 }
 
 /** 訪客與未登入時使用的 key */

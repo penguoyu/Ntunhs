@@ -193,6 +193,19 @@ export interface StudentProfile {
 }
 
 /** FR-07 額滿候補：學生在某門額滿課程的候補登記（模擬） */
+/** 通知中心的一則通知（由選課、候補、退選等操作產生） */
+export interface AppNotification {
+  id: string;
+  kind: 'success' | 'info' | 'warning';
+  title: string;
+  desc: string;
+  /** ISO 時間 */
+  at: string;
+  tab?: ActiveTab;
+  actionText?: string;
+  read?: boolean;
+}
+
 export interface WaitlistEntry {
   courseId: string;
   /** 排在您前面的人數；0 表示您是候補第 1 位 */

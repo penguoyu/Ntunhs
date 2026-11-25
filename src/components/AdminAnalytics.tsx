@@ -21,20 +21,24 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
     .sort((a, b) => (b.enrolled / b.capacity) - (a.enrolled / a.capacity))
     .slice(0, 8);
 
-  // Group by college
-  const colleges = ['健康科技學院', '護理學院', '人類發展與健康學院', '智慧健康照護跨領域學院', '通識中心'] as const;
-  const collegeStats = colleges.map(col => {
-    const list = courses.filter(c => c.college === col);
+  // 依學院統計專業課程；博雅通識在真實資料中掛在各學院底下，另外以課程類別獨立統計
+  const stat = (label: string, list: Course[]) => {
     const colCapacity = list.reduce((s, c) => s + c.capacity, 0);
     const colEnrolled = list.reduce((s, c) => s + c.enrolled, 0);
     return {
-      college: col,
+      college: label,
       count: list.length,
       capacity: colCapacity,
       enrolled: colEnrolled,
       rate: colCapacity > 0 ? Math.round((colEnrolled / colCapacity) * 100) : 0,
     };
-  });
+  };
+  const colleges = ['健康科技學院', '護理學院', '人類發展與健康學院', '智慧健康照護跨領域學院'] as const;
+  const collegeStats = [
+    ...colleges.map(col => stat(col, courses.filter(c => c.college === col && c.category !== '博雅通識'))),
+    stat('通識教育（博雅通識課）', courses.filter(c => c.category === '博雅通識' || c.college === '通識中心')),
+  ].filter(c => c.count > 0);
+  const departmentCount = new Set(courses.filter(c => c.category !== '博雅通識').map(c => c.department)).size;
 
   return (
     <div className="flex flex-col w-full max-w-[1680px] mx-auto pb-16">
@@ -64,7 +68,7 @@ export const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({
             <span className="material-symbols-outlined text-[20px] text-primary">menu_book</span>
           </div>
           <div className="text-2xl font-semibold text-primary mt-2">{totalCourses} 門</div>
-          <div className="text-[11px] text-text-muted mt-1">跨 10 系所及通識中心</div>
+          <div className="text-[11px] text-text-muted mt-1">跨 {departmentCount} 個開課單位及通識課程</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface-card border border-border-subtle shadow-xs">
