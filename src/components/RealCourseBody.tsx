@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Course, StudentProfile } from '../types';
+import { Course, SDG_LIST, StudentProfile } from '../types';
 import { checkPrerequisite, gradingStyle, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
 
 /** 某一學期的開課紀錄（由 scripts/convert_courses.py 依課名彙整） */
@@ -214,6 +214,37 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
         {history?.some(h => h.enrolled === 0) && (
           <p className="mt-2 text-[11px] text-text-muted">「—」表示該學期有排課但資料中修課人數為 0。</p>
         )}
+      </div>
+
+      {/* SDGs：學校資料沒有，依課名自動對應（模擬） */}
+      <div className="bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <h4 className="font-medium text-sm text-primary flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[18px] text-emerald-600">eco</span>
+            SDGs 永續發展目標
+          </h4>
+          <span className="text-[11px] text-text-muted">
+            {course.sdgsAuto ? '依課名與摘要自動對應（模擬），正式版以課程大綱填報為準' : `已對應 ${course.sdgs?.length ?? 0} 項`}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 text-[11px]">
+          {SDG_LIST.map(sdg => {
+            const on = course.sdgs?.includes(sdg.id);
+            return (
+              <div
+                key={sdg.id}
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${
+                  on ? 'bg-emerald-50 border-emerald-300 font-semibold text-emerald-950' : 'border-border-subtle/70 text-text-muted opacity-70'
+                }`}
+              >
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: on ? sdg.color : '#cbd5e1' }} />
+                <span className="truncate" title={`${sdg.code} ${sdg.name}`}>
+                  {sdg.code} {sdg.name}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </>
   );

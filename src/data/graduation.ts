@@ -9,8 +9,8 @@ export interface GraduationRecord {
   earned: Record<AuditCategoryKey, number>;
   /** 通識尚缺的領域 */
   generalMissing: { area: string; credits: number }[];
-  /** 已修課程涵蓋的 SDGs 項數 */
-  sdgCount: number;
+  /** 已修課程涵蓋的 SDGs（編號 1～17） */
+  sdgIds: number[];
 }
 
 /** 畢業門檻（示範值，請依各系修業規定調整），合計 128 學分 */
@@ -30,13 +30,13 @@ export const GRADUATION_RECORDS: Record<string, GraduationRecord> = {
       { area: '社會科學', credits: 2 },
       { area: '美育探索', credits: 4 },
     ],
-    sdgCount: 8,
+    sdgIds: [3, 4, 5, 8, 9, 13, 16, 17],
   },
   // 護理系 林思妤（四年級）
   '11112045': {
     earned: { common: 18, required: 60, elective: 16, general: 10 },
     generalMissing: [{ area: '自然科學', credits: 2 }],
-    sdgCount: 9,
+    sdgIds: [3, 4, 5, 8, 10, 11, 13, 16, 17],
   },
   // 生死系 王若庭（二年級）
   '11135012': {
@@ -46,13 +46,13 @@ export const GRADUATION_RECORDS: Record<string, GraduationRecord> = {
       { area: '自然科學', credits: 2 },
       { area: '美育探索', credits: 2 },
     ],
-    sdgCount: 3,
+    sdgIds: [3, 4, 16],
   },
   // 健管系 郭政儒（三年級）
   '11141088': {
     earned: { common: 18, required: 40, elective: 8, general: 8 },
     generalMissing: [{ area: '美育探索', credits: 4 }],
-    sdgCount: 5,
+    sdgIds: [3, 4, 8, 9, 16],
   },
 };
 
@@ -60,5 +60,5 @@ export const GRADUATION_RECORDS: Record<string, GraduationRecord> = {
 export const EMPTY_GRADUATION_RECORD: GraduationRecord = {
   earned: { common: 0, required: 0, elective: 0, general: 0 },
   generalMissing: [],
-  sdgCount: 0,
+  sdgIds: [],
 };

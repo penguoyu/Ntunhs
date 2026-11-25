@@ -7,13 +7,30 @@ import {
   SDG_REQUIREMENT,
 } from '../data/graduation';
 
+/** 校訂共同必修：國文、英文、體育、資訊素養、全民國防等（學校資料的「通識必修」） */
+const COMMON_REQUIRED = /國文|英文|英語|體育|羽球|資訊素養|國防/;
+
 /** 課程類別對應到畢業學分類別 */
 export const auditCategoryOf = (c: Course): AuditCategoryKey =>
   c.category === '博雅通識' || c.college === '通識中心'
-    ? 'general'
+    ? COMMON_REQUIRED.test(c.name)
+      ? 'common'
+      : 'general'
     : c.category.includes('必修')
       ? 'required'
       : 'elective';
+
+/** 博雅通識課程屬於哪個通識領域（依課名判斷，示範規則） */
+export const generalAreaOf = (name: string): string | null =>
+  /藝術|舞蹈|美學|音樂|美育/.test(name)
+    ? '美育探索'
+    : /法規|法律|邏輯|休閒|經濟|社會|心理|政治/.test(name)
+      ? '社會科學'
+      : /環境|永續|科學|生態|物理|化學|生物/.test(name)
+        ? '自然科學'
+        : /哲學|文明|宗教|文學|歷史|日文|人生/.test(name)
+          ? '人文學'
+          : null;
 
 export interface AuditCategory {
   key: AuditCategoryKey;
@@ -60,8 +77,17 @@ export const buildAudit = (student: Pick<StudentProfile, 'studentId'>, scheduleC
     inProgress,
     /** 本學期全數通過後仍缺的學分 */
     remaining: Math.max(0, total - earned - inProgress),
-    generalMissing: record.generalMissing,
-    sdgCount: record.sdgCount,
+    // 通識缺額：扣掉本學期修習中、屬於該領域的通識課
+    generalMissing: record.generalMissing
+      .map(m => {
+        const taking = categories.general.inProgressCourses.filter(c => generalAreaOf(c.name) === m.area);
+        const inProgress = taking.reduce((sum, c) => sum + c.credits, 0);
+        return { ...m, inProgress, remaining: Math.max(0, m.credits - inProgress), taking };
+      }),
+    // SDGs：已修課程的項目加上本學期課表新涵蓋的項目
+    sdgEarned: record.sdgIds.length,
+    sdgNew: [...new Set(scheduleCourses.flatMap(c => c.sdgs ?? []))].filter(id => !record.sdgIds.includes(id)),
+    sdgCount: new Set([...record.sdgIds, ...scheduleCourses.flatMap(c => c.sdgs ?? [])]).size,
     sdgRequired: SDG_REQUIREMENT,
   };
 };

@@ -119,6 +119,8 @@ export interface Course {
   isCrossDisciplinary?: boolean;
   sdgs?: number[]; // 1 to 17 (聯合國 SDGs 永續發展目標)
   sdgsSummary?: string; // SDGs 永續指標簡述
+  /** SDGs 為依課名自動對應（學校資料沒有提供） */
+  sdgsAuto?: boolean;
   coreCompetencies?: CoreCompetency[];
   prerequisite?: string;
   /** @deprecated 改由 requires + 學生已及格科目計算，見 src/lib/schedule.ts */

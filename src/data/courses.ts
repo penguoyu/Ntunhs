@@ -1,6 +1,7 @@
 import { Course, StudentProfile } from '../types';
 import coursesJson from './generated/courses.json';
 import demoPlans from './generated/demo-plans.json';
+import { inferSdgs } from '../lib/sdgs';
 
 /**
  * 課程資料：由學校「全校修課資料表」轉出（scripts/convert_courses.py）。
@@ -15,9 +16,12 @@ const DEMO_FULL_IDS = new Set([
   '22140162801445', // 醫療機構管理實務
 ]);
 
-export const COURSES_DATA = (coursesJson as unknown as Course[]).map(c =>
-  DEMO_FULL_IDS.has(c.id) ? { ...c, enrolled: c.capacity } : c
-);
+export const COURSES_DATA = (coursesJson as unknown as Course[]).map(c => ({
+  ...c,
+  ...(DEMO_FULL_IDS.has(c.id) ? { enrolled: c.capacity } : {}),
+  // 學校資料沒有 SDGs：依課名與摘要自動對應（模擬，畫面上有標示）
+  ...(c.sdgs?.length ? {} : { sdgs: inferSdgs(c), sdgsAuto: true }),
+}));
 
 export const CURRENT_STUDENT: StudentProfile = {
   name: '張哲宇',

@@ -203,7 +203,7 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
               <div className={`${activeSdgsList.length ? 'flex' : 'hidden'} items-center gap-1.5 flex-wrap pt-2 border-t border-border-subtle/60`}>
                 <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 shrink-0">
                   <span className="material-symbols-outlined text-[15px]">eco</span>
-                  SDGs 永續目標：
+                  SDGs 永續目標{course.sdgsAuto ? '（依課名自動對應・模擬）' : ''}：
                 </span>
                 {activeSdgsList.map(item => (
                   <span
