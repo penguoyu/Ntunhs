@@ -209,6 +209,8 @@ export default function App() {
   };
 
   const handleQuickSwitchRole = () => {
+    // 換身分時清掉前一個身分的 SSO 權杖，避免帶著舊權限
+    clearToken();
     if (!currentUser || currentUser.role === 'admin') {
       const studentUser =
         users.find(u => u.role === 'student' && u.status === 'active') ||
@@ -524,6 +526,7 @@ export default function App() {
 
           {currentTab === 'user-profile' && (
             <StudentAccountCenter
+              key={currentUser?.id ?? 'guest'}
               currentUser={currentUser}
               student={studentProfile}
               scheduleCourses={scheduleCourses}
@@ -533,6 +536,7 @@ export default function App() {
               onOpenLogin={() => setIsLoginModalOpen(true)}
               onNavigateTab={goToTab}
               onSwitchToAdmin={() => {
+                clearToken();
                 const adminUser = users.find(u => u.role === 'admin') || INITIAL_USERS.find(u => u.role === 'admin')!;
                 setCurrentUser(adminUser);
                 setCurrentTab('admin-courses');
@@ -646,6 +650,7 @@ export default function App() {
         {/* User Profile Modal */}
         {currentUser && (
           <UserProfileModal
+            key={currentUser.id}
             isOpen={isUserProfileModalOpen}
             onClose={() => setIsUserProfileModalOpen(false)}
             currentUser={currentUser}

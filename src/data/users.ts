@@ -99,3 +99,17 @@ export const sha256Hex = async (text: string): Promise<string> => {
 };
 
 export const DEFAULT_STUDENT_USER = INITIAL_USERS[0];
+
+/** 修改密碼：先驗證原密碼，通過後回傳新密碼的雜湊；失敗回傳錯誤訊息 */
+export const changePassword = async (
+  user: UserAccount,
+  oldPassword: string,
+  newPassword: string
+): Promise<{ ok: true; passwordHash: string } | { ok: false; message: string }> => {
+  if ((await sha256Hex(oldPassword)) !== (user.passwordHash ?? DEMO_PASSWORD_HASH)) {
+    return { ok: false, message: '原密碼不正確，請重新輸入' };
+  }
+  if (newPassword.length < 8) return { ok: false, message: '新密碼至少需要 8 個字元' };
+  if (newPassword === oldPassword) return { ok: false, message: '新密碼不能和原密碼相同' };
+  return { ok: true, passwordHash: await sha256Hex(newPassword) };
+};

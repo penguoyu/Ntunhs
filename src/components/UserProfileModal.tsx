@@ -1,3 +1,4 @@
+import { changePassword } from '../data/users';
 import React, { useState } from 'react';
 import { UserAccount, StudentProfile } from '../types';
 
@@ -58,7 +59,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     onClose();
   };
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword) {
       showToast('請輸入新密碼');
@@ -68,7 +69,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       showToast('兩次輸入的新密碼不一致，請重新檢查');
       return;
     }
-    showToast('密碼已成功更新。下次登入請使用新密碼');
+    if (!currentUser) return;
+    const result = await changePassword(currentUser, oldPassword, newPassword);
+    if (!result.ok) {
+      showToast(result.message);
+      return;
+    }
+    onUpdateUser({ ...currentUser, passwordHash: result.passwordHash });
+    showToast('密碼已更新，下次登入請使用新密碼');
     setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
