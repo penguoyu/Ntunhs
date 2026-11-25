@@ -29,6 +29,18 @@ export const slotsOf = (c: Course): CourseSlot[] =>
     ? [{ day: c.day, periods: c.periods, room: c.room }, ...(c.extraSlots ?? [])]
     : [];
 
+/** 把同一時段中不連續的節次拆開（例如第 3-4、6-7 節中間隔著午休），課表與換教室檢查都用這個 */
+export const slotRuns = (slot: CourseSlot): CourseSlot[] => {
+  const ps = [...new Set(slot.periods)].sort((a, b) => a - b);
+  const runs: number[][] = [];
+  for (const p of ps) {
+    const last = runs[runs.length - 1];
+    if (last && p === last[last.length - 1] + 1) last.push(p);
+    else runs.push([p]);
+  }
+  return runs.map(periods => ({ ...slot, periods }));
+};
+
 /** 每學期學分上限（示範值，請依北護學則調整） */
 export const CREDIT_LIMIT = 25;
 
@@ -59,10 +71,15 @@ export const formatCourseTime = (c: Course): string => {
   const slots = slotsOf(c);
   if (!slots.length) return c.timeStr || '時間未定';
   return slots
-    .map(({ day, periods }) => {
-      const first = Math.min(...periods);
-      const last = Math.max(...periods);
-      return `週${DAY_LABELS[day - 1] ?? day} ${first === last ? first : `${first}-${last}`} 節`;
+    .map(slot => {
+      const runs = slotRuns(slot)
+        .map(({ periods }) => {
+          const first = periods[0];
+          const last = periods[periods.length - 1];
+          return first === last ? `${first}` : `${first}-${last}`;
+        })
+        .join('、');
+      return `週${DAY_LABELS[slot.day - 1] ?? slot.day} ${runs} 節`;
     })
     .join('、');
 };

@@ -1,4 +1,4 @@
-import { Course } from '../types';
+import { Course, CourseSlot } from '../types';
 import { DAY_LABELS } from './schedule';
 
 /** 解析 CSV 文字（支援 UTF-8 BOM、雙引號欄位、欄位內換行與逗號） */
@@ -66,6 +66,11 @@ const HEADER_ALIASES: Record<string, string> = {
   capacity: 'capacity', 容量上限: 'capacity', 人數上限: 'capacity', 名額: 'capacity',
   isemi: 'isEMI', emi: 'isEMI', 全英語授課: 'isEMI',
   description: 'description', 課程簡介: 'description',
+  extraslots: 'extraSlots', 其他時段: 'extraSlots',
+  note: 'note', 備註: 'note', 課表備註: 'note',
+  program: 'program', 學制: 'program',
+  classname: 'className', 開課班級: 'className', 班級: 'className',
+  grade: 'grade', 年級: 'grade',
 };
 
 const parseDay = (v: string): number | undefined => {
@@ -98,6 +103,20 @@ const parseTimeStr = (v: string) => {
   const b = m[3] ? Number(m[3]) : a;
   return { day, periods: Array.from({ length: b - a + 1 }, (_, i) => a + i) };
 };
+
+/** 「四 1-2 F301；五 3-4 F302」→ 多個時段 */
+const parseExtraSlots = (v: string): CourseSlot[] =>
+  v
+    .split(/[；;]/)
+    .map(part => part.trim())
+    .filter(Boolean)
+    .map(part => {
+      const [d, p, ...room] = part.split(/\s+/);
+      const day = parseDay(d ?? '');
+      const periods = parsePeriods(p ?? '');
+      return day && periods ? { day, periods, room: room.join(' ') } : null;
+    })
+    .filter((x): x is CourseSlot => !!x);
 
 const truthy = (v: string) => /^(1|true|是|y|yes|v|✓)$/i.test(v.trim());
 
@@ -138,6 +157,11 @@ export const csvToCourseObjects = (text: string): { items: Record<string, unknow
     }
     if (roomText) item.location = roomText;
     if (raw.isEMI !== undefined) item.isEMI = truthy(raw.isEMI);
+    if (raw.extraSlots) {
+      const extra = parseExtraSlots(raw.extraSlots);
+      if (extra.length) item.extraSlots = extra;
+      else delete item.extraSlots;
+    } else delete item.extraSlots;
     for (const n of ['credits', 'enrolled', 'capacity'] as const) {
       if (raw[n] !== undefined && raw[n] !== '') item[n] = Number(raw[n]);
     }
@@ -158,7 +182,7 @@ const periodsText = (periods?: number[]) => {
 
 /** 匯出 CSV（欄位與匯入相容，可直接再匯入） */
 export const coursesToCsv = (courses: Course[]): string => {
-  const headers = ['課程代碼', '課號', '課程名稱', '英文名稱', '學分', '類別', '學院', '系所', '授課教師', '星期', '節次', '時間時段', '上課教室', '已選人數', '容量上限', '全英語授課'];
+  const headers = ['課程代碼', '課號', '課程名稱', '英文名稱', '學分', '類別', '學院', '系所', '學制', '開課班級', '年級', '授課教師', '星期', '節次', '上課教室', '其他時段', '時間時段', '已選人數', '容量上限', '全英語授課', '備註'];
   const rows = courses.map(c => [
     c.id,
     c.code,
@@ -168,14 +192,19 @@ export const coursesToCsv = (courses: Course[]): string => {
     c.category,
     c.college,
     c.department,
+    c.program,
+    c.className,
+    c.grade,
     c.teacher,
     c.day ? DAY_LABELS[c.day - 1] : '',
     periodsText(c.periods),
-    c.timeStr,
     c.room || c.location,
+    (c.extraSlots ?? []).map(x => `${DAY_LABELS[x.day - 1]} ${periodsText(x.periods)} ${x.room}`.trim()).join('；'),
+    c.timeStr,
     c.enrolled,
     c.capacity,
     c.isEMI ? '是' : '',
+    c.note,
   ]);
   return '﻿' + [headers, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
 };

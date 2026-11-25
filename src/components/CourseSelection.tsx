@@ -30,6 +30,7 @@ import {
   DAY_LABELS,
   PERIOD_TIMES,
   slotsOf,
+  slotRuns,
   admissionChance,
   checkPrerequisite,
   competitionLevel,
@@ -174,7 +175,7 @@ const Timetable: React.FC<TimetableProps> = ({ scheduleCourses, cartCourses, pre
     for (let d = 1; d <= 7; d++) {
       // 一門課一週可能有多個時段，每個時段各畫一格
       const items = all
-        .flatMap(b => slotsOf(b.course).filter(s => s.day === d).map(slot => ({ ...b, slot })))
+        .flatMap(b => slotsOf(b.course).filter(s => s.day === d).flatMap(slotRuns).map(slot => ({ ...b, slot })))
         .sort((a, b) => Math.min(...a.slot.periods) - Math.min(...b.slot.periods));
       const groups: BlockGroup[] = [];
       for (const b of items) {
@@ -384,8 +385,10 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
     }),
     [keyword, department, category, days, timeOfDay, credits, onlyAvailable, onlyNoConflict, onlyPrereqMet, onlyEMI, onlyFavorites]
   );
+  // 預設條件（本系或全部系所、其他條件都沒設）不記錄，例如按「清除所有條件」後
   const isDefaultSearch =
-    !keyword.trim() && department === homeDepartment && category === initialCategory && !days.length &&
+    !keyword.trim() && (department === homeDepartment || department === '全部') &&
+    (category === initialCategory || category === '全部') && !days.length &&
     timeOfDay === '全部' && credits === '全部' &&
     ![onlyAvailable, onlyNoConflict, onlyPrereqMet, onlyEMI, onlyFavorites].some(Boolean);
   // 停止輸入／調整篩選 1.5 秒後自動記下這組條件；按 Enter 會立刻記錄
@@ -547,7 +550,13 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
   const plannedClash = conflictingIds(plannedCourses);
   // FR-08：下課後要換教室的銜接，列出步行時間不夠或很趕的
   const transitions = useMemo(() => transitionsOf(plannedCourses), [plannedCourses]);
-  const rushTransitions = transitions.filter(t => t.level !== 'ok');
+  // 牽涉預選課的銜接另外標示；正式課表的排前面
+  const involvesCart = (t: (typeof transitions)[number]) =>
+    !scheduleIds.includes(t.prev.course.id) || !scheduleIds.includes(t.next.course.id);
+  const rushTransitions = transitions
+    .filter(t => t.level !== 'ok')
+    .sort((a, b) => Number(involvesCart(a)) - Number(involvesCart(b)));
+  const officialTransitionCount = transitions.filter(t => !involvesCart(t)).length;
   const waitCourses = waitlist
     .map(w => ({ entry: w, course: courseMap.get(w.courseId) }))
     .filter((x): x is { entry: WaitlistEntry; course: Course } => !!x.course);
@@ -864,7 +873,8 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
             <Footprints size={15} className={rushTransitions.length ? 'text-amber-700' : 'text-secondary'} />
             換教室步行檢查
             <span className="ml-auto text-[11px] font-normal text-text-muted">
-              {transitions.length} 處連堂換教室
+              正式課表 {officialTransitionCount} 處
+              {transitions.length > officialTransitionCount && `・含預選 ${transitions.length - officialTransitionCount} 處`}
             </span>
           </p>
           {rushTransitions.length === 0 ? (
@@ -878,6 +888,11 @@ export const CourseSelection: React.FC<CourseSelectionProps> = ({
                     onClick={() => onOpenMap?.(t.next.course)}
                     className="w-full text-left text-xs rounded-lg bg-surface-card border border-amber-200 px-2.5 py-2 hover:border-amber-400"
                   >
+                    {involvesCart(t) && (
+                      <span className="mr-1 px-1.5 py-0.5 rounded bg-secondary-fixed/50 text-on-secondary-fixed text-[11px] font-semibold">
+                        含預選
+                      </span>
+                    )}
                     <span className={`font-semibold ${t.level === 'late' ? 'text-conflict-danger' : 'text-amber-800'}`}>
                       週{DAY_LABELS[t.day - 1]} {t.prev.slot.room || t.prev.course.room} → {t.next.slot.room || t.next.course.room}
                     </span>

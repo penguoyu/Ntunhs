@@ -318,7 +318,15 @@ export default function App() {
   const handleDropCourse = (courseId: string) => {
     const target = courses.find(c => c.id === courseId);
     setScheduleIds(scheduleIds.filter(id => id !== courseId));
-    showToast(`已退選《${target?.name ?? courseId}》`);
+    if (!target) return;
+    const wasFull = seatsLeft(target) === 0;
+    // 退選釋出名額：已選人數 -1；原本額滿的課則立刻由候補第 1 位同學遞補，人數不變（模擬）
+    if (wasFull) {
+      showToast(`已退選《${target.name}》，釋出的名額已由候補第 1 位同學自動遞補`);
+      return;
+    }
+    setCourses(prev => prev.map(c => (c.id === courseId ? { ...c, enrolled: Math.max(0, c.enrolled - 1) } : c)));
+    showToast(`已退選《${target.name}》，名額已釋出（已選人數 ${target.enrolled - 1}/${target.capacity}）`);
   };
 
   /** FR-07：額滿課程加入／取消候補 */
@@ -600,6 +608,8 @@ export default function App() {
           <CourseDetailModal
             course={inspectingCourse}
             isInCart={cart.includes(inspectingCourse.id)}
+            isInSchedule={scheduleIds.includes(inspectingCourse.id)}
+            onDropCourse={currentUser?.role === 'student' ? handleDropCourse : undefined}
             isFavorite={favorites.includes(inspectingCourse.id)}
             scheduleCourses={scheduleCourses}
             cartCourses={cartCourses}

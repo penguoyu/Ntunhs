@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowLeft, CircleCheck, Footprints, MapPin, TriangleAlert, X } from 'lucide-react';
 import { Course } from '../types';
-import { Transition, buildingLabel, floorLabel, offCampusOf, parseRoom, transitionsAround } from '../lib/campus';
+import { Transition, buildingLabel, floorLabel, offCampusOf, parseRoom, parseRooms, transitionsAround } from '../lib/campus';
 import { CampusMapSvg } from './CampusMapSvg';
-import { DAY_LABELS, PERIOD_TIMES, formatCourseTime, slotsOf } from '../lib/schedule';
+import { DAY_LABELS, PERIOD_TIMES, formatCourseTime, slotRuns, slotsOf } from '../lib/schedule';
 
 interface CampusMapModalProps {
   course: Course;
@@ -12,17 +12,17 @@ interface CampusMapModalProps {
   onClose: () => void;
 }
 
-const periodRange = (periods: number[]) => {
-  const first = Math.min(...periods);
-  const last = Math.max(...periods);
-  return `${PERIOD_TIMES[first]?.start ?? ''}-${PERIOD_TIMES[last]?.end ?? ''}`;
-};
+const runsOf = (periods: number[]) => slotRuns({ day: 0, periods, room: '' }).map(r => r.periods);
 
-const periodText = (periods: number[]) => {
-  const first = Math.min(...periods);
-  const last = Math.max(...periods);
-  return first === last ? `第 ${first} 節` : `第 ${first}-${last} 節`;
-};
+const periodRange = (periods: number[]) =>
+  runsOf(periods)
+    .map(r => `${PERIOD_TIMES[r[0]]?.start ?? ''}-${PERIOD_TIMES[r[r.length - 1]]?.end ?? ''}`)
+    .join('、');
+
+const periodText = (periods: number[]) =>
+  `第 ${runsOf(periods)
+    .map(r => (r.length === 1 ? `${r[0]}` : `${r[0]}-${r[r.length - 1]}`))
+    .join('、')} 節`;
 
 const LEVEL_STYLE = {
   late: { box: 'bg-red-50 border-red-200 text-red-800', badge: 'bg-red-100 text-red-700', label: '來不及' },
@@ -51,8 +51,11 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
   }, [onClose]);
 
   // 這門課的大樓永遠是深藍色；路線另一端（前一堂或下一堂）用綠色
-  const targetNo = target?.building.no;
   const arriving = active?.next.course.id === course.id;
+  // 有兩間教室時，以路線實際用到的那間為準
+  const mine = route ? (arriving ? route.to : route.from) : target;
+  const targetNo = mine?.building.no;
+  const allRooms = parseRooms(course.room || course.location);
   const otherInfo = route ? (arriving ? route.from : route.to) : null;
   const otherNo = otherInfo && otherInfo.building.no !== targetNo ? otherInfo.building.no : undefined;
   const offCampus = offCampusOf(course.room || course.location);
@@ -97,6 +100,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
                 ? `${buildingLabel(target.building)} ${floorLabel(target.floor)} ・ `
                 : ''}
               {course.name} ・ {formatCourseTime(course)}
+              {allRooms.length > 1 && ` ・ 排在兩間教室：${allRooms.map(r => r.room).join('、')}`}
             </p>
           </div>
           <button type="button" onClick={onClose} aria-label="關閉" className="w-9 h-9 rounded-full hover:bg-surface-container-low flex items-center justify-center text-text-muted">
