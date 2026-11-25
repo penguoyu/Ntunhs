@@ -5,6 +5,7 @@ import { PERIOD_TIMES, slotsOf } from './schedule';
  * 校本部地圖資料（FR-08）。
  * 建築位置依學校公告的「國立臺北護理健康大學校本部地圖」（2024.10.15 版）描繪，
  * 座標直接沿用該圖的像素位置（約 2000 × 1500），步道網路與距離為估算值。
+ * 教室代碼字首依資管系網站「校本部平面圖」：B 親仁樓、G 教學大樓、S 科技大樓、L 圖書館、F 學思樓、I 樂育樓。
  * 正式上線時應改由校園 GIS 系統 API 取得座標與路徑。
  */
 
@@ -38,8 +39,8 @@ const MIN_PER_FLOOR = 0.35;
 export const CAMPUS_BUILDINGS: CampusBuilding[] = [
   { no: 1, name: '親仁樓', en: 'Benevolence Bldg.', code: 'B', cx: 1500, cy: 505, w: 280, h: 95, rot: -17, door: { x: 1450, y: 560 } },
   { no: 2, name: '行政大樓', en: 'Administration Bldg.', cx: 1375, cy: 705, w: 165, h: 170, rot: -17, door: { x: 1455, y: 720 } },
-  { no: 3, name: '科技大樓', en: 'Science & Technology Bldg.', code: 'S', codeInferred: true, cx: 1310, cy: 900, w: 330, h: 75, rot: -17, door: { x: 1300, y: 940 } },
-  { no: 4, name: '圖書館', en: 'Library', cx: 1130, cy: 790, w: 170, h: 170, rot: 0, round: true, door: { x: 1150, y: 870 } },
+  { no: 3, name: '科技大樓', en: 'Science & Technology Bldg.', code: 'S', cx: 1310, cy: 900, w: 330, h: 75, rot: -17, door: { x: 1300, y: 940 } },
+  { no: 4, name: '圖書館', en: 'Library', code: 'L', cx: 1130, cy: 790, w: 170, h: 170, rot: 0, round: true, door: { x: 1150, y: 870 } },
   { no: 5, name: '教學大樓', en: 'Teaching Bldg.', code: 'G', cx: 1190, cy: 625, w: 300, h: 70, rot: -17, door: { x: 1130, y: 665 } },
   { no: 6, name: '學思樓', en: 'Pondering Bldg.', code: 'F', cx: 900, cy: 560, w: 270, h: 110, rot: 6, door: { x: 880, y: 615 } },
   { no: 7, name: '體育館', en: 'Gymnasium', cx: 632, cy: 600, w: 155, h: 130, rot: 3, round: true, door: { x: 712, y: 610 } },
@@ -49,7 +50,7 @@ export const CAMPUS_BUILDINGS: CampusBuilding[] = [
   { no: 11, name: '蘭心樓', en: 'Lan-Hsin Bldg.', cx: 575, cy: 958, w: 165, h: 60, rot: 3, door: { x: 665, y: 960 } },
   { no: 12, name: '爾雅樓', en: 'Elegance Bldg.', cx: 475, cy: 640, w: 135, h: 95, rot: 3, door: { x: 478, y: 690 } },
   { no: 13, name: '水療中心', en: 'Hydrotherapy Center', cx: 388, cy: 785, w: 170, h: 150, rot: 3, door: { x: 476, y: 790 } },
-  { no: 14, name: '樂育樓', en: 'Inspiration Bldg.', code: 'I', codeInferred: true, cx: 368, cy: 975, w: 150, h: 60, rot: 3, door: { x: 446, y: 990 } },
+  { no: 14, name: '樂育樓', en: 'Inspiration Bldg.', code: 'I', cx: 368, cy: 975, w: 150, h: 60, rot: 3, door: { x: 446, y: 990 } },
 ];
 
 /** 不在校本部的教室代碼（例如 C 開頭是城區部文教大樓） */
