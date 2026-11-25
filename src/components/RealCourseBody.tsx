@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Course, SDG_LIST, StudentProfile } from '../types';
 import { checkPrerequisite, gradingStyle, seatsLeft, seniorsTaken, starText } from '../lib/schedule';
+import { TOTAL_WEEKS, hasExtractedTopics, teachingStyleOf, weeklyPlanOf } from '../lib/weeklyPlan';
 
 /** 某一學期的開課紀錄（由 scripts/convert_courses.py 依課名彙整） */
 interface HistoryEntry {
@@ -63,6 +64,17 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
   const maxEnrolled = Math.max(1, ...(history ?? []).map(h => h.enrolled));
   const prereq = student ? checkPrerequisite(course, student) : null;
   const left = seatsLeft(course);
+  const weeks = weeklyPlanOf(course);
+  const fromDescription = hasExtractedTopics(course);
+  const [showAllWeeks, setShowAllWeeks] = useState(false);
+  useEffect(() => setShowAllWeeks(false), [course.id]);
+  const shownWeeks = showAllWeeks ? weeks : weeks.slice(0, 6);
+  const weekTagStyle = (tag: string) =>
+    tag === '期中' || tag === '期末'
+      ? 'bg-amber-100 text-amber-800'
+      : tag === '課程介紹' || tag === '複習'
+        ? 'bg-surface-container-high text-text-secondary'
+        : 'bg-primary-fixed text-primary';
 
   const card = 'bg-surface-card rounded-2xl p-4 sm:p-5 shadow-sm border border-border-subtle';
   const metric = 'bg-surface-card rounded-xl p-3.5 flex flex-col justify-between shadow-xs border border-border-subtle';
@@ -101,6 +113,44 @@ export const RealCourseBody: React.FC<RealCourseBodyProps> = ({ course, student 
       <div className={card}>
         <h4 className="font-medium text-xs sm:text-sm text-primary mb-1.5">課程簡介</h4>
         <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">{course.description}</p>
+      </div>
+
+      <div className={card}>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h4 className="font-medium text-xs sm:text-sm text-primary">每週上課進度</h4>
+          <span className="text-[11px] text-text-muted shrink-0">共 {TOTAL_WEEKS} 週・模擬</span>
+        </div>
+        <p className="text-[11px] text-text-muted mb-3 leading-relaxed">
+          {fromDescription
+            ? '依課程簡介列出的單元自動排定（模擬），實際進度以老師的教學大綱為準。'
+            : '課程簡介沒有列出單元，先以同類課程的通用進度示意（模擬），實際進度以老師的教學大綱為準。'}
+          <span className="block mt-0.5 text-text-secondary">一般週次上課方式：{teachingStyleOf(course)}</span>
+        </p>
+        <ol className="divide-y divide-border-subtle rounded-xl border border-border-subtle overflow-hidden">
+          {shownWeeks.map(w => (
+            <li key={w.week} className="px-3 py-2.5 bg-surface-container-low flex items-start gap-3">
+              <span className="w-[68px] shrink-0 text-[11px] font-semibold text-primary font-mono pt-0.5 whitespace-nowrap">
+                第 {w.week} 週
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-1.5">
+                  <span className={`px-1.5 py-0.5 rounded text-[11px] font-semibold shrink-0 ${weekTagStyle(w.tag)}`}>{w.tag}</span>
+                  <span className="font-medium text-xs text-on-surface pt-0.5">{w.title}</span>
+                </div>
+                {w.desc && <p className="text-[11px] text-text-muted mt-1">{w.desc}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+        {weeks.length > 6 && (
+          <button
+            type="button"
+            onClick={() => setShowAllWeeks(v => !v)}
+            className="mt-3 w-full py-2 rounded-xl border border-border-subtle text-xs font-semibold text-primary hover:bg-primary/5"
+          >
+            {showAllWeeks ? '收合' : `展開全部 ${TOTAL_WEEKS} 週進度`}
+          </button>
+        )}
       </div>
 
       {(course.note || course.requires?.length) && (
