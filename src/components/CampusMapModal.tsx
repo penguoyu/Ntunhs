@@ -1,15 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowLeft, CircleCheck, Footprints, MapPin, TriangleAlert, X } from 'lucide-react';
 import { Course } from '../types';
-import {
-  CAMPUS_BUILDINGS,
-  ROAD_Y,
-  Transition,
-  doorOf,
-  floorLabel,
-  parseRoom,
-  transitionsAround,
-} from '../lib/campus';
+import { Transition, buildingLabel, floorLabel, offCampusOf, parseRoom, transitionsAround } from '../lib/campus';
+import { CampusMapSvg } from './CampusMapSvg';
 import { DAY_LABELS, PERIOD_TIMES, formatCourseTime, slotsOf } from '../lib/schedule';
 
 interface CampusMapModalProps {
@@ -58,18 +51,17 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
   }, [onClose]);
 
   // 這門課的大樓永遠是深藍色；路線另一端（前一堂或下一堂）用綠色
-  const highlightCode = target?.building.code;
+  const targetNo = target?.building.no;
   const arriving = active?.next.course.id === course.id;
   const otherInfo = route ? (arriving ? route.from : route.to) : null;
-  const originCode = otherInfo && otherInfo.building.code !== highlightCode ? otherInfo.building.code : null;
-  const routeLabelPos = route && route.points.length > 1
-    ? { x: (route.points[1].x + route.points[2].x) / 2, y: ROAD_Y }
-    : null;
+  const otherNo = otherInfo && otherInfo.building.no !== targetNo ? otherInfo.building.no : undefined;
+  const offCampus = offCampusOf(course.room || course.location);
+  const inferred = [target?.building, otherInfo?.building].filter(b => b?.codeInferred);
 
   const slots = slotsOf(course);
 
   const steps = route
-    ? route.from.building.code === route.to.building.code
+    ? route.from.building.no === route.to.building.no
       ? [
           `離開 ${route.from.room}：在 ${route.from.building.name}內移動，不用出大樓。`,
           route.from.floor === route.to.floor
@@ -78,8 +70,8 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
           `抵達 ${route.to.room}。`,
         ]
       : [
-          `離開 ${route.from.room}：${route.from.floor > 1 ? `從 ${floorLabel(route.from.floor)} 下到 1 樓，` : ''}由 ${route.from.building.name}出口走到中央林蔭大道。`,
-          `沿林蔭大道${route.direction ? `向${route.direction}` : ''}步行約 ${route.meters} 公尺，抵達 ${route.to.building.name}（${route.to.building.note}）。`,
+          `離開 ${route.from.room}：${route.from.floor > 1 ? `從 ${floorLabel(route.from.floor)} 下到 1 樓，` : ''}由${route.from.building.name}出口出來。`,
+          `${route.roads.length ? `沿${route.roads.join('、')}` : ''}步行約 ${route.meters} 公尺，抵達 ${route.to.building.no} 號${route.to.building.name}。`,
           `進入 ${route.to.building.name}${route.to.floor > 1 ? `，上到 ${floorLabel(route.to.floor)}` : ''}，找到 ${route.to.room}。`,
         ]
     : [];
@@ -97,12 +89,12 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
             <h2 className="text-base sm:text-lg font-semibold text-on-surface flex flex-wrap items-center gap-2">
               {target ? `${target.room} 教室位置與路線指引` : '教室位置'}
               <span className="px-2 py-0.5 rounded-full bg-surface-container text-[11px] font-medium text-text-secondary">
-                示意地圖
+                校本部地圖
               </span>
             </h2>
             <p className="text-xs text-text-muted mt-0.5 truncate">
               {target
-                ? `${target.building.name}（${target.building.note}）${floorLabel(target.floor)} ・ `
+                ? `${buildingLabel(target.building)} ${floorLabel(target.floor)} ・ `
                 : ''}
               {course.name} ・ {formatCourseTime(course)}
             </p>
@@ -114,87 +106,25 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
 
         {!target ? (
           <div className="p-10 text-center text-sm text-text-muted">
-            這門課的教室為「{course.room || course.location || '未排'}」，尚未排定或無法對應到校園建築，暫時無法顯示位置。
+            {offCampus
+              ? `這門課在${offCampus}（${course.room || course.location}），不在校本部，校本部地圖上沒有這棟大樓。`
+              : `這門課的教室為「${course.room || course.location || '未排'}」，尚未排定或無法對應到校本部建築，暫時無法顯示位置。`}
           </div>
         ) : (
           <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
             {/* 左：地圖 */}
             <div className="p-4 sm:p-5 lg:border-r border-border-subtle">
               <div className="flex items-center justify-between text-[11px] text-text-muted mb-2">
-                <span className="font-semibold text-text-secondary">北護石牌校區平面示意圖</span>
+                <span className="font-semibold text-text-secondary">校本部平面圖（依學校校本部地圖簡化）</span>
                 <span className="flex items-center gap-3">
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary" />目標教室</span>
-                  {originCode && <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-secondary" />{arriving ? '前一堂' : '下一堂'}</span>}
+                  {otherNo && <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-secondary" />{arriving ? '前一堂' : '下一堂'}</span>}
                 </span>
               </div>
-              <svg viewBox="0 0 400 260" className="w-full h-auto rounded-xl bg-[#f3f6fb] border border-border-subtle" role="img" aria-label={`校園示意地圖，標示 ${target.room}`}>
-                {/* 綠地 */}
-                <ellipse cx="190" cy="108" rx="62" ry="26" fill="#dcefe6" />
-                <ellipse cx="150" cy="205" rx="44" ry="30" fill="#dcefe6" />
-                <circle cx="356" cy="210" r="26" fill="#dcefe6" />
-                {/* 道路 */}
-                <rect x="10" y={ROAD_Y - 6} width="380" height="12" rx="6" fill="#dfe5f0" />
-                <text x="160" y={ROAD_Y + 16} textAnchor="middle" fontSize="7" fill="#64748B">中央林蔭大道</text>
-                {CAMPUS_BUILDINGS.map(b => {
-                  const d = doorOf(b);
-                  return <line key={`door-${b.code}`} x1={d.x} y1={d.y} x2={d.x} y2={ROAD_Y} stroke="#dfe5f0" strokeWidth="5" />;
-                })}
-                <text x="392" y={ROAD_Y + 18} textAnchor="end" fontSize="7" fill="#94a3b8">明德路 校門 →</text>
-
-                {/* 建築 */}
-                {CAMPUS_BUILDINGS.map(b => {
-                  const isTarget = b.code === highlightCode;
-                  const isOrigin = b.code === originCode;
-                  const fill = isTarget ? '#00355f' : isOrigin ? '#006b5f' : '#ffffff';
-                  const text = isTarget || isOrigin ? '#ffffff' : '#131b2e';
-                  const sub = isTarget || isOrigin ? 'rgba(255,255,255,.8)' : '#64748B';
-                  return (
-                    <g key={b.code}>
-                      <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="7" fill={fill} stroke={isTarget || isOrigin ? fill : '#CBD5E1'} strokeWidth="1.2" />
-                      <text x={b.x + b.w / 2} y={b.y + b.h / 2 - 1} textAnchor="middle" fontSize="10" fontWeight="700" fill={text}>{b.name}</text>
-                      <text x={b.x + b.w / 2} y={b.y + b.h / 2 + 10} textAnchor="middle" fontSize="7" fill={sub}>{b.note}</text>
-                    </g>
-                  );
-                })}
-
-                {/* 路線 */}
-                {route && route.points.length > 1 && (
-                  <polyline
-                    points={route.points.map(p => `${p.x},${p.y}`).join(' ')}
-                    fill="none"
-                    stroke="#006b5f"
-                    strokeWidth="2.5"
-                    strokeDasharray="5 4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="route-dash"
-                  />
-                )}
-                {routeLabelPos && route && (
-                  <g>
-                    <rect x={routeLabelPos.x - 30} y={routeLabelPos.y - 22} width="60" height="14" rx="7" fill="#006b5f" />
-                    <text x={routeLabelPos.x} y={routeLabelPos.y - 12} textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#fff">
-                      步行約 {route.meters}m
-                    </text>
-                  </g>
-                )}
-
-                {/* 目標標記 */}
-                {(() => {
-                  const b = CAMPUS_BUILDINGS.find(x => x.code === highlightCode);
-                  if (!b) return null;
-                  const cx = b.x + b.w - 8;
-                  const cy = b.y + 8;
-                  return (
-                    <g>
-                      <circle cx={cx} cy={cy} r="9" fill="#71f8e4" className="pin-pulse" />
-                      <circle cx={cx} cy={cy} r="4" fill="#ffffff" />
-                    </g>
-                  );
-                })()}
-              </svg>
+              <CampusMapSvg targetNo={targetNo} otherNo={otherNo} route={route} label={`校本部地圖，標示 ${target.room}`} />
               <p className="mt-2 text-[11px] text-text-muted leading-relaxed">
-                建築位置與步行時間為示意估算（下課人潮步速約 70 公尺／分、每層樓約 20 秒），正式版將串接校園 GIS 圖資 API。
+                大樓位置依學校公告的校本部地圖描繪；步行距離與時間為估算（下課人潮步速約 70 公尺／分、每層樓約 20 秒），正式版將串接校園 GIS 圖資 API。
+                {inferred.length > 0 && ` ${Array.from(new Set(inferred.map(b => `${b!.code} 開頭教室對應${b!.name}`))).join('、')}是依開課系所推測，請以學校公告為準。`}
               </p>
             </div>
 
@@ -300,7 +230,7 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
         )}
 
         <div className="sticky bottom-0 bg-surface-card border-t border-border-subtle px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          <span className="text-[11px] text-text-muted min-w-0">資料來源：校園示意圖資（模擬）<span className="hidden sm:inline">＋ 您的課表與預選清單</span></span>
+          <span className="text-[11px] text-text-muted min-w-0">資料來源：學校校本部地圖（2024.10.15）<span className="hidden sm:inline">＋ 您的課表與預選清單</span></span>
           <button type="button" onClick={onClose} className="shrink-0 whitespace-nowrap px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold flex items-center gap-1.5 hover:bg-primary-container">
             <ArrowLeft size={15} /> 返回選課
           </button>
