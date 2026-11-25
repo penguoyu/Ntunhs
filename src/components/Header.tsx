@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ActiveTab, StudentProfile, UserAccount } from '../types';
-import { Logo } from './Logo';
 
 interface HeaderProps {
   currentTab: ActiveTab;
@@ -45,14 +44,12 @@ export const Header: React.FC<HeaderProps> = ({
         deviceMode === 'mobile' ? 'hidden' : 'hidden xl:block'
       }`}>
         <div className="h-20 w-full px-6 flex items-center justify-between gap-4 max-w-[1920px] mx-auto">
-          {/* Logo & School Branding */}
+          {/* 學期（左上角不放 logo） */}
           <div 
             className="flex items-center gap-3 shrink-0 cursor-pointer" 
             onClick={() => onSelectTab(isAdmin ? 'admin-courses' : 'search-courses')}
           >
-            <Logo size={40} />
-            <div className="h-6 w-px bg-surface-container-high mx-2 hidden 2xl:block"></div>
-            <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-lg text-primary text-xs font-medium shrink-0">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-lg text-primary text-xs font-medium shrink-0">
               <span className="material-symbols-outlined text-general-sky text-[18px]">calendar_month</span>
               <span>{semester}</span>
             </div>
@@ -306,7 +303,6 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
             onClick={() => onSelectTab(isAdmin ? 'admin-courses' : 'search-courses')}
           >
-            <Logo size={30} />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className={`shrink-0 whitespace-nowrap text-[11px] px-1.5 py-0.2 rounded-full font-semibold ${

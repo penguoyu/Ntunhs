@@ -310,3 +310,14 @@ export const transitionsAround = (target: Course, planned: Course[]): Transition
 };
 
 export const floorLabel = (floor: number) => (floor <= 0 ? 'B1' : `${floor}F`);
+
+/**
+ * 「在 Google 地圖導航」連結（不需 API 金鑰）：手機會直接開 Google 地圖 App。
+ * 校內大樓以「學校名＋樓名」搜尋；城區部等校外地點直接導航到該校區。
+ */
+export const googleMapsUrl = (place: string) =>
+  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`國立臺北護理健康大學 ${place}`)}`;
+
+export const OFF_CAMPUS_MAP_QUERY: Record<string, string> = {
+  C: '城區部',
+};

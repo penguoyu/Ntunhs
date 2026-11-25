@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowLeft, CircleCheck, Footprints, MapPin, TriangleAlert, X } from 'lucide-react';
+import { ArrowDown, ArrowLeft, CircleCheck, Footprints, MapPin, Navigation, TriangleAlert, X } from 'lucide-react';
 import { Course } from '../types';
-import { Transition, buildingLabel, floorLabel, offCampusOf, parseRoom, parseRooms, transitionsAround } from '../lib/campus';
+import { OFF_CAMPUS_MAP_QUERY, Transition, buildingLabel, floorLabel, googleMapsUrl, offCampusOf, parseRoom, parseRooms, transitionsAround } from '../lib/campus';
 import { CampusMapSvg } from './CampusMapSvg';
 import { DAY_LABELS, PERIOD_TIMES, formatCourseTime, slotRuns, slotsOf } from '../lib/schedule';
 
@@ -59,6 +59,9 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
   const otherInfo = route ? (arriving ? route.from : route.to) : null;
   const otherNo = otherInfo && otherInfo.building.no !== targetNo ? otherInfo.building.no : undefined;
   const offCampus = offCampusOf(course.room || course.location);
+  const offCampusCode = (course.room || course.location || '').trim().charAt(0).toUpperCase();
+  const mapsPlace = mine ? mine.building.name : offCampus ? OFF_CAMPUS_MAP_QUERY[offCampusCode] ?? offCampus : null;
+  const mapsHref = mapsPlace ? googleMapsUrl(mapsPlace) : null;
   const inferred = [target?.building, otherInfo?.building].filter(b => b?.codeInferred);
 
   const slots = slotsOf(course);
@@ -113,6 +116,18 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
             {offCampus
               ? `這門課在${offCampus}（${course.room || course.location}），不在校本部，校本部地圖上沒有這棟大樓。`
               : `這門課的教室為「${course.room || course.location || '未排'}」，尚未排定或無法對應到校本部建築，暫時無法顯示位置。`}
+            {mapsHref && (
+              <div className="mt-4">
+                <a
+                  href={mapsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/5"
+                >
+                  <Navigation size={15} /> 用 Google 地圖導航到{mapsPlace}
+                </a>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
@@ -234,10 +249,23 @@ export const CampusMapModal: React.FC<CampusMapModalProps> = ({ course, plannedC
         )}
 
         <div className="sticky bottom-0 bg-surface-card border-t border-border-subtle px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-          <span className="text-[11px] text-text-muted min-w-0">資料來源：學校校本部地圖（2024.10.15）<span className="hidden sm:inline">＋ 您的課表與預選清單</span></span>
+          <span className="text-[11px] text-text-muted min-w-0"><span className="sm:hidden">來源：校本部地圖</span><span className="hidden sm:inline">資料來源：學校校本部地圖（2024.10.15）＋ 您的課表與預選清單</span></span>
+          <div className="flex items-center gap-2 shrink-0">
+          {mapsHref && target && (
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`在 Google 地圖開啟${mapsPlace}`}
+              className="whitespace-nowrap px-3 sm:px-4 py-2 rounded-lg border border-border-subtle text-primary text-sm font-semibold flex items-center gap-1.5 hover:bg-primary/5"
+            >
+              <Navigation size={15} /> <span className="hidden sm:inline">在 </span>Google 地圖<span className="hidden sm:inline">開啟</span>
+            </a>
+          )}
           <button type="button" onClick={onClose} className="shrink-0 whitespace-nowrap px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold flex items-center gap-1.5 hover:bg-primary-container">
             <ArrowLeft size={15} /> 返回選課
           </button>
+          </div>
         </div>
       </div>
     </div>
