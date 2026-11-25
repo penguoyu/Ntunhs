@@ -28,7 +28,7 @@ import { backfillBlock, blockText, initialAhead } from './lib/waitlist';
  * 資料版本：修改 src/data 內的預設資料後請一併更新，
  * 瀏覽器中舊的 localStorage 快取就會被清掉，改用新的預設資料。
  */
-const DATA_VERSION = '2026-11-24-waitlist-map';
+const DATA_VERSION = '2026-11-25-review-fixes';
 const DATA_KEYS = [
   'ntunhs_courses_catalog',
   'ntunhs_cart',
